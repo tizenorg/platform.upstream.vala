@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 2.6.  */
+/* A Bison parser, made by GNU Bison 2.6.5.  */
 
 /* Bison implementation for Yacc-like parsers in C
    
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.6"
+#define YYBISON_VERSION "2.6.5"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -62,8 +62,7 @@
 
 
 /* Copy the first part of user declarations.  */
-
-/* Line 336 of yacc.c  */
+/* Line 360 of yacc.c  */
 #line 29 "scannerparser.y"
 
 #include <stdio.h>
@@ -224,9 +223,8 @@ cdirective_free (CDirective *directive)
 }
 
 
-
-/* Line 336 of yacc.c  */
-#line 230 "scannerparser.c"
+/* Line 360 of yacc.c  */
+#line 228 "scannerparser.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -246,8 +244,8 @@ cdirective_free (CDirective *directive)
 
 /* In a future release of Bison, this section will be replaced
    by #include "y.tab.h".  */
-#ifndef YY_Y_TAB_H
-# define YY_Y_TAB_H
+#ifndef YY_YY_Y_TAB_H_INCLUDED
+# define YY_YY_Y_TAB_H_INCLUDED
 /* Enabling traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -401,8 +399,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
-
-/* Line 350 of yacc.c  */
+/* Line 376 of yacc.c  */
 #line 190 "scannerparser.y"
 
   char *str;
@@ -415,9 +412,8 @@ typedef union YYSTYPE
   UnaryOperator unary_operator;
 
 
-
-/* Line 350 of yacc.c  */
-#line 421 "scannerparser.c"
+/* Line 376 of yacc.c  */
+#line 417 "scannerparser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -440,13 +436,12 @@ int yyparse ();
 #endif
 #endif /* ! YYPARSE_PARAM */
 
-#endif /* !YY_Y_TAB_H  */
+#endif /* !YY_YY_Y_TAB_H_INCLUDED  */
 
 /* Copy the second part of user declarations.  */
 
-
-/* Line 353 of yacc.c  */
-#line 450 "scannerparser.c"
+/* Line 379 of yacc.c  */
+#line 445 "scannerparser.c"
 
 #ifdef short
 # undef short
@@ -499,24 +494,24 @@ typedef short int yytype_int16;
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
-#   define YY_(msgid) dgettext ("bison-runtime", msgid)
+#   define YY_(Msgid) dgettext ("bison-runtime", Msgid)
 #  endif
 # endif
 # ifndef YY_
-#  define YY_(msgid) msgid
+#  define YY_(Msgid) Msgid
 # endif
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(e) ((void) (e))
+# define YYUSE(E) ((void) (E))
 #else
-# define YYUSE(e) /* empty */
+# define YYUSE(E) /* empty */
 #endif
 
 /* Identity function, used to suppress warnings about constant conditions.  */
 #ifndef lint
-# define YYID(n) (n)
+# define YYID(N) (N)
 #else
 #if (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
@@ -1300,10 +1295,10 @@ static const yytype_int16 yytable[] =
        0,     0,    21,    22,    23,    24
 };
 
-#define yypact_value_is_default(yystate) \
-  ((yystate) == (-199))
+#define yypact_value_is_default(Yystate) \
+  (!!((Yystate) == (-199)))
 
-#define yytable_value_is_error(yytable_value) \
+#define yytable_value_is_error(Yytable_value) \
   YYID (0)
 
 static const yytype_int16 yycheck[] =
@@ -1582,47 +1577,18 @@ do                                                              \
     }								\
 while (YYID (0))
 
-
+/* Error token number */
 #define YYTERROR	1
 #define YYERRCODE	256
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)                                \
-    do                                                                  \
-      if (YYID (N))                                                     \
-        {                                                               \
-          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
-          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;      \
-          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;         \
-          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;       \
-        }                                                               \
-      else                                                              \
-        {                                                               \
-          (Current).first_line   = (Current).last_line   =              \
-            YYRHSLOC (Rhs, 0).last_line;                                \
-          (Current).first_column = (Current).last_column =              \
-            YYRHSLOC (Rhs, 0).last_column;                              \
-        }                                                               \
-    while (YYID (0))
-#endif
-
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-
-
 
 /* This macro is provided for backward compatibility. */
-
 #ifndef YY_LOCATION_PRINT
 # define YY_LOCATION_PRINT(File, Loc) ((void) 0)
 #endif
 
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
-
 #ifdef YYLEX_PARAM
 # define YYLEX yylex (YYLEX_PARAM)
 #else
@@ -2093,8 +2059,17 @@ yydestruct (yymsg, yytype, yyvaluep, igenerator)
 /* The lookahead symbol.  */
 int yychar;
 
+
+#ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END
+#endif
+#ifndef YY_INITIAL_VALUE
+# define YY_INITIAL_VALUE(Value) /* Nothing. */
+#endif
+
 /* The semantic value of the lookahead symbol.  */
-YYSTYPE yylval;
+YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
 /* Number of syntax errors so far.  */
 int yynerrs;
@@ -2152,7 +2127,7 @@ yyparse (igenerator)
   int yyn;
   int yyresult;
   /* Lookahead token as an internal (translated) token number.  */
-  int yytoken;
+  int yytoken = 0;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
@@ -2170,9 +2145,8 @@ yyparse (igenerator)
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
-  yytoken = 0;
-  yyss = yyssa;
-  yyvs = yyvsa;
+  yyssp = yyss = yyssa;
+  yyvsp = yyvs = yyvsa;
   yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
@@ -2181,14 +2155,6 @@ yyparse (igenerator)
   yyerrstatus = 0;
   yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
-
-  /* Initialize stack pointers.
-     Waste one element of value and location stack
-     so that they stay on the same level as the state stack.
-     The wasted elements are never initialized.  */
-  yyssp = yyss;
-  yyvsp = yyvs;
-
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -2329,7 +2295,9 @@ yybackup:
   yychar = YYEMPTY;
 
   yystate = yyn;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
   goto yynewstate;
 
@@ -2366,8 +2334,7 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 280 "scannerparser.y"
     {
 		(yyval.symbol) = g_hash_table_lookup (const_table, (yyvsp[(1) - (1)].str));
@@ -2378,8 +2345,7 @@ yyreduce:
     break;
 
   case 3:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 287 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2395,8 +2361,7 @@ yyreduce:
     break;
 
   case 4:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 299 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2404,8 +2369,7 @@ yyreduce:
     break;
 
   case 5:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 303 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2413,8 +2377,7 @@ yyreduce:
     break;
 
   case 7:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 308 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (3)].symbol);
@@ -2422,8 +2385,7 @@ yyreduce:
     break;
 
   case 8:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 316 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2433,8 +2395,7 @@ yyreduce:
     break;
 
   case 9:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 322 "scannerparser.y"
     {
 		char *strings, *string2;
@@ -2449,8 +2410,7 @@ yyreduce:
     break;
 
   case 10:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 336 "scannerparser.y"
     {
 		(yyval.str) = g_strdup (yytext);
@@ -2458,8 +2418,7 @@ yyreduce:
     break;
 
   case 14:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 349 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2467,8 +2426,7 @@ yyreduce:
     break;
 
   case 15:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 353 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2476,8 +2434,7 @@ yyreduce:
     break;
 
   case 16:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 357 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2485,8 +2442,7 @@ yyreduce:
     break;
 
   case 17:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 361 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2494,8 +2450,7 @@ yyreduce:
     break;
 
   case 18:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 365 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2503,8 +2458,7 @@ yyreduce:
     break;
 
   case 19:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 369 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2512,8 +2466,7 @@ yyreduce:
     break;
 
   case 20:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 373 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2521,8 +2474,7 @@ yyreduce:
     break;
 
   case 24:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 386 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2530,8 +2482,7 @@ yyreduce:
     break;
 
   case 25:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 390 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2539,8 +2490,7 @@ yyreduce:
     break;
 
   case 26:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 394 "scannerparser.y"
     {
 		switch ((yyvsp[(1) - (2)].unary_operator)) {
@@ -2567,8 +2517,7 @@ yyreduce:
     break;
 
   case 27:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 417 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2576,8 +2525,7 @@ yyreduce:
     break;
 
   case 28:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 421 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2585,8 +2533,7 @@ yyreduce:
     break;
 
   case 29:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 428 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_ADDRESS_OF;
@@ -2594,8 +2541,7 @@ yyreduce:
     break;
 
   case 30:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 432 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_POINTER_INDIRECTION;
@@ -2603,8 +2549,7 @@ yyreduce:
     break;
 
   case 31:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 436 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_PLUS;
@@ -2612,8 +2557,7 @@ yyreduce:
     break;
 
   case 32:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 440 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_MINUS;
@@ -2621,8 +2565,7 @@ yyreduce:
     break;
 
   case 33:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 444 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_BITWISE_COMPLEMENT;
@@ -2630,8 +2573,7 @@ yyreduce:
     break;
 
   case 34:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 448 "scannerparser.y"
     {
 		(yyval.unary_operator) = UNARY_LOGICAL_NEGATION;
@@ -2639,8 +2581,7 @@ yyreduce:
     break;
 
   case 36:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 456 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(4) - (4)].symbol);
@@ -2648,8 +2589,7 @@ yyreduce:
     break;
 
   case 38:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 464 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2659,8 +2599,7 @@ yyreduce:
     break;
 
   case 39:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 470 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2672,8 +2611,7 @@ yyreduce:
     break;
 
   case 40:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 478 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2683,8 +2621,7 @@ yyreduce:
     break;
 
   case 42:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 488 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2694,8 +2631,7 @@ yyreduce:
     break;
 
   case 43:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 494 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2705,8 +2641,7 @@ yyreduce:
     break;
 
   case 45:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 504 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2716,8 +2651,7 @@ yyreduce:
     break;
 
   case 46:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 510 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2727,8 +2661,7 @@ yyreduce:
     break;
 
   case 48:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 520 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2738,8 +2671,7 @@ yyreduce:
     break;
 
   case 49:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 526 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2749,8 +2681,7 @@ yyreduce:
     break;
 
   case 50:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 532 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2760,8 +2691,7 @@ yyreduce:
     break;
 
   case 51:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 538 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2771,8 +2701,7 @@ yyreduce:
     break;
 
   case 53:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 548 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2782,8 +2711,7 @@ yyreduce:
     break;
 
   case 54:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 554 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2793,8 +2721,7 @@ yyreduce:
     break;
 
   case 56:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 564 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2804,8 +2731,7 @@ yyreduce:
     break;
 
   case 58:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 574 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2815,8 +2741,7 @@ yyreduce:
     break;
 
   case 60:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 584 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2826,8 +2751,7 @@ yyreduce:
     break;
 
   case 62:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 594 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2837,8 +2761,7 @@ yyreduce:
     break;
 
   case 64:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 604 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_CONST);
@@ -2848,8 +2771,7 @@ yyreduce:
     break;
 
   case 66:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 614 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_get_const_boolean ((yyvsp[(1) - (5)].symbol)) ? (yyvsp[(3) - (5)].symbol) : (yyvsp[(5) - (5)].symbol);
@@ -2857,8 +2779,7 @@ yyreduce:
     break;
 
   case 68:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 622 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2866,8 +2787,7 @@ yyreduce:
     break;
 
   case 81:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 644 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -2875,8 +2795,7 @@ yyreduce:
     break;
 
   case 83:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 657 "scannerparser.y"
     {
 		GList *l;
@@ -2896,8 +2815,7 @@ yyreduce:
     break;
 
   case 85:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 677 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(2) - (2)].ctype);
@@ -2906,8 +2824,7 @@ yyreduce:
     break;
 
   case 86:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 682 "scannerparser.y"
     {
 		(yyval.ctype) = ctype_new (CTYPE_INVALID);
@@ -2916,8 +2833,7 @@ yyreduce:
     break;
 
   case 87:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 687 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(1) - (2)].ctype);
@@ -2926,8 +2842,7 @@ yyreduce:
     break;
 
   case 89:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 693 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(2) - (2)].ctype);
@@ -2936,8 +2851,7 @@ yyreduce:
     break;
 
   case 90:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 698 "scannerparser.y"
     {
 		(yyval.ctype) = ctype_new (CTYPE_INVALID);
@@ -2946,8 +2860,7 @@ yyreduce:
     break;
 
   case 91:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 703 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(2) - (2)].ctype);
@@ -2956,8 +2869,7 @@ yyreduce:
     break;
 
   case 92:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 708 "scannerparser.y"
     {
 		(yyval.ctype) = ctype_new (CTYPE_INVALID);
@@ -2966,8 +2878,7 @@ yyreduce:
     break;
 
   case 93:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 716 "scannerparser.y"
     {
 		(yyval.list) = g_list_append (NULL, (yyvsp[(1) - (1)].symbol));
@@ -2975,8 +2886,7 @@ yyreduce:
     break;
 
   case 94:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 720 "scannerparser.y"
     {
 		(yyval.list) = g_list_append ((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].symbol));
@@ -2984,8 +2894,7 @@ yyreduce:
     break;
 
   case 97:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 732 "scannerparser.y"
     {
 		(yyval.storage_class_specifier) = STORAGE_CLASS_TYPEDEF;
@@ -2993,8 +2902,7 @@ yyreduce:
     break;
 
   case 98:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 736 "scannerparser.y"
     {
 		(yyval.storage_class_specifier) = STORAGE_CLASS_EXTERN;
@@ -3002,8 +2910,7 @@ yyreduce:
     break;
 
   case 99:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 740 "scannerparser.y"
     {
 		(yyval.storage_class_specifier) = STORAGE_CLASS_STATIC;
@@ -3011,8 +2918,7 @@ yyreduce:
     break;
 
   case 100:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 744 "scannerparser.y"
     {
 		(yyval.storage_class_specifier) = STORAGE_CLASS_AUTO;
@@ -3020,8 +2926,7 @@ yyreduce:
     break;
 
   case 101:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 748 "scannerparser.y"
     {
 		(yyval.storage_class_specifier) = STORAGE_CLASS_REGISTER;
@@ -3029,8 +2934,7 @@ yyreduce:
     break;
 
   case 102:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 755 "scannerparser.y"
     {
 		(yyval.ctype) = ctype_new (CTYPE_VOID);
@@ -3038,8 +2942,7 @@ yyreduce:
     break;
 
   case 103:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 759 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("char");
@@ -3047,8 +2950,7 @@ yyreduce:
     break;
 
   case 104:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 763 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("short");
@@ -3056,8 +2958,7 @@ yyreduce:
     break;
 
   case 105:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 767 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("int");
@@ -3065,8 +2966,7 @@ yyreduce:
     break;
 
   case 106:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 771 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("long");
@@ -3074,8 +2974,7 @@ yyreduce:
     break;
 
   case 107:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 775 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("float");
@@ -3083,8 +2982,7 @@ yyreduce:
     break;
 
   case 108:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 779 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("double");
@@ -3092,8 +2990,7 @@ yyreduce:
     break;
 
   case 109:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 783 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("signed");
@@ -3101,8 +2998,7 @@ yyreduce:
     break;
 
   case 110:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 787 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("unsigned");
@@ -3110,8 +3006,7 @@ yyreduce:
     break;
 
   case 111:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 791 "scannerparser.y"
     {
 		(yyval.ctype) = cbasic_type_new ("bool");
@@ -3119,8 +3014,7 @@ yyreduce:
     break;
 
   case 114:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 797 "scannerparser.y"
     {
 		(yyval.ctype) = ctypedef_new ((yyvsp[(1) - (1)].str));
@@ -3128,8 +3022,7 @@ yyreduce:
     break;
 
   case 115:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 804 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(1) - (5)].ctype);
@@ -3151,8 +3044,7 @@ yyreduce:
     break;
 
   case 116:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 822 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(1) - (4)].ctype);
@@ -3161,8 +3053,7 @@ yyreduce:
     break;
 
   case 117:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 827 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(1) - (2)].ctype);
@@ -3171,8 +3062,7 @@ yyreduce:
     break;
 
   case 118:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 835 "scannerparser.y"
     {
 		(yyval.ctype) = cstruct_new (NULL);
@@ -3180,8 +3070,7 @@ yyreduce:
     break;
 
   case 119:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 839 "scannerparser.y"
     {
 		(yyval.ctype) = cunion_new (NULL);
@@ -3189,8 +3078,7 @@ yyreduce:
     break;
 
   case 121:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 847 "scannerparser.y"
     {
 		(yyval.list) = g_list_concat ((yyvsp[(1) - (2)].list), (yyvsp[(2) - (2)].list));
@@ -3198,8 +3086,7 @@ yyreduce:
     break;
 
   case 122:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 854 "scannerparser.y"
     {
 		GList *l;
@@ -3216,8 +3103,7 @@ yyreduce:
     break;
 
   case 123:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 870 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(1) - (2)].ctype);
@@ -3226,8 +3112,7 @@ yyreduce:
     break;
 
   case 125:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 876 "scannerparser.y"
     {
 		(yyval.ctype) = (yyvsp[(2) - (2)].ctype);
@@ -3236,8 +3121,7 @@ yyreduce:
     break;
 
   case 126:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 881 "scannerparser.y"
     {
 		(yyval.ctype) = ctype_new (CTYPE_INVALID);
@@ -3246,8 +3130,7 @@ yyreduce:
     break;
 
   case 127:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 889 "scannerparser.y"
     {
 		(yyval.list) = g_list_append (NULL, (yyvsp[(1) - (1)].symbol));
@@ -3255,8 +3138,7 @@ yyreduce:
     break;
 
   case 128:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 893 "scannerparser.y"
     {
 		(yyval.list) = g_list_append ((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].symbol));
@@ -3264,8 +3146,7 @@ yyreduce:
     break;
 
   case 129:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 900 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3273,8 +3154,7 @@ yyreduce:
     break;
 
   case 131:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 905 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3282,8 +3162,7 @@ yyreduce:
     break;
 
   case 133:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 913 "scannerparser.y"
     {
 		(yyval.ctype) = cenum_new ((yyvsp[(2) - (5)].str));
@@ -3293,8 +3172,7 @@ yyreduce:
     break;
 
   case 134:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 919 "scannerparser.y"
     {
 		(yyval.ctype) = cenum_new (NULL);
@@ -3304,8 +3182,7 @@ yyreduce:
     break;
 
   case 135:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 925 "scannerparser.y"
     {
 		(yyval.ctype) = cenum_new ((yyvsp[(2) - (6)].str));
@@ -3315,8 +3192,7 @@ yyreduce:
     break;
 
   case 136:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 931 "scannerparser.y"
     {
 		(yyval.ctype) = cenum_new (NULL);
@@ -3326,8 +3202,7 @@ yyreduce:
     break;
 
   case 137:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 937 "scannerparser.y"
     {
 		(yyval.ctype) = cenum_new ((yyvsp[(2) - (2)].str));
@@ -3335,8 +3210,7 @@ yyreduce:
     break;
 
   case 138:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 944 "scannerparser.y"
     {
 		(yyval.list) = g_list_append (NULL, (yyvsp[(1) - (1)].symbol));
@@ -3344,8 +3218,7 @@ yyreduce:
     break;
 
   case 139:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 948 "scannerparser.y"
     {
 		(yyval.list) = g_list_append ((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].symbol));
@@ -3353,8 +3226,7 @@ yyreduce:
     break;
 
   case 140:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 955 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_OBJECT);
@@ -3366,8 +3238,7 @@ yyreduce:
     break;
 
   case 141:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 963 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_OBJECT);
@@ -3380,8 +3251,7 @@ yyreduce:
     break;
 
   case 142:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 975 "scannerparser.y"
     {
 		(yyval.type_qualifier) = TYPE_QUALIFIER_CONST;
@@ -3389,8 +3259,7 @@ yyreduce:
     break;
 
   case 143:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 979 "scannerparser.y"
     {
 		(yyval.type_qualifier) = TYPE_QUALIFIER_RESTRICT;
@@ -3398,8 +3267,7 @@ yyreduce:
     break;
 
   case 144:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 983 "scannerparser.y"
     {
 		(yyval.type_qualifier) = TYPE_QUALIFIER_VOLATILE;
@@ -3407,8 +3275,7 @@ yyreduce:
     break;
 
   case 145:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 990 "scannerparser.y"
     {
 		(yyval.function_specifier) = FUNCTION_INLINE;
@@ -3416,8 +3283,7 @@ yyreduce:
     break;
 
   case 146:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 997 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (2)].symbol);
@@ -3426,8 +3292,7 @@ yyreduce:
     break;
 
   case 148:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1006 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3436,8 +3301,7 @@ yyreduce:
     break;
 
   case 149:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1011 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (3)].symbol);
@@ -3445,8 +3309,7 @@ yyreduce:
     break;
 
   case 150:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1015 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(1) - (4)].symbol);
@@ -3455,8 +3318,7 @@ yyreduce:
     break;
 
   case 151:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1020 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(1) - (3)].symbol);
@@ -3465,8 +3327,7 @@ yyreduce:
     break;
 
   case 152:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1025 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3480,8 +3341,7 @@ yyreduce:
     break;
 
   case 153:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1035 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3492,8 +3352,7 @@ yyreduce:
     break;
 
   case 154:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1042 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3503,8 +3362,7 @@ yyreduce:
     break;
 
   case 155:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1051 "scannerparser.y"
     {
 		(yyval.ctype) = cpointer_new (NULL);
@@ -3513,8 +3371,7 @@ yyreduce:
     break;
 
   case 156:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1056 "scannerparser.y"
     {
 		(yyval.ctype) = cpointer_new (NULL);
@@ -3522,8 +3379,7 @@ yyreduce:
     break;
 
   case 157:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1060 "scannerparser.y"
     {
 		(yyval.ctype) = cpointer_new ((yyvsp[(3) - (3)].ctype));
@@ -3532,8 +3388,7 @@ yyreduce:
     break;
 
   case 158:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1065 "scannerparser.y"
     {
 		(yyval.ctype) = cpointer_new ((yyvsp[(2) - (2)].ctype));
@@ -3541,8 +3396,7 @@ yyreduce:
     break;
 
   case 160:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1073 "scannerparser.y"
     {
 		(yyval.type_qualifier) = (yyvsp[(1) - (2)].type_qualifier) | (yyvsp[(2) - (2)].type_qualifier);
@@ -3550,8 +3404,7 @@ yyreduce:
     break;
 
   case 163:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1085 "scannerparser.y"
     {
 		(yyval.list) = g_list_append (NULL, (yyvsp[(1) - (1)].symbol));
@@ -3559,8 +3412,7 @@ yyreduce:
     break;
 
   case 164:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1089 "scannerparser.y"
     {
 		(yyval.list) = g_list_append ((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].symbol));
@@ -3568,8 +3420,7 @@ yyreduce:
     break;
 
   case 165:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1096 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (2)].symbol);
@@ -3578,8 +3429,7 @@ yyreduce:
     break;
 
   case 166:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1101 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (2)].symbol);
@@ -3588,8 +3438,7 @@ yyreduce:
     break;
 
   case 167:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1106 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3598,8 +3447,7 @@ yyreduce:
     break;
 
   case 168:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1114 "scannerparser.y"
     {
 		CSymbol *sym = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3609,8 +3457,7 @@ yyreduce:
     break;
 
   case 169:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1120 "scannerparser.y"
     {
 		CSymbol *sym = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3620,8 +3467,7 @@ yyreduce:
     break;
 
   case 172:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1134 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3630,8 +3476,7 @@ yyreduce:
     break;
 
   case 174:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1140 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (2)].symbol);
@@ -3640,8 +3485,7 @@ yyreduce:
     break;
 
   case 175:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1148 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(2) - (3)].symbol);
@@ -3649,8 +3493,7 @@ yyreduce:
     break;
 
   case 176:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1152 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3659,8 +3502,7 @@ yyreduce:
     break;
 
   case 177:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1157 "scannerparser.y"
     {
 		(yyval.symbol) = csymbol_new (CSYMBOL_TYPE_INVALID);
@@ -3669,8 +3511,7 @@ yyreduce:
     break;
 
   case 178:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1162 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(1) - (3)].symbol);
@@ -3679,8 +3520,7 @@ yyreduce:
     break;
 
   case 179:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1167 "scannerparser.y"
     {
 		(yyval.symbol) = (yyvsp[(1) - (4)].symbol);
@@ -3689,8 +3529,7 @@ yyreduce:
     break;
 
   case 180:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1172 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3700,8 +3539,7 @@ yyreduce:
     break;
 
   case 181:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1178 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3715,8 +3553,7 @@ yyreduce:
     break;
 
   case 182:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1188 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3726,8 +3563,7 @@ yyreduce:
     break;
 
   case 183:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1194 "scannerparser.y"
     {
 		CType *func = cfunction_new ();
@@ -3741,8 +3577,7 @@ yyreduce:
     break;
 
   case 184:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1207 "scannerparser.y"
     {
 		(yyval.str) = g_strdup (yytext);
@@ -3750,8 +3585,7 @@ yyreduce:
     break;
 
   case 234:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1314 "scannerparser.y"
     {
 		(yyval.str) = g_strdup (yytext + strlen ("#define "));
@@ -3759,8 +3593,7 @@ yyreduce:
     break;
 
   case 235:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1321 "scannerparser.y"
     {
 		(yyval.str) = g_strdup (yytext + strlen ("#define "));
@@ -3768,8 +3601,7 @@ yyreduce:
     break;
 
   case 237:
-
-/* Line 1788 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 1332 "scannerparser.y"
     {
 		if ((yyvsp[(2) - (2)].symbol)->const_int_set || (yyvsp[(2) - (2)].symbol)->const_string != NULL) {
@@ -3780,9 +3612,8 @@ yyreduce:
     break;
 
 
-
-/* Line 1788 of yacc.c  */
-#line 3786 "scannerparser.c"
+/* Line 1778 of yacc.c  */
+#line 3617 "scannerparser.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -3945,7 +3776,9 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
 
   /* Shift the error token.  */
@@ -4011,8 +3844,7 @@ yyreturn:
 }
 
 
-
-/* Line 2049 of yacc.c  */
+/* Line 2041 of yacc.c  */
 #line 1346 "scannerparser.y"
 
 
@@ -4047,6 +3879,5 @@ g_igenerator_parse_file (GIGenerator *igenerator, FILE *file)
 
   return TRUE;
 }
-
 
 

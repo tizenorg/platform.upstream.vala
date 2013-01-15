@@ -1374,6 +1374,7 @@ void vala_code_node_set_source_reference (ValaCodeNode* self, ValaSourceReferenc
 static ValaSymbol* vala_array_type_real_get_member (ValaDataType* base, const gchar* member_name);
 static ValaArrayLengthField* vala_array_type_get_length_field (ValaArrayType* self);
 static ValaArrayMoveMethod* vala_array_type_get_move_method (ValaArrayType* self);
+gint vala_array_type_get_rank (ValaArrayType* self);
 static ValaArrayResizeMethod* vala_array_type_get_resize_method (ValaArrayType* self);
 ValaSourceReference* vala_code_node_get_source_reference (ValaCodeNode* self);
 ValaArrayLengthField* vala_array_length_field_new (ValaSourceReference* source_reference);
@@ -1391,7 +1392,6 @@ ValaSourceFile* vala_source_reference_get_file (ValaSourceReference* self);
 ValaCodeContext* vala_source_file_get_context (ValaSourceFile* self);
 GType vala_namespace_get_type (void) G_GNUC_CONST;
 ValaNamespace* vala_code_context_get_root (ValaCodeContext* self);
-gint vala_array_type_get_rank (ValaArrayType* self);
 ValaScope* vala_symbol_get_scope (ValaSymbol* self);
 ValaSymbol* vala_scope_lookup (ValaScope* self, const gchar* name);
 GType vala_typesymbol_get_type (void) G_GNUC_CONST;
@@ -1584,9 +1584,15 @@ static ValaSymbol* vala_array_type_real_get_member (ValaDataType* base, const gc
 			const gchar* _tmp4_;
 			_tmp4_ = member_name;
 			if (g_strcmp0 (_tmp4_, "resize") == 0) {
-				ValaArrayResizeMethod* _tmp5_ = NULL;
-				_tmp5_ = vala_array_type_get_resize_method (self);
-				result = (ValaSymbol*) _tmp5_;
+				gint _tmp5_;
+				ValaArrayResizeMethod* _tmp6_ = NULL;
+				_tmp5_ = self->priv->_rank;
+				if (_tmp5_ > 1) {
+					result = NULL;
+					return result;
+				}
+				_tmp6_ = vala_array_type_get_resize_method (self);
+				result = (ValaSymbol*) _tmp6_;
 				return result;
 			}
 		}

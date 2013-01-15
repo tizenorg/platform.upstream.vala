@@ -1223,7 +1223,7 @@ namespace Gtk {
 		public weak Gtk.Widget colorsel;
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public ColorSelectionDialog (string title);
-		public unowned Gtk.Widget get_color_selection ();
+		public unowned Gtk.ColorSelection get_color_selection ();
 		[NoAccessorMethod]
 		public Gtk.Widget cancel_button { owned get; }
 		public Gtk.Widget color_selection { get; }
@@ -1912,8 +1912,8 @@ namespace Gtk {
 	public class HSV : Gtk.Widget, Atk.Implementor, Gtk.Buildable {
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public HSV ();
-		public void get_color (double h, double s, double v);
-		public void get_metrics (int size, int ring_width);
+		public void get_color (out double h, out double s, out double v);
+		public void get_metrics (out int size, out int ring_width);
 		public bool is_adjusting ();
 		public void set_color (double h, double s, double v);
 		public void set_metrics (int size, int ring_width);
@@ -2328,10 +2328,10 @@ namespace Gtk {
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public InfoBar ();
 		public void add_action_widget (Gtk.Widget child, int response_id);
-		public unowned Gtk.Widget add_button (string button_text, int response_id);
+		public unowned Gtk.Button add_button (string button_text, int response_id);
 		public void add_buttons (...);
 		public unowned Gtk.Widget get_action_area ();
-		public unowned Gtk.Widget get_content_area ();
+		public unowned Gtk.Container get_content_area ();
 		public Gtk.MessageType get_message_type ();
 		public void set_default_response (int response_id);
 		public void set_message_type (Gtk.MessageType message_type);
@@ -2674,7 +2674,7 @@ namespace Gtk {
 		public virtual signal void toggle_size_request (void* requisition);
 	}
 	[CCode (cheader_filename = "gtk/gtk.h")]
-	public class MenuShell : Gtk.Container, Atk.Implementor, Gtk.Buildable {
+	public abstract class MenuShell : Gtk.Container, Atk.Implementor, Gtk.Buildable {
 		public uint32 activate_time;
 		public uint active;
 		public weak Gtk.Widget active_menu_item;
@@ -3261,17 +3261,17 @@ namespace Gtk {
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioButton (GLib.SList<Gtk.RadioButton>? group);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioButton.from_widget (Gtk.RadioButton radio_group_member);
+		public RadioButton.from_widget (Gtk.RadioButton? radio_group_member);
 		public unowned GLib.SList<Gtk.RadioButton> get_group ();
 		public void set_group (GLib.SList<Gtk.RadioButton> group);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioButton.with_label (GLib.SList<Gtk.RadioButton>? group, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioButton.with_label_from_widget (Gtk.RadioButton radio_group_member, string label);
+		public RadioButton.with_label_from_widget (Gtk.RadioButton? radio_group_member, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioButton.with_mnemonic (GLib.SList<Gtk.RadioButton>? group, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioButton.with_mnemonic_from_widget (Gtk.RadioButton radio_group_member, string label);
+		public RadioButton.with_mnemonic_from_widget (Gtk.RadioButton? radio_group_member, string label);
 		[NoAccessorMethod]
 		public Gtk.RadioButton group { set; }
 		public virtual signal void group_changed ();
@@ -3279,17 +3279,17 @@ namespace Gtk {
 	[CCode (cheader_filename = "gtk/gtk.h")]
 	public class RadioMenuItem : Gtk.CheckMenuItem, Atk.Implementor, Gtk.Buildable, Gtk.Activatable {
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioMenuItem (GLib.SList<Gtk.RadioMenuItem> group);
+		public RadioMenuItem (GLib.SList<Gtk.RadioMenuItem>? group);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioMenuItem.from_widget (Gtk.RadioMenuItem group);
-		public unowned GLib.SList<Gtk.RadioMenuItem> get_group ();
-		public void set_group (GLib.SList<Gtk.RadioMenuItem> group);
+		public unowned GLib.SList<Gtk.RadioMenuItem>? get_group ();
+		public void set_group (GLib.SList<Gtk.RadioMenuItem>? group);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioMenuItem.with_label (GLib.SList<Gtk.RadioMenuItem> group, string label);
+		public RadioMenuItem.with_label (GLib.SList<Gtk.RadioMenuItem>? group, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioMenuItem.with_label_from_widget (Gtk.RadioMenuItem group, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public RadioMenuItem.with_mnemonic (GLib.SList<Gtk.RadioMenuItem> group, string label);
+		public RadioMenuItem.with_mnemonic (GLib.SList<Gtk.RadioMenuItem>? group, string label);
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		public RadioMenuItem.with_mnemonic_from_widget (Gtk.RadioMenuItem group, string label);
 		public Gtk.RadioMenuItem group { set; }
@@ -3615,7 +3615,7 @@ namespace Gtk {
 		public weak Gtk.Widget minus_button;
 		public weak Gtk.Widget plus_button;
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		public ScaleButton (Gtk.IconSize size, double min, double max, double step, [CCode (array_length = false)] string[] icons);
+		public ScaleButton (Gtk.IconSize size, double min = 0.0, double max = 100.0, double step = 2.0, [CCode (array_length = false)] string[]? icons = null);
 		public unowned Gtk.Adjustment get_adjustment ();
 		public unowned Gtk.Widget get_minus_button ();
 		public unowned Gtk.Widget get_plus_button ();
@@ -4057,7 +4057,7 @@ namespace Gtk {
 		public Statusbar ();
 		public uint get_context_id (string context_description);
 		public bool get_has_resize_grip ();
-		public unowned Gtk.Widget get_message_area ();
+		public unowned Gtk.Container get_message_area ();
 		public void pop (uint context_id);
 		public uint push (uint context_id, string text);
 		public void remove (uint context_id, uint message_id);

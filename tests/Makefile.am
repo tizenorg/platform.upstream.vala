@@ -32,6 +32,7 @@ TESTS = \
 	basic-types/bug652380.vala \
 	basic-types/bug655908.vala \
 	basic-types/bug659975.vala \
+	basic-types/bug686336.vala \
 	namespaces.vala \
 	methods/lambda.vala \
 	methods/closures.vala \
@@ -166,6 +167,7 @@ TESTS = \
 	dbus/async-errors.test \
 	dbus/signals.test \
 	dbus/filedescriptor.test \
+	dbus/dicts.test \
 	dbus/bug596862.vala \
 	dbus/bug602003.test \
 	gir/bug651773.test \

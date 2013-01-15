@@ -58,17 +58,18 @@ TESTS = basic-types/integers.vala basic-types/floats.vala \
 	basic-types/bug632322.vala basic-types/bug647222.vala \
 	basic-types/bug648364.vala basic-types/bug650993.vala \
 	basic-types/bug652380.vala basic-types/bug655908.vala \
-	basic-types/bug659975.vala namespaces.vala methods/lambda.vala \
-	methods/closures.vala methods/symbolresolution.vala \
-	methods/bug595538.vala methods/bug596726.vala \
-	methods/bug597426.vala methods/bug598738.vala \
-	methods/bug599892.vala methods/bug613483.vala \
-	methods/bug620673.vala methods/bug622570.vala \
-	methods/bug639054.vala methods/bug642899.vala \
-	methods/bug646345.vala methods/bug648320.vala \
-	methods/bug649562.vala methods/bug653391.vala \
-	methods/bug653908.vala methods/bug663210.vala \
-	methods/generics.vala control-flow/break.vala \
+	basic-types/bug659975.vala basic-types/bug686336.vala \
+	namespaces.vala methods/lambda.vala methods/closures.vala \
+	methods/symbolresolution.vala methods/bug595538.vala \
+	methods/bug596726.vala methods/bug597426.vala \
+	methods/bug598738.vala methods/bug599892.vala \
+	methods/bug613483.vala methods/bug620673.vala \
+	methods/bug622570.vala methods/bug639054.vala \
+	methods/bug642899.vala methods/bug646345.vala \
+	methods/bug648320.vala methods/bug649562.vala \
+	methods/bug653391.vala methods/bug653908.vala \
+	methods/bug663210.vala methods/generics.vala \
+	control-flow/break.vala \
 	control-flow/expressions-conditional.vala \
 	control-flow/for.vala control-flow/foreach.vala \
 	control-flow/switch.vala control-flow/sideeffects.vala \
@@ -123,7 +124,7 @@ TESTS = basic-types/integers.vala basic-types/floats.vala \
 	asynchronous/closures.vala dbus/basic-types.test \
 	dbus/arrays.test dbus/structs.test dbus/errors.test \
 	dbus/async.test dbus/async-errors.test dbus/signals.test \
-	dbus/filedescriptor.test dbus/bug596862.vala \
+	dbus/filedescriptor.test dbus/dicts.test dbus/bug596862.vala \
 	dbus/bug602003.test gir/bug651773.test $(am__EXEEXT_1)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in

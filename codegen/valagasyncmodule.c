@@ -1551,8 +1551,8 @@ static void vala_gasync_module_generate_async_function (ValaGAsyncModule* self, 
 	ValaMethod* _tmp139_;
 	ValaSymbol* _tmp140_;
 	ValaSymbol* _tmp141_;
-	ValaClass* _tmp142_;
-	ValaClass* cl;
+	ValaTypeSymbol* _tmp142_;
+	ValaTypeSymbol* t;
 	gboolean _tmp143_ = FALSE;
 	gboolean _tmp144_ = FALSE;
 	gboolean _tmp145_ = FALSE;
@@ -1918,8 +1918,8 @@ static void vala_gasync_module_generate_async_function (ValaGAsyncModule* self, 
 	_tmp139_ = m;
 	_tmp140_ = vala_symbol_get_parent_symbol ((ValaSymbol*) _tmp139_);
 	_tmp141_ = _tmp140_;
-	_tmp142_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp141_, VALA_TYPE_CLASS) ? ((ValaClass*) _tmp141_) : NULL);
-	cl = _tmp142_;
+	_tmp142_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp141_, VALA_TYPE_TYPESYMBOL) ? ((ValaTypeSymbol*) _tmp141_) : NULL);
+	t = _tmp142_;
 	_tmp146_ = m;
 	if (!G_TYPE_CHECK_INSTANCE_TYPE (_tmp146_, VALA_TYPE_CREATION_METHOD)) {
 		ValaMethod* _tmp147_;
@@ -1934,20 +1934,20 @@ static void vala_gasync_module_generate_async_function (ValaGAsyncModule* self, 
 	}
 	_tmp150_ = _tmp145_;
 	if (_tmp150_) {
-		ValaClass* _tmp151_;
-		_tmp151_ = cl;
+		ValaTypeSymbol* _tmp151_;
+		_tmp151_ = t;
 		_tmp144_ = _tmp151_ != NULL;
 	} else {
 		_tmp144_ = FALSE;
 	}
 	_tmp152_ = _tmp144_;
 	if (_tmp152_) {
-		ValaClass* _tmp153_;
+		ValaTypeSymbol* _tmp153_;
 		ValaTypeSymbol* _tmp154_;
 		gboolean _tmp155_ = FALSE;
-		_tmp153_ = cl;
+		_tmp153_ = t;
 		_tmp154_ = ((ValaCCodeBaseModule*) self)->gobject_type;
-		_tmp155_ = vala_typesymbol_is_subtype_of ((ValaTypeSymbol*) _tmp153_, _tmp154_);
+		_tmp155_ = vala_typesymbol_is_subtype_of (_tmp153_, _tmp154_);
 		_tmp143_ = _tmp155_;
 	} else {
 		_tmp143_ = FALSE;
@@ -2505,7 +2505,7 @@ static void vala_gasync_module_generate_async_function (ValaGAsyncModule* self, 
 	vala_ccode_base_module_pop_context ((ValaCCodeBaseModule*) self);
 	_vala_ccode_node_unref0 (ccall);
 	_vala_ccode_node_unref0 (set_op_res_call);
-	_vala_code_node_unref0 (cl);
+	_vala_code_node_unref0 (t);
 	_vala_ccode_node_unref0 (create_result);
 	_vala_ccode_node_unref0 (data_var);
 	_vala_ccode_node_unref0 (dataalloc);

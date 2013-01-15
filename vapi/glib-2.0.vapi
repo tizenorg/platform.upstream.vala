@@ -661,6 +661,10 @@ public struct uint64 {
 [CCode (cname = "gfloat", cheader_filename = "glib.h,float.h,math.h", type_id = "G_TYPE_FLOAT", marshaller_type_name = "FLOAT", get_value_function = "g_value_get_float", set_value_function = "g_value_set_float", default_value = "0.0F")]
 [FloatingType (rank = 1)]
 public struct float {
+	[CCode (cname = "FLT_ROUNDS")]
+	public static int ROUNDS;
+	[CCode (cname = "FLT_RADIX")]
+	public static int RADIX;
 	[CCode (cname = "FLT_MANT_DIG")]
 	public static int MANT_DIG;
 	[CCode (cname = "FLT_DIG")]
@@ -1830,6 +1834,7 @@ namespace GLib {
 	[Compact]
 	[CCode (ref_function = "g_async_queue_ref", unref_function = "g_async_queue_unref")]
 	public class AsyncQueue<G> {
+		[CCode (cname = "g_async_queue_new_full", simple_generics = true)]
 		public AsyncQueue ();
 		public void push (owned G data);
 		public void push_sorted (owned G data, CompareDataFunc<G> func);
@@ -2563,11 +2568,11 @@ namespace GLib {
 		[CCode (cname = "g_get_environ", array_length = false, array_null_terminated = true)]
 		public static string[] get ();
 		[CCode (cname = "g_environ_getenv")]
-		public static string? get_variable ([CCode (array_length = false, array_null_terminated = true)] string[] envp, string variable);
+		public static string? get_variable ([CCode (array_length = false, array_null_terminated = true)] string[]? envp, string variable);
 		[CCode (cname = "g_environ_setenv", array_length = false, array_null_terminated = true)]
-		public static string[] set_variable ([CCode (array_length = false, array_null_terminated = true)] owned string[] envp, string variable, string value, bool overwrite = true);
+		public static string[] set_variable ([CCode (array_length = false, array_null_terminated = true)] owned string[]? envp, string variable, string value, bool overwrite = true);
 		[CCode (cname = "g_environ_unsetenv", array_length = false, array_null_terminated = true)]
-		public static string[] unset_variable ([CCode (array_length = false, array_null_terminated = true)] owned string[] envp, string variable);
+		public static string[] unset_variable ([CCode (array_length = false, array_null_terminated = true)] owned string[]? envp, string variable);
 	}
 
 	[CCode (has_type_id = false)]
@@ -2872,6 +2877,8 @@ namespace GLib {
 		public static bool spawn_command_line_sync (string command_line, out string standard_output = null, out string standard_error = null, out int exit_status = null) throws SpawnError;
 		[CCode (cname = "g_spawn_close_pid")]
 		public static void close_pid (Pid pid);
+		[CCode (cname = "g_spawn_check_exit_status")]
+		public static bool check_exit_status (int exit_status) throws GLib.Error;
 		
 		/* these macros are required to examine the exit status of a process */
 		[CCode (cname = "WIFEXITED", cheader_filename = "sys/wait.h")]
@@ -3615,7 +3622,7 @@ namespace GLib {
 		public static int32 rand_int ();
 		public static int32 rand_int_range (int32 begin, int32 end);
 		public static double rand_double ();
-		public static double rand_double_range ();
+		public static double rand_double_range (double begin, double end);
 		public static void log_set_fatal_handler (LogFatalFunc log_func);
 	}
 
