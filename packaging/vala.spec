@@ -2,8 +2,8 @@
 %define         vala_libversion 0_18
 %define         vala_priority 18
 Name:           vala
-Version:        0.18.0
-Release:        2.1
+Version:  0.18.1
+Release:  1
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
 Group:          Development/Languages/Other
