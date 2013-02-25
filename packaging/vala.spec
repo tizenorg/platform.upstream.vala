@@ -1,14 +1,17 @@
-%define         vala_version 0.18
-%define         vala_libversion 0_18
-%define         vala_priority 18
+%define         baseline 0.19
+%define         vala_version 0.20
+%define         vala_libversion 0_20
+%define         vala_priority 19
+
+
 Name:           vala
-Version:  0.18.1
-Release:  1
+Version:        0.19.0
+Release:        1
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
-Group:          Development/Languages/Other
+Group:          Development/Gnome
 Url:            http://live.gnome.org/Vala
-Source0:        http://download.gnome.org/sources/vala/0.18/%{name}-%{version}.tar.xz
+Source0:        http://download.gnome.org/sources/vala/%{baseline}/%{name}-%{version}.tar.xz
 BuildRequires:  bison
 BuildRequires:  fdupes
 BuildRequires:  flex
@@ -16,13 +19,14 @@ BuildRequires:  glib2-devel >= 2.18.0
 Requires(post): update-alternatives
 Requires(postun): update-alternatives
 BuildRequires:  xz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
+
 
 %description
 Vala is a new programming language that aims to bring modern
 programming language features to GNOME developers without imposing any
 additional runtime requirements and without using a different ABI
 compared to applications and libraries written in C.
+
 
 %package -n libvala
 Summary:        Programming language for GNOME
@@ -34,9 +38,10 @@ programming language features to GNOME developers without imposing any
 additional runtime requirements and without using a different ABI
 compared to applications and libraries written in C.
 
+
 %package -n libvala-devel
 Summary:        Programming language for GNOME
-Group:          Development/Libraries/Other
+Group:          Development/Gnome
 Requires:       libvala = %{version}
 
 %description -n libvala-devel
@@ -84,7 +89,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
-%doc AUTHORS ChangeLog COPYING NEWS README
+%license COPYING
 %ghost %{_bindir}/vala
 %ghost %{_bindir}/valac
 %ghost %{_bindir}/vala-gen-introspect
@@ -115,6 +120,7 @@ fi
 %{_libdir}/libvala-%{vala_version}.so.*
 
 %files -n libvala-devel
+%doc AUTHORS ChangeLog NEWS README
 %defattr(-,root,root,-)
 %{_includedir}/vala-%{vala_version}/
 %{_libdir}/libvala-%{vala_version}.so
