@@ -323,6 +323,19 @@ namespace Xml {
 	}
 
 	[Compact]
+	[CCode (cname = "xmlBuffer", free_function = "xmlBufferFree", cheader_filename = "libxml/tree.h")]
+	public class Buffer {
+		[CCode (cname = "xmlBufferCreate")]
+		public Buffer ();
+
+		[CCode (cname = "xmlBufferContent")]
+		public unowned string content ();
+
+		[CCode (cname = "xmlNodeDump")]
+		public int node_dump (Xml.Doc *doc, Xml.Node *cur, int level, int format);
+	}
+
+	[Compact]
 	[CCode (cname = "xmlDoc", free_function = "xmlFreeDoc", cheader_filename = "libxml/tree.h,libxml/parser.h")]
 	public class Doc {
 		public ElementType type;
@@ -448,6 +461,12 @@ namespace Xml {
 
 		[CCode (cname = "xmlStringLenGetNodeList")]
 		public Node* string_len_get_node_list (string str, int len);
+
+		[CCode (cname = "xmlSearchNs")]
+		public Ns* search_ns(Node* node, string? prefix);
+
+		[CCode (cname = "xmlSearchNsByHref")]
+		public Ns* search_ns_by_href(Node* node, string? href);
 	}
 
 	[Compact]
@@ -462,7 +481,9 @@ namespace Xml {
 		public Node* prev;
 		public Doc* doc;
 
+		[CCode (cname = "ExternalID")]
 		public weak string external_id;
+		[CCode (cname = "SystemID")]
 		public weak string system_id;
 
 		[CCode (cname = "xmlNewDtd")]
@@ -587,6 +608,36 @@ namespace Xml {
 		public const string name;
 	}
 
+	[CCode (has_target = false, cname = "xmlHashScannerFull", cheader_filename = "libxml/hash.h")]
+	public delegate void HashScannerFull (void *payload, void *user_data, string name, string name2, string name3);
+
+	[CCode (has_target = false, cname = "xmlHashDeallocator", cheader_filename = "libxml/hash.h")]
+	public delegate void HashDeallocator (void *payload, string name);
+
+	[Compact]
+	[CCode (cname = "xmlHashTable", cheader_filename="libxml/hash.h")]
+	public class HashTable {
+		[CCode (cname = "xmlHashCreate")]
+		public HashTable (int size);
+
+		[CCode (cname = "xmlHashAddEntry")]
+		public int add_entry (string name, void *user_data);
+
+		[CCode (cname = "xmlHashFree")]
+		public void free (HashDeallocator? f);
+
+		[CCode (cname = "xmlHashLookup")]
+		public void *lookup (string name);
+
+		[CCode (cname = "xmlHashRemoveEntry")]
+		public int remove_entry (string name, HashDeallocator? f);
+
+		[CCode (cname = "xmlHashScanFull")]
+		public void scan_full (HashScannerFull f, void *user_data);
+
+		[CCode (cname = "xmlHashSize")]
+		public int size ();
+	}
 
 	[Compact]
 	[CCode (cname = "xmlNode", free_function = "xmlFreeNode", cheader_filename = "libxml/tree.h")]
@@ -735,6 +786,9 @@ namespace Xml {
 
 		[CCode (cname = "xmlSetListDoc")]
 		public void set_list_doc (Doc* doc);
+
+		[CCode (cname = "xmlSetNs")]
+		public void set_ns (Ns* ns);
 
 		[CCode (cname = "xmlSetNsProp")]
 		public Attr* set_ns_prop (Ns* ns, string name, string value);
@@ -935,8 +989,29 @@ namespace Xml {
 	/* xmlschemas - incomplete XML Schemas structure implementation */
 
 	[Compact]
-	[CCode (cname = "xmlSchemaValidCtxt", cheader_filename = "libxml/xmlreader.h")]
+	[CCode (cname = "xmlSchema", free_function = "xmlSchemaFree", cheader_filename = "libxml/xmlschemas.h")]
+	public class Schema {
+		[CCode (cname = "xmlSchemaDump", instance_pos = -1)]
+		public void dump (GLib.FileStream output);
+	}
+
+	[Compact]
+	[CCode (cname = "xmlSchemaParserCtxt", free_function = "xmlSchemaFreeParserCtxt", cheader_filename = "libxml/xmlschemas.h")]
+	public class SchemaParserCtxt {
+		[CCode (cname = "xmlSchemaNewParserCtxt")]
+		public SchemaParserCtxt (string URL);
+		[CCode (cname = "xmlSchemaNewDocParserCtxt")]
+		public SchemaParserCtxt.from_doc (Xml.Doc doc);
+		[CCode (cname = "xmlSchemaNewMemParserCtxt")]
+		public SchemaParserCtxt.from_buffer (uint8[] buffer);
+		[CCode (cname = "xmlSchemaParse")]
+		public Xml.Schema parse ();
+	}
+
+	[Compact]
+	[CCode (cname = "xmlSchemaValidCtxt", free_function = "xmlSchemaFreeValidCtxt", cheader_filename = "libxml/xmlschemas.h")]
 	public class SchemaValidCtxt {
+		public SchemaValidCtxt (Xml.Schema schema);
 	}
 
 	/* xmlsave */
@@ -1687,7 +1762,7 @@ namespace Html {
 		[CCode (cname = "htmlNewDoc")]
 		public Doc (string? uri = null, string? external_id = null);
 
-		[CCode (cname = "htmlNewNoDtD")]
+		[CCode (cname = "htmlNewDocNoDtD")]
 		public Doc.new_no_dtd (string? uri = null, string? external_id = null);
 
 		[CCode (cname = "htmlSAXParseDoc")]

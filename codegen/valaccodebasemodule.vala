@@ -2686,6 +2686,10 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 			return equal_func;
 		}
 
+		if (st.base_struct != null) {
+			return generate_struct_equal_function (st.base_struct);
+		}
+
 		var function = new CCodeFunction (equal_func, "gboolean");
 		function.modifiers = CCodeModifiers.STATIC;
 
@@ -4829,7 +4833,12 @@ public abstract class Vala.CCodeBaseModule : CodeGenerator {
 			var glib_value = (GLibValue) expr.inner.target_value;
 
 			var ref_value = new GLibValue (glib_value.value_type);
-			ref_value.cvalue = new CCodeUnaryExpression (CCodeUnaryOperator.ADDRESS_OF, glib_value.cvalue);
+			if (expr.target_type != null && glib_value.value_type.is_real_struct_type () && glib_value.value_type.nullable != expr.target_type.nullable) {
+				// the only possibility is that value_type is nullable and target_type is non-nullable
+				ref_value.cvalue = glib_value.cvalue;
+			} else {
+				ref_value.cvalue = new CCodeUnaryExpression (CCodeUnaryOperator.ADDRESS_OF, glib_value.cvalue);
+			}
 
 			if (glib_value.array_length_cvalues != null) {
 				for (int i = 0; i < glib_value.array_length_cvalues.size; i++) {

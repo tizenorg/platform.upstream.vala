@@ -1484,6 +1484,7 @@ static void vala_symbol_resolver_real_visit_return_statement (ValaCodeVisitor* b
 static void vala_symbol_resolver_real_visit_yield_statement (ValaCodeVisitor* base, ValaYieldStatement* stmt);
 static void vala_symbol_resolver_real_visit_throw_statement (ValaCodeVisitor* base, ValaThrowStatement* stmt);
 static void vala_symbol_resolver_real_visit_try_statement (ValaCodeVisitor* base, ValaTryStatement* stmt);
+static void vala_symbol_resolver_real_visit_delete_statement (ValaCodeVisitor* base, ValaDeleteStatement* stmt);
 static void vala_symbol_resolver_real_visit_catch_clause (ValaCodeVisitor* base, ValaCatchClause* clause);
 static void vala_symbol_resolver_real_visit_array_creation_expression (ValaCodeVisitor* base, ValaArrayCreationExpression* e);
 static void vala_symbol_resolver_real_visit_template (ValaCodeVisitor* base, ValaTemplate* tmpl);
@@ -3488,6 +3489,16 @@ static void vala_symbol_resolver_real_visit_try_statement (ValaCodeVisitor* base
 }
 
 
+static void vala_symbol_resolver_real_visit_delete_statement (ValaCodeVisitor* base, ValaDeleteStatement* stmt) {
+	ValaSymbolResolver * self;
+	ValaDeleteStatement* _tmp0_;
+	self = (ValaSymbolResolver*) base;
+	g_return_if_fail (stmt != NULL);
+	_tmp0_ = stmt;
+	vala_code_node_accept_children ((ValaCodeNode*) _tmp0_, (ValaCodeVisitor*) self);
+}
+
+
 static void vala_symbol_resolver_real_visit_catch_clause (ValaCodeVisitor* base, ValaCatchClause* clause) {
 	ValaSymbolResolver * self;
 	ValaCatchClause* _tmp0_;
@@ -3751,6 +3762,7 @@ static void vala_symbol_resolver_class_init (ValaSymbolResolverClass * klass) {
 	VALA_CODE_VISITOR_CLASS (klass)->visit_yield_statement = vala_symbol_resolver_real_visit_yield_statement;
 	VALA_CODE_VISITOR_CLASS (klass)->visit_throw_statement = vala_symbol_resolver_real_visit_throw_statement;
 	VALA_CODE_VISITOR_CLASS (klass)->visit_try_statement = vala_symbol_resolver_real_visit_try_statement;
+	VALA_CODE_VISITOR_CLASS (klass)->visit_delete_statement = vala_symbol_resolver_real_visit_delete_statement;
 	VALA_CODE_VISITOR_CLASS (klass)->visit_catch_clause = vala_symbol_resolver_real_visit_catch_clause;
 	VALA_CODE_VISITOR_CLASS (klass)->visit_array_creation_expression = vala_symbol_resolver_real_visit_array_creation_expression;
 	VALA_CODE_VISITOR_CLASS (klass)->visit_template = vala_symbol_resolver_real_visit_template;

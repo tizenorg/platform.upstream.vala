@@ -199,7 +199,7 @@ gboolean vala_ccode_writer_open (ValaCCodeWriter* self, gboolean write_version) 
 		_g_free0 (self->priv->temp_filename);
 		self->priv->temp_filename = _tmp4_;
 		_tmp5_ = self->priv->temp_filename;
-		_tmp6_ = fopen (_tmp5_, "w");
+		_tmp6_ = g_fopen (_tmp5_, "w");
 		_fclose0 (self->priv->stream);
 		self->priv->stream = _tmp6_;
 	} else {
@@ -215,7 +215,7 @@ gboolean vala_ccode_writer_open (ValaCCodeWriter* self, gboolean write_version) 
 		_tmp9_ = dirname;
 		g_mkdir_with_parents (_tmp9_, 0755);
 		_tmp10_ = self->priv->_filename;
-		_tmp11_ = fopen (_tmp10_, "w");
+		_tmp11_ = g_fopen (_tmp10_, "w");
 		_fclose0 (self->priv->stream);
 		self->priv->stream = _tmp11_;
 		_g_free0 (dirname);

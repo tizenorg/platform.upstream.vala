@@ -1288,6 +1288,8 @@ ValaSwitchSection* vala_switch_section_construct (GType object_type, ValaSourceR
 ValaBlock* vala_block_new (ValaSourceReference* source_reference);
 ValaBlock* vala_block_construct (GType object_type, ValaSourceReference* source_reference);
 void vala_switch_section_add_label (ValaSwitchSection* self, ValaSwitchLabel* label);
+ValaSourceReference* vala_code_node_get_source_reference (ValaCodeNode* self);
+void vala_code_node_set_source_reference (ValaCodeNode* self, ValaSourceReference* value);
 void vala_switch_label_set_section (ValaSwitchLabel* self, ValaSwitchSection* value);
 ValaList* vala_switch_section_get_labels (ValaSwitchSection* self);
 gboolean vala_switch_section_has_default_label (ValaSwitchSection* self);
@@ -1422,15 +1424,30 @@ ValaSwitchSection* vala_switch_section_new (ValaSourceReference* source_referenc
  */
 void vala_switch_section_add_label (ValaSwitchSection* self, ValaSwitchLabel* label) {
 	ValaList* _tmp0_;
-	ValaSwitchLabel* _tmp1_;
-	ValaSwitchLabel* _tmp2_;
+	gint _tmp1_;
+	gint _tmp2_;
+	ValaList* _tmp6_;
+	ValaSwitchLabel* _tmp7_;
+	ValaSwitchLabel* _tmp8_;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (label != NULL);
 	_tmp0_ = self->priv->labels;
-	_tmp1_ = label;
-	vala_collection_add ((ValaCollection*) _tmp0_, _tmp1_);
-	_tmp2_ = label;
-	vala_switch_label_set_section (_tmp2_, self);
+	_tmp1_ = vala_collection_get_size ((ValaCollection*) _tmp0_);
+	_tmp2_ = _tmp1_;
+	if (_tmp2_ == 0) {
+		ValaSwitchLabel* _tmp3_;
+		ValaSourceReference* _tmp4_;
+		ValaSourceReference* _tmp5_;
+		_tmp3_ = label;
+		_tmp4_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp3_);
+		_tmp5_ = _tmp4_;
+		vala_code_node_set_source_reference ((ValaCodeNode*) self, _tmp5_);
+	}
+	_tmp6_ = self->priv->labels;
+	_tmp7_ = label;
+	vala_collection_add ((ValaCollection*) _tmp6_, _tmp7_);
+	_tmp8_ = label;
+	vala_switch_label_set_section (_tmp8_, self);
 }
 
 

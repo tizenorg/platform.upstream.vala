@@ -1521,7 +1521,7 @@ namespace GLib {
 		[CCode (cname = "g_main_current_source")]
 		public static unowned Source current_source ();
 		public static unowned MainContext? get_thread_default ();
-		public static unowned MainContext ref_thread_default ();
+		public static MainContext ref_thread_default ();
 		public void push_thread_default ();
 		public void pop_thread_default ();
 		[CCode (cname = "g_main_context_invoke_full")]
@@ -1691,9 +1691,11 @@ namespace GLib {
 		[CCode (simple_generics = true)]
 		public static unowned Thread<T> self<T> ();
 		public T join ();
+		[Deprecated (since = "2.32")]
 		public void set_priority (ThreadPriority priority);
 		public static void yield ();
 		public static void exit (T retval);
+		[Deprecated (since = "2.32")]
 		public static void @foreach (Func<Thread> thread_func);
 
 		[CCode (cname = "g_usleep")]
@@ -2428,7 +2430,6 @@ namespace GLib {
 		public DateTime add_weeks (int weeks);
 		public DateTime add_days (int days);
 		public DateTime add_hours (int hours);
-		public DateTime add_milliseconds (int milliseconds);
 		public DateTime add_minutes (int minutes);
 		public DateTime add_seconds (double seconds);
 		public DateTime add_full (int years, int months, int days, int hours = 0, int minutes = 0, double seconds = 0);
@@ -2988,7 +2989,7 @@ namespace GLib {
 		[CCode (cname = "EOF", cheader_filename = "stdio.h")]
 		public const int EOF;
 
-		[CCode (cname = "fopen")]
+		[CCode (cname = "g_fopen", cheader_filename = "glib/gstdio.h")]
 		public static FileStream? open (string path, string mode);
 		[CCode (cname = "fdopen")]
 		public static FileStream? fdopen (int fildes, string mode);
@@ -3975,7 +3976,10 @@ namespace GLib {
 		public unowned StringBuilder prepend_unichar (unichar wc);
 		public unowned StringBuilder prepend_len (string val, ssize_t len);
 		public unowned StringBuilder insert (ssize_t pos, string val);
+		public unowned StringBuilder insert_len (ssize_t pos, string val, ssize_t len);
 		public unowned StringBuilder insert_unichar (ssize_t pos, unichar wc);
+		public unowned StringBuilder overwrite (size_t pos, string val);
+		public unowned StringBuilder overwrite_len (size_t pos, string val, ssize_t len);
 		public unowned StringBuilder erase (ssize_t pos = 0, ssize_t len = -1);
 		public unowned StringBuilder truncate (size_t len = 0);
 
@@ -4033,8 +4037,8 @@ namespace GLib {
 		public bool remove_fast (void *data);
 		public void remove_index_fast (uint index);
 		public void remove_range (uint index, uint length);
-		public void sort (CompareFunc compare_func);
-		public void sort_with_data (CompareDataFunc compare_func);
+		public void sort (CompareFunc<void**> compare_func);
+		public void sort_with_data (CompareDataFunc<void**> compare_func);
 		public void set_free_func (GLib.DestroyNotify? element_free_function);
 		public void set_size (int length);
 
@@ -4044,6 +4048,7 @@ namespace GLib {
 
 	[Compact]
 	[CCode (cname = "GPtrArray", cprefix = "g_ptr_array_", ref_function = "g_ptr_array_ref", unref_function = "g_ptr_array_unref", type_id = "G_TYPE_PTR_ARRAY")]
+	[GIR (name = "PtrArray")]
 	public class GenericArray<G> {
 		[CCode (cname = "g_ptr_array_new_with_free_func", simple_generics = true)]
 		public GenericArray ();
@@ -4288,7 +4293,7 @@ namespace GLib {
 	
 	/* GTree */
 	
-	public delegate bool TraverseFunc (void* key, void* value);
+	public delegate bool TraverseFunc<K,V> (K key, V value);
 	
 	[CCode (cprefix = "G_", has_type_id = false)]
 	public enum TraverseType {
@@ -4307,7 +4312,9 @@ namespace GLib {
 	[CCode (free_function = "g_tree_destroy")]
 #endif
 	public class Tree<K,V> {
-		public Tree (CompareFunc<K> key_compare_func);
+		[CCode (cname = "g_tree_new_full", simple_generics = true)]
+		public Tree (CompareDataFunc<K> key_compare_func);
+		[Deprecated (since = "vala-0.20", replacement = "Tree ()")]
 		public Tree.with_data (CompareDataFunc<K> key_compare_func);
 		public Tree.full (CompareDataFunc<K> key_compare_func, DestroyNotify? key_destroy_func, DestroyNotify? value_destroy_func);
 		public void insert (owned K key, owned V value);
@@ -4315,8 +4322,8 @@ namespace GLib {
 		public int nnodes ();
 		public int height ();
 		public unowned V lookup (K key);
-		public bool lookup_extended (K lookup_key, K orig_key, V value);
-		public void foreach (TraverseFunc traverse_func);
+		public bool lookup_extended (K lookup_key, out unowned K orig_key, out unowned V value);
+		public void foreach (TraverseFunc<K,V> traverse_func);
 		public unowned V search (TreeSearchFunc<K> search_func);
 		[CCode (cname = "g_tree_search")]
 		public unowned V search_key (CompareFunc<K> search_func, K key);
@@ -4563,7 +4570,8 @@ namespace GLib {
 		public Variant.variant (Variant value);
 		public Variant.maybe (VariantType? child_type, Variant? child);
 		public Variant.array (VariantType? child_type, Variant[] children);
-		public Variant.fixed_array (VariantType? element_type, [CCode (array_length_type = "gsize")] Variant[] elements, size_t element_size);
+		[CCode (simple_generics = true)]
+		public static Variant new_fixed_array<T> (VariantType? element_type, [CCode (array_length_type = "gsize")] T[] elements, size_t element_size);
 		public Variant.tuple (Variant[] children);
 		public Variant.dict_entry (Variant key, Variant value);
 		public Variant get_variant ();

@@ -75,7 +75,8 @@ public class Vala.GirParser : CodeVisitor {
 		FINISH_NAME,
 		SYMBOL_TYPE,
 		INSTANCE_IDX,
-		EXPERIMENTAL;
+		EXPERIMENTAL,
+		FLOATING;
 
 		public static ArgumentType? from_string (string name) {
 			var enum_class = (EnumClass) typeof(ArgumentType).class_ref ();
@@ -443,8 +444,8 @@ public class Vala.GirParser : CodeVisitor {
 				}
 				var arg_type = ArgumentType.from_string (id);
 				if (arg_type == null) {
-					Report.error (get_src (begin, old_end), "unknown argument");
-					return false;
+					Report.warning (get_src (begin, old_end), "unknown argument `%s'".printf (id));
+					continue;
 				}
 
 				if (current != TokenType.ASSIGN) {
@@ -1233,9 +1234,9 @@ public class Vala.GirParser : CodeVisitor {
 	}
 
 	void end_element (string name) {
-		if (current_token != MarkupTokenType.END_ELEMENT || reader.name != name) {
-			// error
-			Report.error (get_current_src (), "expected end element of `%s'".printf (name));
+		while (current_token != MarkupTokenType.END_ELEMENT || reader.name != name) {
+			Report.warning (get_current_src (), "expected end element of `%s'".printf (name));
+			skip_element ();
 		}
 		next ();
 	}
@@ -2848,6 +2849,9 @@ public class Vala.GirParser : CodeVisitor {
 				method.set_attribute_string ("CCode", "vfunc_name", metadata.get_string (ArgumentType.VFUNC_NAME));
 				method.is_virtual = true;
 			}
+			if (metadata.has_argument (ArgumentType.FLOATING)) {
+				method.returns_floating_reference = metadata.get_bool (ArgumentType.FLOATING);
+			}
 		}
 
 		if (!(metadata.get_expression (ArgumentType.THROWS) is NullLiteral)) {
@@ -2896,6 +2900,11 @@ public class Vala.GirParser : CodeVisitor {
 			next ();
 
 			while (current_token == MarkupTokenType.START_ELEMENT) {
+				if (reader.name == "instance-parameter") {
+					skip_element ();
+					continue;
+				}
+
 				if (!push_metadata ()) {
 					skip_element ();
 					continue;
@@ -3296,6 +3305,31 @@ public class Vala.GirParser : CodeVisitor {
 							last_param.keep = false;
 							return_type = last_param.param.variable_type.copy ();
 						}
+					}
+				}
+			}
+		} else {
+			if (return_type is UnresolvedType && !return_type.nullable) {
+				var st = resolve_symbol (node.parent, ((UnresolvedType) return_type).unresolved_symbol) as Struct;
+				if (st != null) {
+					bool is_simple_type = false;
+					Struct? base_st = st;
+
+					while (base_st != null) {
+						if (base_st.is_simple_type ()) {
+							is_simple_type = true;
+							break;
+						}
+
+						if (base_st.base_type is UnresolvedType) {
+							base_st = resolve_symbol (node.parent, ((UnresolvedType) base_st.base_type).unresolved_symbol) as Struct;
+						} else {
+							base_st = base_st.base_struct;
+						}
+					}
+
+					if (!is_simple_type) {
+						return_type.nullable = true;
 					}
 				}
 			}

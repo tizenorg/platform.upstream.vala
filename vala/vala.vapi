@@ -2043,6 +2043,7 @@ namespace Vala {
 		public override void visit_data_type (Vala.DataType data_type);
 		public override void visit_declaration_statement (Vala.DeclarationStatement stmt);
 		public override void visit_delegate (Vala.Delegate cb);
+		public override void visit_delete_statement (Vala.DeleteStatement stmt);
 		public override void visit_destructor (Vala.Destructor d);
 		public override void visit_do_statement (Vala.DoStatement stmt);
 		public override void visit_element_access (Vala.ElementAccess expr);

@@ -326,6 +326,15 @@ namespace Posix {
 	[CCode (cheader_filename = "fcntl.h")]
 	public int posix_fallocate (int fd, long offset, long len);
 
+	[CCode (cname = "struct flock", cheader_filename = "fcntl.h")]
+	public struct Flock {
+		public int l_type;
+		public int l_whence;
+		public off_t l_start;
+		public off_t l_len;
+		public pid_t l_pid;
+	}
+
 	[Compact]
 	[CCode (cname = "struct group", cheader_filename = "grp.h")]
 	public class Group {
@@ -1026,7 +1035,7 @@ namespace Posix {
 	public int mkostemp (string template, int flags);
 
 	[CCode (cheader_filename = "stdlib.h")]
-	public string? realpath (string path, uint8[]? resolved_path = null);
+	public string? realpath (string path, [CCode (array_length = false)] uint8[]? resolved_path = null);
 
 	[CCode (cheader_filename = "stdlib.h")]
 	public int posix_openpt (int flags);
@@ -1494,6 +1503,8 @@ namespace Posix {
 	[CCode (cheader_filename = "sys/stat.h")]
 	public int chmod (string filename, mode_t mode);
 	[CCode (cheader_filename = "sys/stat.h")]
+	public int fchmod (int fd, mode_t mode);
+	[CCode (cheader_filename = "sys/stat.h")]
 	public mode_t umask (mode_t mask);
 	[CCode (cheader_filename = "sys/stat.h")]
 	public int mkdir (string path, mode_t mode);
@@ -1580,6 +1591,13 @@ namespace Posix {
 	[CCode (cheader_filename = "sys/types.h")]
 	public struct dev_t {
 	}
+
+	[CCode (cheader_filename = "sys/types.h")]
+	uint major (dev_t dev);
+	[CCode (cheader_filename = "sys/types.h")]
+	uint minor (dev_t dev);
+	[CCode (cheader_filename = "sys/types.h")]
+	dev_t makedev (int maj, int min);
 
 	[SimpleType]
 	[IntegerType (rank = 9)]
@@ -1693,7 +1711,9 @@ namespace Posix {
 	[CCode (cheader_filename = "unistd.h")]
 	public ssize_t readlink (string path, char[] buf);
 	[CCode (cheader_filename = "sys/uio.h")]
-	public ssize_t readv (int fd, iovector vector, int iovcnt);
+	public ssize_t readv (int fd, iovector vector, int iovcnt = 1);
+	[CCode (cname = "readv", cheader_filename = "sys/uio.h")]
+	public ssize_t read_vectors (int fd, iovector[] vector);
 	[CCode (cheader_filename = "unistd.h,sys/types.h")]
 	public int setgid (gid_t gid);
 	[CCode (cheader_filename = "unistd.h,sys/types.h")]
@@ -1705,7 +1725,9 @@ namespace Posix {
 	[CCode (cheader_filename = "unistd.h")]
 	public ssize_t pwrite (int fd, void* buf, size_t count, off_t offset);
 	[CCode (cheader_filename = "sys/uio.h")]
-	public ssize_t writev (int fd, iovector vector, int iovcnt);
+	public ssize_t writev (int fd, iovector vector, int iovcnt = 1);
+	[CCode (cname = "writev", cheader_filename = "sys/uio.h")]
+	public ssize_t write_vectors (int fd, iovector[] vector);
 	[CCode (cheader_filename = "unistd.h")]
 	public off_t lseek(int fildes, off_t offset, int whence);
 

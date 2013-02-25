@@ -1913,14 +1913,14 @@ void vala_code_writer_write_file (ValaCodeWriter* self, ValaCodeContext* context
 		const gchar* _tmp7_;
 		FILE* _tmp8_ = NULL;
 		_tmp7_ = temp_filename;
-		_tmp8_ = fopen (_tmp7_, "w");
+		_tmp8_ = g_fopen (_tmp7_, "w");
 		_fclose0 (self->priv->stream);
 		self->priv->stream = _tmp8_;
 	} else {
 		const gchar* _tmp9_;
 		FILE* _tmp10_ = NULL;
 		_tmp9_ = filename;
-		_tmp10_ = fopen (_tmp9_, "w");
+		_tmp10_ = g_fopen (_tmp9_, "w");
 		_fclose0 (self->priv->stream);
 		self->priv->stream = _tmp10_;
 	}

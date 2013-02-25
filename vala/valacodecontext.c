@@ -1674,7 +1674,7 @@ void vala_code_context_write_dependencies (ValaCodeContext* self, const gchar* f
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (filename != NULL);
 	_tmp0_ = filename;
-	_tmp1_ = fopen (_tmp0_, "w");
+	_tmp1_ = g_fopen (_tmp0_, "w");
 	stream = _tmp1_;
 	_tmp2_ = stream;
 	if (_tmp2_ == NULL) {

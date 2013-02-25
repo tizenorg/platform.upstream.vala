@@ -30,8 +30,18 @@ namespace Curses {
 	public const int COLORS;
 	public const int COLOR_PAIRS;
 
-	public enum Color {
-		BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+	[SimpleType]
+	[CCode (cname = "short", has_type_id = false, default_value = "0")]
+	[IntegerType (rank = 4, min = -32768, max = 32767)]
+	public struct Color : short {
+		public const Curses.Color BLACK;
+		public const Curses.Color RED;
+		public const Curses.Color GREEN;
+		public const Curses.Color YELLOW;
+		public const Curses.Color BLUE;
+		public const Curses.Color MAGENTA;
+		public const Curses.Color CYAN;
+		public const Curses.Color WHITE;
 	}
 
 	public enum Acs {
@@ -221,6 +231,8 @@ namespace Curses {
 		[CCode (cname = "wprintw")]
 		[PrintfLike]
 		public int printw(string str, ...);
+		[CCode (cname = "vw_printw")]
+		public int vprintw(string str, va_list args);
 		[CCode (cname = "wredrawln")]
 		public int redrawln(int beg_line, int num_lines);
 		[CCode (cname = "wrefresh")]
@@ -228,6 +240,8 @@ namespace Curses {
 		[CCode (cname = "wscanw")]
 		[PrintfLike]
 		public int scanw(string str, ...);
+		[CCode (cname = "vw_scanw")]
+		public int vscanw(string str, va_list args);
 		[CCode (cname = "wscrl")]
 		public int scrl(int n);
 		[CCode (cname = "wsetscrreg")]
@@ -418,7 +432,6 @@ namespace Curses {
 	public delegate int VidputsPutcFunc(char ch);
 	public int vidputs(ulong attrs, VidputsPutcFunc putc);
 	public int vline(ulong ch, int n);
-	/* no vwprintw, vw_printw, vwscanw, vw_scanw - va_list */
 
 	[CCode (cprefix = "A_")]
 	public enum Attribute {

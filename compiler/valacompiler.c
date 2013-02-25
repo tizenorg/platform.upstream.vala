@@ -94,6 +94,8 @@ static gchar* vala_compiler_directory;
 static gchar* vala_compiler_directory = NULL;
 static gboolean vala_compiler_version;
 static gboolean vala_compiler_version = FALSE;
+static gboolean vala_compiler_api_version;
+static gboolean vala_compiler_api_version = FALSE;
 static gchar** vala_compiler_sources;
 static gchar** vala_compiler_sources = NULL;
 static gchar** vala_compiler_vapi_directories;
@@ -215,7 +217,7 @@ static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNoti
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-static const GOptionEntry VALA_COMPILER_options[48] = {{"vapidir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_vapi_directories, "Look for package bindings in DIRECTORY", "DIRECTORY..."}, {"girdir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_gir_directories, "Look for .gir files in DIRECTORY", "DIRECTORY..."}, {"metadatadir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_metadata_directories, "Look for GIR .metadata files in DIRECTORY", "DIRECTORY..."}, {"pkg", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_packages, "Include binding for PACKAGE", "PACKAGE..."}, {"vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_vapi_filename, "Output VAPI file name", "FILE"}, {"library", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_library, "Library name", "NAME"}, {"gir", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_gir, "GObject-Introspection repository file name", "NAME-VERSION.gir"}, {"basedir", 'b', 0, G_OPTION_ARG_FILENAME, &vala_compiler_basedir, "Base source directory", "DIRECTORY"}, {"directory", 'd', 0, G_OPTION_ARG_FILENAME, &vala_compiler_directory, "Output directory", "DIRECTORY"}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_version, "Display version number", NULL}, {"ccode", 'C', 0, G_OPTION_ARG_NONE, &vala_compiler_ccode_only, "Output C code", NULL}, {"header", 'H', 0, G_OPTION_ARG_FILENAME, &vala_compiler_header_filename, "Output C header file", "FILE"}, {"use-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_use_header, "Use C header file", NULL}, {"includedir", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_includedir, "Directory used to include the C header file", "DIRECTORY"}, {"internal-header", 'h', 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_header_filename, "Output internal C header file", "FILE"}, {"internal-vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_vapi_filename, "Output vapi with internal api", "FILE"}, {"fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_fast_vapi_filename, "Output vapi without performing symbol resolution", NULL}, {"use-fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_fast_vapis, "Use --fast-vapi output during this compile", NULL}, {"deps", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_dependencies, "Write make-style dependency information to this file", NULL}, {"symbols", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_symbols_filename, "Output symbols file", "FILE"}, {"compile", 'c', 0, G_OPTION_ARG_NONE, &vala_compiler_compile_only, "Compile but do not link", NULL}, {"output", 'o', 0, G_OPTION_ARG_FILENAME, &vala_compiler_output, "Place output in file FILE", "FILE"}, {"debug", 'g', 0, G_OPTION_ARG_NONE, &vala_compiler_debug, "Produce debug information", NULL}, {"thread", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_thread, "Enable multithreading support", NULL}, {"enable-mem-profiler", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_mem_profiler, "Enable GLib memory profiler", NULL}, {"define", 'D', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_defines, "Define SYMBOL", "SYMBOL..."}, {"main", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_entry_point, "Use SYMBOL as entry point", "SYMBOL..."}, {"nostdpkg", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_nostdpkg, "Do not include standard packages", NULL}, {"disable-assert", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_assert, "Disable assertions", NULL}, {"enable-checking", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_checking, "Enable additional run-time checks", NULL}, {"enable-deprecated", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_deprecated, "Enable deprecated features", NULL}, {"enable-experimental", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental, "Enable experimental features", NULL}, {"disable-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_warnings, "Disable warnings", NULL}, {"fatal-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_fatal_warnings, "Treat warnings as fatal", NULL}, {"enable-experimental-non-null", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental_non_null, "Enable experimental enhancements for non-null types", NULL}, {"enable-gobject-tracing", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_gobject_tracing, "Enable GObject creation tracing", NULL}, {"cc", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_cc_command, "Use COMMAND as C compiler command", "COMMAND"}, {"Xcc", 'X', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_cc_options, "Pass OPTION to the C compiler", "OPTION..."}, {"dump-tree", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_dump_tree, "Write code tree to FILE", "FILE"}, {"save-temps", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_save_temps, "Keep temporary files", NULL}, {"profile", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_profile, "Use the given profile instead of the default", "PROFILE"}, {"quiet", 'q', 0, G_OPTION_ARG_NONE, &vala_compiler_quiet_mode, "Do not print messages to the console", NULL}, {"verbose", 'v', 0, G_OPTION_ARG_NONE, &vala_compiler_verbose_mode, "Print additional messages to the console", NULL}, {"target-glib", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_target_glib, "Target version of glib for code generation", "MAJOR.MINOR"}, {"enable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_version_header, "Write vala build version in generated files", NULL}, {"disable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_version_header, "Do not write vala build version in generated files", NULL}, {"", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_sources, NULL, "FILE..."}, {NULL}};
+static const GOptionEntry VALA_COMPILER_options[49] = {{"vapidir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_vapi_directories, "Look for package bindings in DIRECTORY", "DIRECTORY..."}, {"girdir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_gir_directories, "Look for .gir files in DIRECTORY", "DIRECTORY..."}, {"metadatadir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_metadata_directories, "Look for GIR .metadata files in DIRECTORY", "DIRECTORY..."}, {"pkg", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_packages, "Include binding for PACKAGE", "PACKAGE..."}, {"vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_vapi_filename, "Output VAPI file name", "FILE"}, {"library", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_library, "Library name", "NAME"}, {"gir", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_gir, "GObject-Introspection repository file name", "NAME-VERSION.gir"}, {"basedir", 'b', 0, G_OPTION_ARG_FILENAME, &vala_compiler_basedir, "Base source directory", "DIRECTORY"}, {"directory", 'd', 0, G_OPTION_ARG_FILENAME, &vala_compiler_directory, "Output directory", "DIRECTORY"}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_version, "Display version number", NULL}, {"api-version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_api_version, "Display API version number", NULL}, {"ccode", 'C', 0, G_OPTION_ARG_NONE, &vala_compiler_ccode_only, "Output C code", NULL}, {"header", 'H', 0, G_OPTION_ARG_FILENAME, &vala_compiler_header_filename, "Output C header file", "FILE"}, {"use-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_use_header, "Use C header file", NULL}, {"includedir", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_includedir, "Directory used to include the C header file", "DIRECTORY"}, {"internal-header", 'h', 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_header_filename, "Output internal C header file", "FILE"}, {"internal-vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_vapi_filename, "Output vapi with internal api", "FILE"}, {"fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_fast_vapi_filename, "Output vapi without performing symbol resolution", NULL}, {"use-fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_fast_vapis, "Use --fast-vapi output during this compile", NULL}, {"deps", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_dependencies, "Write make-style dependency information to this file", NULL}, {"symbols", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_symbols_filename, "Output symbols file", "FILE"}, {"compile", 'c', 0, G_OPTION_ARG_NONE, &vala_compiler_compile_only, "Compile but do not link", NULL}, {"output", 'o', 0, G_OPTION_ARG_FILENAME, &vala_compiler_output, "Place output in file FILE", "FILE"}, {"debug", 'g', 0, G_OPTION_ARG_NONE, &vala_compiler_debug, "Produce debug information", NULL}, {"thread", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_thread, "Enable multithreading support", NULL}, {"enable-mem-profiler", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_mem_profiler, "Enable GLib memory profiler", NULL}, {"define", 'D', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_defines, "Define SYMBOL", "SYMBOL..."}, {"main", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_entry_point, "Use SYMBOL as entry point", "SYMBOL..."}, {"nostdpkg", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_nostdpkg, "Do not include standard packages", NULL}, {"disable-assert", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_assert, "Disable assertions", NULL}, {"enable-checking", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_checking, "Enable additional run-time checks", NULL}, {"enable-deprecated", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_deprecated, "Enable deprecated features", NULL}, {"enable-experimental", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental, "Enable experimental features", NULL}, {"disable-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_warnings, "Disable warnings", NULL}, {"fatal-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_fatal_warnings, "Treat warnings as fatal", NULL}, {"enable-experimental-non-null", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental_non_null, "Enable experimental enhancements for non-null types", NULL}, {"enable-gobject-tracing", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_gobject_tracing, "Enable GObject creation tracing", NULL}, {"cc", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_cc_command, "Use COMMAND as C compiler command", "COMMAND"}, {"Xcc", 'X', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_cc_options, "Pass OPTION to the C compiler", "OPTION..."}, {"dump-tree", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_dump_tree, "Write code tree to FILE", "FILE"}, {"save-temps", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_save_temps, "Keep temporary files", NULL}, {"profile", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_profile, "Use the given profile instead of the default", "PROFILE"}, {"quiet", 'q', 0, G_OPTION_ARG_NONE, &vala_compiler_quiet_mode, "Do not print messages to the console", NULL}, {"verbose", 'v', 0, G_OPTION_ARG_NONE, &vala_compiler_verbose_mode, "Print additional messages to the console", NULL}, {"target-glib", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_target_glib, "Target version of glib for code generation", "MAJOR.MINOR"}, {"enable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_version_header, "Write vala build version in generated files", NULL}, {"disable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_version_header, "Do not write vala build version in generated files", NULL}, {"", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_sources, NULL, "FILE..."}, {NULL}};
 
 static gint vala_compiler_quit (ValaCompiler* self) {
 	gint result = 0;
@@ -1017,7 +1019,7 @@ static gint vala_compiler_run (ValaCompiler* self) {
 				}
 				_tmp124_ = FALSE;
 				_tmp127_ = i;
-				if (!(_tmp127_ <= 18)) {
+				if (!(_tmp127_ <= 20)) {
 					break;
 				}
 				_tmp128_ = self->priv->context;
@@ -2346,14 +2348,14 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 	gboolean _tmp5_;
 	gboolean _tmp10_;
 	gboolean _tmp23_;
-	gboolean _tmp25_ = FALSE;
-	gchar** _tmp26_;
-	gint _tmp26__length1;
-	gboolean _tmp28_;
-	ValaCompiler* _tmp30_;
+	gboolean _tmp29_ = FALSE;
+	gchar** _tmp30_;
+	gint _tmp30__length1;
+	gboolean _tmp32_;
+	ValaCompiler* _tmp34_;
 	ValaCompiler* compiler;
-	ValaCompiler* _tmp31_;
-	gint _tmp32_ = 0;
+	ValaCompiler* _tmp35_;
+	gint _tmp36_ = 0;
 	GError * _inner_error_ = NULL;
 	setlocale (LC_ALL, "");
 	_tmp1_ = args;
@@ -2455,31 +2457,46 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 		fprintf (_tmp24_, "Vala %s\n", BUILD_VERSION);
 		result = 0;
 		return result;
-	}
-	_tmp26_ = vala_compiler_sources;
-	_tmp26__length1 = _vala_array_length (vala_compiler_sources);
-	if (_tmp26_ == NULL) {
-		gchar** _tmp27_;
-		gint _tmp27__length1;
-		_tmp27_ = vala_compiler_fast_vapis;
-		_tmp27__length1 = _vala_array_length (vala_compiler_fast_vapis);
-		_tmp25_ = _tmp27_ == NULL;
 	} else {
-		_tmp25_ = FALSE;
+		gboolean _tmp25_;
+		_tmp25_ = vala_compiler_api_version;
+		if (_tmp25_) {
+			FILE* _tmp26_;
+			gchar* _tmp27_ = NULL;
+			gchar* _tmp28_;
+			_tmp26_ = stdout;
+			_tmp27_ = string_substring (PACKAGE_SUFFIX, (glong) 1, (glong) (-1));
+			_tmp28_ = _tmp27_;
+			fprintf (_tmp26_, "%s\n", _tmp28_);
+			_g_free0 (_tmp28_);
+			result = 0;
+			return result;
+		}
 	}
-	_tmp28_ = _tmp25_;
-	if (_tmp28_) {
-		FILE* _tmp29_;
-		_tmp29_ = stderr;
-		fprintf (_tmp29_, "No source file specified.\n");
+	_tmp30_ = vala_compiler_sources;
+	_tmp30__length1 = _vala_array_length (vala_compiler_sources);
+	if (_tmp30_ == NULL) {
+		gchar** _tmp31_;
+		gint _tmp31__length1;
+		_tmp31_ = vala_compiler_fast_vapis;
+		_tmp31__length1 = _vala_array_length (vala_compiler_fast_vapis);
+		_tmp29_ = _tmp31_ == NULL;
+	} else {
+		_tmp29_ = FALSE;
+	}
+	_tmp32_ = _tmp29_;
+	if (_tmp32_) {
+		FILE* _tmp33_;
+		_tmp33_ = stderr;
+		fprintf (_tmp33_, "No source file specified.\n");
 		result = 1;
 		return result;
 	}
-	_tmp30_ = vala_compiler_new ();
-	compiler = _tmp30_;
-	_tmp31_ = compiler;
-	_tmp32_ = vala_compiler_run (_tmp31_);
-	result = _tmp32_;
+	_tmp34_ = vala_compiler_new ();
+	compiler = _tmp34_;
+	_tmp35_ = compiler;
+	_tmp36_ = vala_compiler_run (_tmp35_);
+	result = _tmp36_;
 	_vala_compiler_unref0 (compiler);
 	return result;
 }

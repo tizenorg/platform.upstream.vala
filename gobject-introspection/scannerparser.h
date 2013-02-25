@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 2.6.5.  */
+/* A Bison parser, made by GNU Bison 2.7.  */
 
 /* Bison interface for Yacc-like parsers in C
    
@@ -185,7 +185,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
-/* Line 2042 of yacc.c  */
+/* Line 2058 of yacc.c  */
 #line 190 "scannerparser.y"
 
   char *str;
@@ -198,7 +198,7 @@ typedef union YYSTYPE
   UnaryOperator unary_operator;
 
 
-/* Line 2042 of yacc.c  */
+/* Line 2058 of yacc.c  */
 #line 203 "scannerparser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1

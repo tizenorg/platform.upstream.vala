@@ -549,7 +549,7 @@ namespace Gst {
 			public virtual bool is_seekable ();
 			[NoWrapper]
 			public virtual bool negotiate ();
-			public bool new_seamless_segment (int64 start, int64 stop, int64 position);
+			public bool new_seamless_segment (int64 start, int64 stop, int64 time);
 			[NoWrapper]
 			public virtual bool prepare_seek_segment (Gst.Event seek, Gst.Segment segment);
 			[NoWrapper]
@@ -621,6 +621,7 @@ namespace Gst {
 			public void set_gap_aware (bool gap_aware);
 			public void set_in_place (bool in_place);
 			public void set_passthrough (bool passthrough);
+			public void set_prefer_passthrough (bool prefer_passthrough);
 			public void set_qos_enabled (bool enabled);
 			[NoWrapper]
 			public virtual bool sink_event (Gst.Event event);
@@ -685,9 +686,9 @@ namespace Gst {
 		[CCode (cheader_filename = "gst/base/gstadapter.h,gst/base/gstbaseparse.h,gst/base/gstbasesink.h,gst/base/gstbasesrc.h,gst/base/gstbasetransform.h,gst/base/gstbitreader.h,gst/base/gstbytereader.h,gst/base/gstbytewriter.h,gst/base/gstcollectpads.h,gst/base/gstpushsrc.h,gst/base/gsttypefindhelper.h", cname = "GstCollectDataDestroyNotify", has_target = false)]
 		public delegate void CollectDataDestroyNotify (Gst.Base.CollectData data);
 		[CCode (cheader_filename = "gst/base/gstadapter.h,gst/base/gstbaseparse.h,gst/base/gstbasesink.h,gst/base/gstbasesrc.h,gst/base/gstbasetransform.h,gst/base/gstbitreader.h,gst/base/gstbytereader.h,gst/base/gstbytewriter.h,gst/base/gstcollectpads.h,gst/base/gstpushsrc.h,gst/base/gsttypefindhelper.h", cname = "GstCollectPadsBufferFunction", instance_pos = 3.9)]
-		public delegate Gst.FlowReturn CollectPadsBufferFunction (Gst.Base.CollectPads pads, Gst.Base.CollectData data, Gst.Buffer buffer);
+		public delegate Gst.FlowReturn CollectPadsBufferFunction (Gst.Base.CollectPads pads, Gst.Base.CollectData data, owned Gst.Buffer buffer);
 		[CCode (cheader_filename = "gst/base/gstadapter.h,gst/base/gstbaseparse.h,gst/base/gstbasesink.h,gst/base/gstbasesrc.h,gst/base/gstbasetransform.h,gst/base/gstbitreader.h,gst/base/gstbytereader.h,gst/base/gstbytewriter.h,gst/base/gstcollectpads.h,gst/base/gstpushsrc.h,gst/base/gsttypefindhelper.h", cname = "GstCollectPadsClipFunction", instance_pos = 4.9)]
-		public delegate Gst.FlowReturn CollectPadsClipFunction (Gst.Base.CollectPads pads, Gst.Base.CollectData data, Gst.Buffer inbuffer, Gst.Buffer outbuffer);
+		public delegate Gst.FlowReturn CollectPadsClipFunction (Gst.Base.CollectPads pads, Gst.Base.CollectData data, owned Gst.Buffer inbuffer, Gst.Buffer outbuffer);
 		[CCode (cheader_filename = "gst/base/gstadapter.h,gst/base/gstbaseparse.h,gst/base/gstbasesink.h,gst/base/gstbasesrc.h,gst/base/gstbasetransform.h,gst/base/gstbitreader.h,gst/base/gstbytereader.h,gst/base/gstbytewriter.h,gst/base/gstcollectpads.h,gst/base/gstpushsrc.h,gst/base/gsttypefindhelper.h", cname = "GstCollectPadsCompareFunction", instance_pos = 5.9)]
 		public delegate int CollectPadsCompareFunction (Gst.Base.CollectPads pads, Gst.Base.CollectData data1, Gst.ClockTime timestamp1, Gst.Base.CollectData data2, Gst.ClockTime timestamp2);
 		[CCode (cheader_filename = "gst/base/gstadapter.h,gst/base/gstbaseparse.h,gst/base/gstbasesink.h,gst/base/gstbasesrc.h,gst/base/gstbasetransform.h,gst/base/gstbitreader.h,gst/base/gstbytereader.h,gst/base/gstbytewriter.h,gst/base/gstcollectpads.h,gst/base/gstpushsrc.h,gst/base/gsttypefindhelper.h", cname = "GstCollectPadsEventFunction", instance_pos = 3.9)]

@@ -1,6 +1,345 @@
+2013-02-20  Jürg Billeter  <j@bitron.ch>
+
+	Release 0.19.0
+
+2013-02-19  Evan Nemerson  <evan@coeus-group.com>
+
+	gtk+-3.0: make drag_begin event arg nullable
+	Fixes bug 691237.
+
+	vapis: regenerate GIR-based bindings
+
+	girparser: mark non-simpletype struct return values as nullable
+	Functions which return structs currently generate incorrect C code
+	since valac thinks the struct is actually an out argument.  This patch
+	will mark the return values of functions returning structs as nullable
+	in order to prevent valac from adding extra arguments.
+
+2013-02-18  Marcin Lewandowski  <www@saepia.net>
+
+	gstreamer-0.10: add some deprecation annotations
+	Fixes bug 682207.
+
+2013-02-18  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: fix g_variant_new_fixed_array binding
+	The elements argument needs to be a generic array, with the type
+	depending on the element_type argument.
+
+2013-02-17  Michael Hofmann  <mh21@mh21.de>
+
+	gtk+-3.0: Fix colors parameter of ColorChooser.add_palette
+	Fixes bug 694037.
+
+2013-02-17  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: add StringBuilder.insert_len and overwrite* bindings
+
+2013-02-16  Evan Nemerson  <evan@coeus-group.com>
+
+	girparser: warn instead of error on unrecognized metadata arguments
+
+	girparser: add support for "floating" metadata argument
+
+	vte-2.90: remove some obsolete metadata
+
+2013-02-14  Evan Nemerson  <evan@coeus-group.com>
+
+	Remove libxklavier bindings.
+	There hasn't been a release since they were added and it looks like
+	libxklavier is going to be shipping them.  The only user I'm aware of
+	is Caribou, and they are already shipping a local copy.
+
+	x11: set Event GIR name to XEvent
+
+2013-02-11  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: add missing C header for g_fopen
+
+	girparser: be a bit more forgiving about unexpected elements in a GIR
+
+	girwriter: fix name of *Class structs for nested types in GIRs
+	Fixes bug 689500.
+
+2013-02-11  shuerhaaken  <interflug1@gmx.net>
+
+	gtk+-3.0: hide extraneous CellArea.foreach parameter
+	Fixes bug 693308.
+
+2013-02-11  Evan Nemerson  <evan@coeus-group.com>
+
+	Regenerate many GIR-based bindings
+
+2013-02-09  Martin Pitt  <martinpitt@gnome.org>
+
+	posix: Add binding for major(), minor(), makedev()
+	Fixes bug 693411.
+
+	posix: Fix superfluous array length argument for realpath()
+	Fixes bug 693410.
+
+2013-02-09  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: use g_fopen for FileStream.open
+	Fixes bug 691622.
+
+	curses: make Curses.Color a struct with the correct cname
+	Fixes bug 693456.
+
+2013-02-08  Evan Nemerson  <evan@coeus-group.com>
+
+	libxml-2.0: revert 5fcabbfa
+
+	x11: add VisualInfo bindings
+
+2013-02-08  Richard Schwarting  <aquarichy@gmail.com>
+
+	libxml-2.0: add Buffer
+	Fixes bug 677355.
+
+	libxml-2.0: add HashTable
+	Partially fixes bug 677355.
+
+	libxml-2.0: Expose xmlBuffer as Xml.Buffer
+	Partially fixes bug 677355.
+
+	libxml-2.0: Expose xmlSetNs
+	Fixes bug 677726.
+
+2013-02-08  Evan Nemerson  <evan@coeus-group.com>
+
+	posix: add read_vectors and write_vectors
+	Fixes bug 679035.
+
+	vapigen.m4: emit error if no GOBJECT_INTROSPECTION_* macro is called
+	Fixes bug 684275.
+
+	x11: add has_destroy_function = false to WindowAttributes
+	Fixes bug 690870.
+
+2013-02-08  David Ma  <dma724332@gmail.com>
+
+	posix: add Flock struct
+	Fixes bug 690871.
+
+2013-02-08  Evan Nemerson  <evan@coeus-group.com>
+
+	x11: add Display.list_properties and XA_STRING
+	Fixes bug 690905.
+
+2013-02-08  Dan Callaghan  <djc@djc.id.au>
+
+	libxml-2.0: fix Xml.Dtd property cnames
+	Fixes bug 692060.
+
+	libxml-2.0: add xmlSearchNs and xmlSearchNsByHref
+	Fixes bug 692061.
+
+2013-02-08  Pierre Lamot  <pierre.lamot@yahoo.fr>
+
+	curses: add vprintw and vscanw bindings to Window
+	Fixes bug 692748.
+
+2013-02-08  Evan Nemerson  <evan@coeus-group.com>
+
+	libxml-2.0: add some schema-related bindings
+
+	gdl-3.0: update to 3.7.3
+	Fixes bug 693127.
+
+2013-02-02  Jasper St. Pierre  <jstpierre@mecheye.net>
+
+	valagirparser: Ignore the new instance-parameter tag
+	g-ir-scanner will now start emitting the instance parameter; since
+	vala doesn't need this, just skip it.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=693054
+
+2013-02-02  Evan Nemerson  <evan@coeus-group.com>
+
+	clutter-1.0:  fix Color.get_static return value
+
+2013-01-22  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: mark Thread.set_priority and Thread.foreach as deprecated
+
+2013-01-18  Rico Tzschichholz  <ricotz@t-online.de>
+
+	codegen: Use equal method of base-struct for derived structs
+	https://bugzilla.gnome.org/show_bug.cgi?id=690380
+
+2013-01-11  Evan Nemerson  <evan@coeus-group.com>
+
+	clutter-1.0: undeprecate BinAlignment enum.
+
+2013-01-10  Evan Nemerson  <evan@coeus-group.com>
+
+	clutter-1.0: avoid deprecation warning for BinLayout constructor
+
+2013-01-08  Rico Tzschichholz  <ricotz@t-online.de>
+
+	gstreamer-1.0: Update to 1.0.5
+
+2012-12-29  Rico Tzschichholz  <ricotz@t-online.de>
+
+	pango: Update to 1.32.5
+
+2012-12-29  Luca Bruno  <lucabru@src.gnome.org>
+
+	posix: Add fchmod
+
+2012-12-29  Rico Tzschichholz  <ricotz@t-online.de>
+
+	clutter-gtk-1.0: Update to 1.4.2
+
+	clutter-1.0: Update to 1.13.2
+
+	gstreamer-1.0: Update to 1.0.4
+
+2012-12-20  Rico Tzschichholz  <ricotz@t-online.de>
+
+	x11: add some contansts and mark some enums as flags
+
+2012-12-17  Jürg Billeter  <j@bitron.ch>
+
+	gtk+-3.0: Update to 3.6.2
+
+2012-12-16  Rico Tzschichholz  <ricotz@t-online.de>
+
+	pixman-1: multiple fixes, mainly for Pixman.Image
+
+2012-12-16  Evan Nemerson  <evan@coeus-group.com>
+
+	gdk-3.0: do not implicitly pass array length to property_change
+	Fixes bug 689286.
+
+	libxml-2.0:  fix Html.Doc.new_no_dtd cname
+	Fixes bug 689368.
+
+2012-12-16  Rico Tzschichholz  <ricotz@t-online.de>
+
+	gobject-2.0: Update and fix some enums which are actually flags
+
+2012-12-06  Luca Bruno  <lucabru@src.gnome.org>
+
+	gstreamer-interfaces-0.10: Fix cheader_filename of StreamVolume
+	Based on patch by Reiner Merk.
+
+	Fixes bug 689541.
+
+2012-12-02  Luca Bruno  <lucabru@src.gnome.org>
+
+	resolver: Accept children of DeleteStatement
+	Fixes bug 689464.
+
+2012-12-02  Jan Dvořák  <mordae@anilinux.org>
+
+	linux: Make If* enums public
+	Fixes bug 689466.
+
+2012-12-02  Evan Nemerson  <evan@coeus-group.com>
+
+	atk: update bindings to account for changes made in atk
+
+2012-12-01  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: make MainContext.ref_thread_default return value owned
+
+2012-11-29  Luca Bruno  <lucabru@src.gnome.org>
+
+	Document --api-version in the man page
+
+2012-11-29  Jürg Billeter  <j@bitron.ch>
+
+	Add --api-version option
+
+2012-11-29  Luca Bruno  <lucabru@src.gnome.org>
+
+	libgsf-1: Use uint8[] for InputMemory creation methods
+	Based on patch by Hodong Kim.
+
+	Fixes bug 689026.
+
+2012-11-28  Luca Bruno  <lucabru@src.gnome.org>
+
+	codegen: Fix passing nullable structs to non-nullable parameters
+	Fixes bug 685177.
+
+2012-11-25  Daiki Ueno  <ueno@unixuser.org>
+
+	atspi-2: Add new bindings
+	Fixes bug 688442.
+
+	libxklavier: Add new bindings
+	Fixes bug 688358.
+
+2012-11-25  Luca Bruno  <lucabru@src.gnome.org>
+
+	gstreamer-0.10: Fix Element.request_pad
+	Based on patch by Marcin Lewandowski.
+
+	Fixes bug 682208.
+
+2012-11-25  Víctor Manuel Jáquez Leal  <vjaquez@igalia.com>
+
+	gstreamer-1.0: Mark argv as unowned in Gst.init_check()
+	Fixes bug 689003.
+
+2012-11-22  Luca Bruno  <lucabru@src.gnome.org>
+
+	libgsf-1: Fix type_id to match the unusual libgsf convention
+	Fixes bug 688851.
+
+2012-11-21  Luca Bruno  <lucabru@src.gnome.org>
+
+	gio-2.0: Add throws to DBusProxy.new and .create_for_bus
+	Fixes bug 688815.
+
+2012-11-21  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0: set GLib.GenericArray GIR name to PtrArray.
+
+	girwriter: write GArray and GPtrArray to GIRs as arrays.
+
+2012-11-20  Thomas Wood  <thomas.wood@intel.com>
+
+	glib-2.0: remove GLib.DateTime.add_milliseconds
+	This function was removed before glib 2.26 was released.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=688712
+
+2012-11-19  Luca Bruno  <lucabru@src.gnome.org>
+
+	Support scope = "async" on parameters.
+	This flag is still useful on delegates such as ThreadFunc that are
+	always scope = "async" by default. The flag on the parameter will
+	override the flag has been set on the delegate.
+
+	libgsf-1: No array length for Infile.child_by_aname.names
+	Fixes bug 688556.
+
+2012-11-15  Rico Tzschichholz  <ricotz@t-online.de>
+
+	gstreamer-1.0: update deps accordingly
+
+2012-11-15  Evan Nemerson  <evan@coeus-group.com>
+
+	gio-2.0: assorted minor fixes
+
+2012-11-14  Jürg Billeter  <j@bitron.ch>
+
+	gstreamer-1.0: Update to 1.0.2
+
+	gtk+-3.0: Fix gtk_css_provider_get_named binding
+	Fixes bug 688292.
+
+	Reported-by: Pascal Garber <jumplink@gmail.com>
+
 2012-11-13  Jürg Billeter  <j@bitron.ch>
 
-	Release 0.18.1
+	Fix source reference of switch sections
+
+2012-11-11  Jürg Billeter  <j@bitron.ch>
 
 	gtk+-3.0: Fix gtk_grid_attach_next_to binding
 	Fixes bug 682477.
@@ -11,22 +350,29 @@
 	codegen: Fix g_simple_async_result_new in interface methods
 	Fixes bug 684557.
 
+2012-11-11  Sebastian Pölsterl  <sebp@k-d-w.org>
+
+	Added gstreamer-rtsp-server-1.0 bindings
+	Fixes bug 687039.
+
+2012-11-11  Jürg Billeter  <j@bitron.ch>
+
 	linux: Fix uinput_user_dev binding
 	Based on patch by Pascal Garber.
 
 	Fixes bug 687602.
 
-2012-11-13  Andreas Fenkart  <andreas.fenkart@streamunlimited.com>
+2012-11-11  Andreas Fenkart  <andreas.fenkart@streamunlimited.com>
 
 	gstreamer-0.10: removed static from transition_next/current.
 	Fixes bug 687807.
 
-2012-11-13  Robert Ancell  <robert.ancell@canonical.com>
+2012-11-11  Robert Ancell  <robert.ancell@canonical.com>
 
 	posix: Add nl_langinfo
 	Fixes 685039.
 
-2012-11-13  Simon Werbeck  <simon.werbeck@gmail.com>
+2012-11-11  Simon Werbeck  <simon.werbeck@gmail.com>
 
 	Forbid `resize' method for multi-dimensional array
 	Fixes bug 687943.
@@ -36,10 +382,12 @@
 	gtk+-3.0: Add gtk_widget_has_grab binding
 	Reported-by: Hans Baier <hansfbaier@googlemail.com>
 
+2012-11-10  Jürg Billeter  <j@bitron.ch>
+
 	codegen: Retain array length for cast from/to generic array
 	Fixes bug 687728.
 
-2012-11-11  Arnel A. Borja  <kyoushuu@yahoo.com>
+2012-11-03  Arnel A. Borja  <kyoushuu@yahoo.com>
 
 	Fix build for Windows
 	- Replace POSIX calls for spawning process with functions from Windows
@@ -49,43 +397,56 @@
 
 	Fixes bug 685180.
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-11-03  Evan Nemerson  <evan@coeus-group.com>
 
 	glib-2.0: add float.ROUNDS and RADIX
 
+2012-11-01  Evan Nemerson  <evan@coeus-group.com>
+
 	glib-2.0: add Process.check_exit_status binding
 
-2012-11-11  Dmitry Vagin  <dmitry2004@yandex.ru>
+2012-10-24  Dmitry Vagin  <dmitry2004@yandex.ru>
 
 	posix: mark inet_ntop as nullable
 	Fixes bug 678988.
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-10-24  Evan Nemerson  <evan@coeus-group.com>
+
+	atk: fix Util.add_global_event_listener callback type
+	Fixes bug 685552.
+
+2012-10-23  Evan Nemerson  <evan@coeus-group.com>
 
 	gtk+-2.0, gtk+-3.0: assorted minor fixes
+
+2012-10-22  Evan Nemerson  <evan@coeus-group.com>
 
 	gtk+-3.0: fix nullability of ColorChooserDialog constructor arguments
 
 	gtk+-2.0, gtk+-3.0: make RadioButton radio_group_member args nullable
 
-2012-11-11  Rico Tzschichholz  <ricotz@t-online.de>
+2012-10-21  Evan Nemerson  <evan@coeus-group.com>
+
+	clutter-1.0: remove "out" from several caller-allocates parameters
+
+2012-10-20  Rico Tzschichholz  <ricotz@t-online.de>
 
 	tests: Add D-Bus test for dictionary passing
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-10-20  Evan Nemerson  <evan@coeus-group.com>
 
 	gtk+-2.0, gtk+-3.0: improvements for Gtk.ScaleButton constructor args
 
-2012-11-11  Jürg Billeter  <j@bitron.ch>
+2012-10-20  Jürg Billeter  <j@bitron.ch>
 
 	codegen: Fix fields initialized by functions returning an array
 	Fixes bug 686336.
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-10-20  Evan Nemerson  <evan@coeus-group.com>
 
 	gkt+-2.0, gtk+-3.0: fix Gtk.HSV.get_* arguments
 
-2012-11-11  Jürg Billeter  <j@bitron.ch>
+2012-10-19  Jürg Billeter  <j@bitron.ch>
 
 	GDBus: Initialize array length variable in property get wrappers
 	This fixes a gcc warning when building with -O3.
@@ -94,23 +455,58 @@
 
 	Fixes bug 686123.
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-10-19  Evan Nemerson  <evan@coeus-group.com>
 
 	gtk+-3.0: mark Gtk.FontChooserDialog construtor arguments as nullable
 
-2012-11-11  Jürg Billeter  <j@bitron.ch>
+2012-10-19  Jürg Billeter  <j@bitron.ch>
+
+	codegen: Do not call g_type_init when targeting GLib >= 2.36
+	Fixes bug 686222.
 
 	codegen: Do not call g_thread_init when targeting GLib >= 2.32
 
-2012-11-11  Evan Nemerson  <evan@coeus-group.com>
+2012-10-19  Evan Nemerson  <evan@coeus-group.com>
+
+	gtk+-2.0, gtk+-3.0: fix FileChooserButton.with_dialog argument type
+
+2012-10-18  Evan Nemerson  <evan@coeus-group.com>
+
+	gtk+-2.0, gtk+-3.0: the parameter passed to Gtk.init can be null
+
+2012-10-16  Evan Nemerson  <evan@coeus-group.com>
 
 	glib-2.0: use g_async_queue_new_full instead of g_async_queue_new
 
 	glib-2.0: mark envp parameters in GLib.Environ methods as nullable
 
+	glib-2.0: add generic type arguments to PtrArray sort callbacks
+
+2012-10-11  Evan Nemerson  <evan@coeus-group.com>
+
 	glib-2.0: add missing parameters to Test.rand_double_range
 
+2012-10-10  Evan Nemerson  <evan@coeus-group.com>
+
+	vapigen: support GIRDIRS variable in Makefile.vapigen
+
+2012-10-09  Evan Nemerson  <evan@coeus-group.com>
+
+	gstreamer-0.10: add GIR namespace and version info
+
+	glib-2.0: generic-related improvements to Tree
+
+2012-10-09  Rico Tzschichholz  <ricotz@t-online.de>
+
+	gstreamer-1.0: update to 1.0.1
+
+2012-10-09  Evan Nemerson  <evan@coeus-group.com>
+
 	libxml-2.0: add has_type_id = false to all enums
+
+2012-10-04  Jürg Billeter  <j@bitron.ch>
+
+	Bump version suffix
 
 2012-10-03  Jürg Billeter  <j@bitron.ch>
 

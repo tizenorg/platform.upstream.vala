@@ -9,6 +9,8 @@ dist_vapi_DATA = \
 	alsa.vapi \
 	alsa.deps \
 	atk.vapi \
+	atspi-2.vapi \
+	atspi-2.deps \
 	avahi-client.vapi \
 	avahi-gobject.deps \
 	avahi-gobject.vapi \
@@ -134,6 +136,8 @@ dist_vapi_DATA = \
 	gstreamer-rtp-1.0.deps \
 	gstreamer-rtsp-1.0.vapi \
 	gstreamer-rtsp-1.0.deps \
+	gstreamer-rtsp-server-1.0.vapi \
+	gstreamer-rtsp-server-1.0.deps \
 	gstreamer-sdp-1.0.vapi \
 	gstreamer-sdp-1.0.deps \
 	gstreamer-tag-1.0.vapi \
@@ -359,12 +363,14 @@ GSTREAMER_1_0_BINDINGS = \
 	gstreamer-rtp-1.0 \
 	gstreamer-sdp-1.0 \
 	gstreamer-rtsp-1.0 \
+	gstreamer-rtsp-server-1.0 \
 	gstreamer-tag-1.0 \
 	gstreamer-video-1.0 \
 	$(NULL)
 
 GIR_BINDINGS = \
 	atk \
+	atspi-2 \
 	clutter-1.0 \
 	cogl-pango \
 	gdk-3.0 \
@@ -415,8 +421,11 @@ all-bindings: gir-bindings gidl-bindings
 atk:
 	$(GENVAPI) --library $(srcdir)/atk --metadatadir $(METADATADIR) $(METADATADIR)/Atk-1.0-custom.vala $(GIRDIR)/Atk-1.0.gir
 
+atspi-2:
+	$(GENVAPI) --library $(srcdir)/atspi-2 --metadatadir $(METADATADIR) $(GIRDIR)/Atspi-2.0.gir
+
 clutter-1.0:
-	$(GENVAPI) --library $(srcdir)/clutter-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Clutter-1.0-custom.vala --pkg atk --pkg cairo --pkg pango --pkg cogl-1.0 --pkg json-glib-1.0 $(GIRDIR)/Clutter-1.0.gir
+	$(GENVAPI) --library $(srcdir)/clutter-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Clutter-1.0-custom.vala --pkg atk --pkg cairo --pkg pango --pkg cogl-1.0 --pkg cogl-pango-1.0 --pkg json-glib-1.0 $(GIRDIR)/Clutter-1.0.gir
 
 clutter-gtk-0.10:
 	$(GENVAPI) --library $(srcdir)/clutter-gtk-0.10 $(PACKAGESDIR)/clutter-gtk-0.10/clutter-gtk-0.10.gi
@@ -569,13 +578,16 @@ gstreamer-net-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-net-1.0 --pkg gstreamer-1.0 --pkg gio-2.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstNet-1.0.gir
 
 gstreamer-pbutils-1.0:
-	$(GENVAPI) --library $(srcdir)/gstreamer-pbutils-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstPbutils-1.0.gir
+	$(GENVAPI) --library $(srcdir)/gstreamer-pbutils-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstPbutils-1.0.gir
 
 gstreamer-rtp-1.0:
-	$(GENVAPI) --library $(srcdir)/gstreamer-rtp-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtp-1.0.gir
+	$(GENVAPI) --library $(srcdir)/gstreamer-rtp-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtp-1.0.gir
 
 gstreamer-rtsp-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-rtsp-1.0 --pkg gstreamer-sdp-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtsp-1.0.gir
+
+gstreamer-rtsp-server-1.0:
+	$(GENVAPI) --library $(srcdir)/gstreamer-rtsp-server-1.0 --pkg gstreamer-rtsp-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtspServer-1.0.gir
 
 gstreamer-sdp-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-sdp-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstSdp-1.0.gir
@@ -671,7 +683,7 @@ loudmouth-1.0:
 	$(GENVAPI) --library $(srcdir)/loudmouth-1.0 $(PACKAGESDIR)/loudmouth-1.0/loudmouth-1.0-custom.vala $(PACKAGESDIR)/loudmouth-1.0/loudmouth-1.0.gi
 
 mx-1.0:
-	$(GENVAPI) --library $(srcdir)/mx-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Mx-1.0-custom.vala $(GIRDIR)/Mx-1.0.gir
+	$(GENVAPI) --library $(srcdir)/mx-1.0 --metadatadir $(METADATADIR) --pkg clutter-1.0 --pkg cogl-pango-1.0 $(METADATADIR)/Mx-1.0-custom.vala $(GIRDIR)/Mx-1.0.gir
 
 packagekit-glib2:
 	$(GENVAPI) --library $(srcdir)/packagekit-glib2 --metadatadir $(METADATADIR) --pkg gio-2.0 $(GIRDIR)/PackageKitGlib-1.0.gir
