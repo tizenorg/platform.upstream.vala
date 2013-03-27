@@ -5,7 +5,7 @@
 
 
 Name:           vala
-Version:        0.19.0
+Version:        0.20.0
 Release:        1
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
