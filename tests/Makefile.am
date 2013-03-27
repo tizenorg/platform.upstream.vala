@@ -63,6 +63,7 @@ TESTS = \
 	control-flow/bug652549.vala \
 	control-flow/bug665904.vala \
 	enums/enums.vala \
+	enums/bug673879.vala \
 	structs/structs.vala \
 	structs/gvalue.vala \
 	structs/bug530605.vala \
@@ -131,6 +132,7 @@ TESTS = \
 	objects/bug664529.vala \
 	objects/bug667668.vala \
 	objects/bug683646.vala \
+	objects/bug695671.vala \
 	errors/errors.vala \
 	errors/bug567181.vala \
 	errors/bug579101.vala \

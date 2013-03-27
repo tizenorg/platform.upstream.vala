@@ -74,26 +74,26 @@ TESTS = basic-types/integers.vala basic-types/floats.vala \
 	control-flow/for.vala control-flow/foreach.vala \
 	control-flow/switch.vala control-flow/sideeffects.vala \
 	control-flow/bug652549.vala control-flow/bug665904.vala \
-	enums/enums.vala structs/structs.vala structs/gvalue.vala \
-	structs/bug530605.vala structs/bug572091.vala \
-	structs/bug583603.vala structs/bug595587.vala \
-	structs/bug596144.vala structs/bug606202.vala \
-	structs/bug609642.vala structs/bug613513.vala \
-	structs/bug613825.vala structs/bug621176.vala \
-	structs/bug622422.vala structs/bug623092.vala \
-	structs/bug651441.vala structs/bug654646.vala \
-	structs/bug654753.vala structs/bug656693.vala \
-	structs/bug657378.vala structs/bug658048.vala \
-	structs/bug660426.vala structs/bug661945.vala \
-	structs/bug667890.vala structs/bug669580.vala \
-	structs/bug685177.vala structs/bug690380.vala \
-	delegates/delegates.vala delegates/bug539166.vala \
-	delegates/bug595610.vala delegates/bug595639.vala \
-	delegates/bug638415.vala delegates/bug639751.vala \
-	objects/classes.vala objects/fields.vala \
-	objects/interfaces.vala objects/methods.vala \
-	objects/properties.vala objects/regex.vala \
-	objects/signals.vala objects/test-025.vala \
+	enums/enums.vala enums/bug673879.vala structs/structs.vala \
+	structs/gvalue.vala structs/bug530605.vala \
+	structs/bug572091.vala structs/bug583603.vala \
+	structs/bug595587.vala structs/bug596144.vala \
+	structs/bug606202.vala structs/bug609642.vala \
+	structs/bug613513.vala structs/bug613825.vala \
+	structs/bug621176.vala structs/bug622422.vala \
+	structs/bug623092.vala structs/bug651441.vala \
+	structs/bug654646.vala structs/bug654753.vala \
+	structs/bug656693.vala structs/bug657378.vala \
+	structs/bug658048.vala structs/bug660426.vala \
+	structs/bug661945.vala structs/bug667890.vala \
+	structs/bug669580.vala structs/bug685177.vala \
+	structs/bug690380.vala delegates/delegates.vala \
+	delegates/bug539166.vala delegates/bug595610.vala \
+	delegates/bug595639.vala delegates/bug638415.vala \
+	delegates/bug639751.vala objects/classes.vala \
+	objects/fields.vala objects/interfaces.vala \
+	objects/methods.vala objects/properties.vala \
+	objects/regex.vala objects/signals.vala objects/test-025.vala \
 	objects/test-026.vala objects/test-029.vala \
 	objects/test-034.vala objects/bug566909.vala \
 	objects/bug588203.vala objects/bug589928.vala \
@@ -108,7 +108,8 @@ TESTS = basic-types/integers.vala basic-types/floats.vala \
 	objects/bug653138.vala objects/bug654702.vala \
 	objects/bug663134.vala objects/bug664529.vala \
 	objects/bug667668.vala objects/bug683646.vala \
-	errors/errors.vala errors/bug567181.vala errors/bug579101.vala \
+	objects/bug695671.vala errors/errors.vala \
+	errors/bug567181.vala errors/bug579101.vala \
 	errors/bug596228.vala errors/bug623049.vala \
 	errors/bug639589.vala errors/bug651145.vala \
 	asynchronous/bug595735.vala asynchronous/bug595755.vala \
@@ -1048,6 +1049,13 @@ enums/enums.vala.log: enums/enums.vala
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+enums/bug673879.vala.log: enums/bug673879.vala
+	@p='enums/bug673879.vala'; \
+	b='enums/bug673879.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 structs/structs.vala.log: structs/structs.vala
 	@p='structs/structs.vala'; \
 	b='structs/structs.vala'; \
@@ -1520,6 +1528,13 @@ objects/bug667668.vala.log: objects/bug667668.vala
 objects/bug683646.vala.log: objects/bug683646.vala
 	@p='objects/bug683646.vala'; \
 	b='objects/bug683646.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+objects/bug695671.vala.log: objects/bug695671.vala
+	@p='objects/bug695671.vala'; \
+	b='objects/bug695671.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

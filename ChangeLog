@@ -1,3 +1,53 @@
+2013-03-26  Jürg Billeter  <j@bitron.ch>
+
+	Release 0.20.0
+
+2013-03-25  Luca Bruno  <luca.bruno@immobiliare.it>
+
+	Support non-null cast for enum values
+	Fixes bug 673879.
+
+2013-03-22  Luca Bruno  <lucabru@src.gnome.org>
+
+	codegen: Destroy value of "as" cast in case the result is null
+	Fixes bug 695671.
+
+2013-03-20  Luca Bruno  <lucabru@src.gnome.org>
+
+	gtk+-2.0, gtk+-3.0: Fix TreePath.to_string and TreeView.get_visible_range
+	Based on patch by shuerhaaken.
+
+	Fixes bug 695812.
+
+	gtk+-2.0, gtk+-3.0: Fix IconView.get_visible_range
+	Based on patch by shuerhaaken.
+
+	Fixes bug 695833.
+
+2013-03-18  Evan Nemerson  <evan@coeus-group.com>
+
+	glib-2.0, gtk+-3.0: make parameter string for goption nullable
+	Fixes bug 696055.
+
+2013-03-17  Paolo Borelli  <pborelli@gnome.org>
+
+	gtk+-3.0: make TreeView::set_search_entry nullable
+
+2013-03-02  Jesse van den Kieboom  <jessevdk@gnome.org>
+
+	Updated gtk+-3.0 to lastest master
+	https://bugzilla.gnome.org/show_bug.cgi?id=695017
+
+2013-02-21  Evan Nemerson  <evan@coeus-group.com>
+
+	bindings: update GIR-based bindings
+
+2013-02-20  Evan Nemerson  <evan@coeus-group.com>
+
+	girparser: support renaming fields in metadata
+	Previously we allowed metadata to change field names, but did not set
+	the cname CCode attribute, which would cause invalid C to be generated.
+
 2013-02-20  Jürg Billeter  <j@bitron.ch>
 
 	Release 0.19.0
