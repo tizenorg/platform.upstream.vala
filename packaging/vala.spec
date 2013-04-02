@@ -1,4 +1,4 @@
-%define         baseline 0.19
+%define         baseline 0.20
 %define         vala_version 0.20
 %define         vala_libversion 0_20
 %define         vala_priority 19
