@@ -162,6 +162,16 @@ typedef struct _ValaStatementIface ValaStatementIface;
 typedef struct _ValaLocalVariable ValaLocalVariable;
 typedef struct _ValaLocalVariableClass ValaLocalVariableClass;
 
+#define VALA_TYPE_MEMBER_INITIALIZER (vala_member_initializer_get_type ())
+#define VALA_MEMBER_INITIALIZER(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_MEMBER_INITIALIZER, ValaMemberInitializer))
+#define VALA_MEMBER_INITIALIZER_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_MEMBER_INITIALIZER, ValaMemberInitializerClass))
+#define VALA_IS_MEMBER_INITIALIZER(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VALA_TYPE_MEMBER_INITIALIZER))
+#define VALA_IS_MEMBER_INITIALIZER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), VALA_TYPE_MEMBER_INITIALIZER))
+#define VALA_MEMBER_INITIALIZER_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), VALA_TYPE_MEMBER_INITIALIZER, ValaMemberInitializerClass))
+
+typedef struct _ValaMemberInitializer ValaMemberInitializer;
+typedef struct _ValaMemberInitializerClass ValaMemberInitializerClass;
+
 struct _ValaCodeNode {
 	GTypeInstance parent_instance;
 	volatile int ref_count;
@@ -279,6 +289,7 @@ ValaTargetValue* vala_expression_get_target_value (ValaExpression* self);
 void vala_expression_set_target_value (ValaExpression* self, ValaTargetValue* value);
 ValaCodeNode* vala_code_node_get_parent_node (ValaCodeNode* self);
 GType vala_local_variable_get_type (void) G_GNUC_CONST;
+GType vala_member_initializer_get_type (void) G_GNUC_CONST;
 static void vala_expression_finalize (ValaCodeNode* obj);
 
 
@@ -519,7 +530,11 @@ ValaStatement* vala_expression_get_parent_statement (ValaExpression* self) {
 	ValaCodeNode* _tmp7_;
 	ValaLocalVariable* _tmp8_;
 	ValaLocalVariable* local;
-	ValaStatement* _tmp9_;
+	ValaCodeNode* _tmp9_;
+	ValaCodeNode* _tmp10_;
+	ValaMemberInitializer* _tmp11_;
+	ValaMemberInitializer* initializer;
+	ValaStatement* _tmp12_;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_code_node_get_parent_node ((ValaCodeNode*) self);
 	_tmp1_ = _tmp0_;
@@ -533,56 +548,86 @@ ValaStatement* vala_expression_get_parent_statement (ValaExpression* self) {
 	_tmp7_ = _tmp6_;
 	_tmp8_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp7_, VALA_TYPE_LOCAL_VARIABLE) ? ((ValaLocalVariable*) _tmp7_) : NULL);
 	local = _tmp8_;
-	_tmp9_ = stmt;
-	if (_tmp9_ != NULL) {
-		ValaCodeNode* _tmp10_;
-		ValaCodeNode* _tmp11_;
-		_tmp10_ = vala_code_node_get_parent_node ((ValaCodeNode*) self);
-		_tmp11_ = _tmp10_;
-		result = G_TYPE_CHECK_INSTANCE_CAST (_tmp11_, VALA_TYPE_STATEMENT, ValaStatement);
+	_tmp9_ = vala_code_node_get_parent_node ((ValaCodeNode*) self);
+	_tmp10_ = _tmp9_;
+	_tmp11_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp10_, VALA_TYPE_MEMBER_INITIALIZER) ? ((ValaMemberInitializer*) _tmp10_) : NULL);
+	initializer = _tmp11_;
+	_tmp12_ = stmt;
+	if (_tmp12_ != NULL) {
+		ValaCodeNode* _tmp13_;
+		ValaCodeNode* _tmp14_;
+		_tmp13_ = vala_code_node_get_parent_node ((ValaCodeNode*) self);
+		_tmp14_ = _tmp13_;
+		result = G_TYPE_CHECK_INSTANCE_CAST (_tmp14_, VALA_TYPE_STATEMENT, ValaStatement);
+		_vala_code_node_unref0 (initializer);
 		_vala_code_node_unref0 (local);
 		_vala_code_node_unref0 (stmt);
 		_vala_code_node_unref0 (expr);
 		return result;
 	} else {
-		ValaExpression* _tmp12_;
-		_tmp12_ = expr;
-		if (_tmp12_ != NULL) {
-			ValaExpression* _tmp13_;
-			ValaStatement* _tmp14_;
-			ValaStatement* _tmp15_;
-			_tmp13_ = expr;
-			_tmp14_ = vala_expression_get_parent_statement (_tmp13_);
-			_tmp15_ = _tmp14_;
-			result = _tmp15_;
+		ValaExpression* _tmp15_;
+		_tmp15_ = expr;
+		if (_tmp15_ != NULL) {
+			ValaExpression* _tmp16_;
+			ValaStatement* _tmp17_;
+			ValaStatement* _tmp18_;
+			_tmp16_ = expr;
+			_tmp17_ = vala_expression_get_parent_statement (_tmp16_);
+			_tmp18_ = _tmp17_;
+			result = _tmp18_;
+			_vala_code_node_unref0 (initializer);
 			_vala_code_node_unref0 (local);
 			_vala_code_node_unref0 (stmt);
 			_vala_code_node_unref0 (expr);
 			return result;
 		} else {
-			ValaLocalVariable* _tmp16_;
-			_tmp16_ = local;
-			if (_tmp16_ != NULL) {
-				ValaLocalVariable* _tmp17_;
-				ValaCodeNode* _tmp18_;
-				ValaCodeNode* _tmp19_;
-				_tmp17_ = local;
-				_tmp18_ = vala_code_node_get_parent_node ((ValaCodeNode*) _tmp17_);
-				_tmp19_ = _tmp18_;
-				result = G_TYPE_CHECK_INSTANCE_CAST (_tmp19_, VALA_TYPE_STATEMENT, ValaStatement);
+			ValaLocalVariable* _tmp19_;
+			_tmp19_ = local;
+			if (_tmp19_ != NULL) {
+				ValaLocalVariable* _tmp20_;
+				ValaCodeNode* _tmp21_;
+				ValaCodeNode* _tmp22_;
+				_tmp20_ = local;
+				_tmp21_ = vala_code_node_get_parent_node ((ValaCodeNode*) _tmp20_);
+				_tmp22_ = _tmp21_;
+				result = G_TYPE_CHECK_INSTANCE_CAST (_tmp22_, VALA_TYPE_STATEMENT, ValaStatement);
+				_vala_code_node_unref0 (initializer);
 				_vala_code_node_unref0 (local);
 				_vala_code_node_unref0 (stmt);
 				_vala_code_node_unref0 (expr);
 				return result;
 			} else {
-				result = NULL;
-				_vala_code_node_unref0 (local);
-				_vala_code_node_unref0 (stmt);
-				_vala_code_node_unref0 (expr);
-				return result;
+				ValaMemberInitializer* _tmp23_;
+				_tmp23_ = initializer;
+				if (_tmp23_ != NULL) {
+					ValaMemberInitializer* _tmp24_;
+					ValaCodeNode* _tmp25_;
+					ValaCodeNode* _tmp26_;
+					ValaStatement* _tmp27_;
+					ValaStatement* _tmp28_;
+					_tmp24_ = initializer;
+					_tmp25_ = vala_code_node_get_parent_node ((ValaCodeNode*) _tmp24_);
+					_tmp26_ = _tmp25_;
+					_tmp27_ = vala_expression_get_parent_statement (G_TYPE_CHECK_INSTANCE_CAST (_tmp26_, VALA_TYPE_EXPRESSION, ValaExpression));
+					_tmp28_ = _tmp27_;
+					result = _tmp28_;
+					_vala_code_node_unref0 (initializer);
+					_vala_code_node_unref0 (local);
+					_vala_code_node_unref0 (stmt);
+					_vala_code_node_unref0 (expr);
+					return result;
+				} else {
+					result = NULL;
+					_vala_code_node_unref0 (initializer);
+					_vala_code_node_unref0 (local);
+					_vala_code_node_unref0 (stmt);
+					_vala_code_node_unref0 (expr);
+					return result;
+				}
 			}
 		}
 	}
+	_vala_code_node_unref0 (initializer);
 	_vala_code_node_unref0 (local);
 	_vala_code_node_unref0 (stmt);
 	_vala_code_node_unref0 (expr);

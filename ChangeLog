@@ -1,3 +1,28 @@
+2013-04-08  Jürg Billeter  <j@bitron.ch>
+
+	Release 0.20.1
+
+2013-03-31  Evan Nemerson  <evan@coeus-group.com>
+
+	gtksourceview-2.0: fix SourceGutter.set_cell_{data,size}_func
+
+2013-03-29  Simon Werbeck  <simon.werbeck@gmail.com>
+
+	Check parameter directions in inherited methods
+	Fixes bug 695214.
+
+2013-03-28  Simon Werbeck  <simon.werbeck@gmail.com>
+
+	Set correct parent_statement for MemberInitializer
+	Fixes bug 603056.
+
+2013-03-27  Evan Nemerson  <evan@coeus-group.com>
+
+	gtk+-3.0: make IconInfo a compact class instead of a GObject
+	Fixes bug 695831.
+
+	json-glib-1.0: the get_root() methods return values are nullable.
+
 2013-03-26  Jürg Billeter  <j@bitron.ch>
 
 	Release 0.20.0

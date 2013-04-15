@@ -78,22 +78,23 @@ TESTS = basic-types/integers.vala basic-types/floats.vala \
 	structs/gvalue.vala structs/bug530605.vala \
 	structs/bug572091.vala structs/bug583603.vala \
 	structs/bug595587.vala structs/bug596144.vala \
-	structs/bug606202.vala structs/bug609642.vala \
-	structs/bug613513.vala structs/bug613825.vala \
-	structs/bug621176.vala structs/bug622422.vala \
-	structs/bug623092.vala structs/bug651441.vala \
-	structs/bug654646.vala structs/bug654753.vala \
-	structs/bug656693.vala structs/bug657378.vala \
-	structs/bug658048.vala structs/bug660426.vala \
-	structs/bug661945.vala structs/bug667890.vala \
-	structs/bug669580.vala structs/bug685177.vala \
-	structs/bug690380.vala delegates/delegates.vala \
-	delegates/bug539166.vala delegates/bug595610.vala \
-	delegates/bug595639.vala delegates/bug638415.vala \
-	delegates/bug639751.vala objects/classes.vala \
-	objects/fields.vala objects/interfaces.vala \
-	objects/methods.vala objects/properties.vala \
-	objects/regex.vala objects/signals.vala objects/test-025.vala \
+	structs/bug603056.vala structs/bug606202.vala \
+	structs/bug609642.vala structs/bug613513.vala \
+	structs/bug613825.vala structs/bug621176.vala \
+	structs/bug622422.vala structs/bug623092.vala \
+	structs/bug651441.vala structs/bug654646.vala \
+	structs/bug654753.vala structs/bug656693.vala \
+	structs/bug657378.vala structs/bug658048.vala \
+	structs/bug660426.vala structs/bug661945.vala \
+	structs/bug667890.vala structs/bug669580.vala \
+	structs/bug685177.vala structs/bug690380.vala \
+	delegates/delegates.vala delegates/bug539166.vala \
+	delegates/bug595610.vala delegates/bug595639.vala \
+	delegates/bug638415.vala delegates/bug639751.vala \
+	objects/classes.vala objects/fields.vala \
+	objects/interfaces.vala objects/methods.vala \
+	objects/properties.vala objects/regex.vala \
+	objects/signals.vala objects/test-025.vala \
 	objects/test-026.vala objects/test-029.vala \
 	objects/test-034.vala objects/bug566909.vala \
 	objects/bug588203.vala objects/bug589928.vala \
@@ -1101,6 +1102,13 @@ structs/bug595587.vala.log: structs/bug595587.vala
 structs/bug596144.vala.log: structs/bug596144.vala
 	@p='structs/bug596144.vala'; \
 	b='structs/bug596144.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+structs/bug603056.vala.log: structs/bug603056.vala
+	@p='structs/bug603056.vala'; \
+	b='structs/bug603056.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
