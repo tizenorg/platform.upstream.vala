@@ -244,7 +244,7 @@ static void vala_empty_statement_real_emit (ValaCodeNode* base, ValaCodeGenerato
  */
 ValaEmptyStatement* vala_empty_statement_construct (GType object_type, ValaSourceReference* source) {
 	ValaEmptyStatement* self = NULL;
-	ValaSourceReference* _tmp0_;
+	ValaSourceReference* _tmp0_ = NULL;
 	g_return_val_if_fail (source != NULL, NULL);
 	self = (ValaEmptyStatement*) vala_code_node_construct (object_type);
 	_tmp0_ = source;
@@ -260,7 +260,7 @@ ValaEmptyStatement* vala_empty_statement_new (ValaSourceReference* source) {
 
 static void vala_empty_statement_real_accept (ValaCodeNode* base, ValaCodeVisitor* visitor) {
 	ValaEmptyStatement * self;
-	ValaCodeVisitor* _tmp0_;
+	ValaCodeVisitor* _tmp0_ = NULL;
 	self = (ValaEmptyStatement*) base;
 	g_return_if_fail (visitor != NULL);
 	_tmp0_ = visitor;
@@ -270,7 +270,7 @@ static void vala_empty_statement_real_accept (ValaCodeNode* base, ValaCodeVisito
 
 static void vala_empty_statement_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen) {
 	ValaEmptyStatement * self;
-	ValaCodeGenerator* _tmp0_;
+	ValaCodeGenerator* _tmp0_ = NULL;
 	self = (ValaEmptyStatement*) base;
 	g_return_if_fail (codegen != NULL);
 	_tmp0_ = codegen;

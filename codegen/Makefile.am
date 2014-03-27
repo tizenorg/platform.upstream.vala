@@ -11,7 +11,7 @@ AM_CPPFLAGS = \
 BUILT_SOURCES = codegen.vala.stamp
 
 lib_LTLIBRARIES = \
-	libvala@PACKAGE_SUFFIX@.la
+	libvala@PACKAGE_SUFFIX@.la \
 	$(NULL)
 
 libvala_la_VALASOURCES = \
@@ -36,6 +36,7 @@ libvala_la_VALASOURCES = \
 	valagerrormodule.vala \
 	valagirwriter.vala \
 	valagobjectmodule.vala \
+	valagtkmodule.vala \
 	valagsignalmodule.vala \
 	valagtypemodule.vala \
 	valagvariantmodule.vala \

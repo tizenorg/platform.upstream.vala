@@ -341,7 +341,7 @@ public class Vala.GTypeModule : GErrorModule {
 						if (delegate_type.delegate_symbol.has_target) {
 							// create field to store delegate target
 							instance_struct.add_field ("gpointer", get_ccode_delegate_target_name (f));
-							if (delegate_type.value_owned) {
+							if (delegate_type.is_disposable ()) {
 								instance_struct.add_field ("GDestroyNotify", get_delegate_target_destroy_notify_cname (f.name));
 							}
 						}
@@ -447,7 +447,7 @@ public class Vala.GTypeModule : GErrorModule {
 						if (delegate_type.delegate_symbol.has_target) {
 							// create field to store delegate target
 							instance_priv_struct.add_field ("gpointer", get_ccode_delegate_target_name (f));
-							if (delegate_type.value_owned) {
+							if (delegate_type.is_disposable ()) {
 								instance_priv_struct.add_field ("GDestroyNotify", get_delegate_target_destroy_notify_cname (f.name));
 							}
 						}
@@ -1166,6 +1166,9 @@ public class Vala.GTypeModule : GErrorModule {
 	public virtual void generate_class_init (Class cl) {
 	}
 
+	public virtual void end_instance_init (Class cl) {
+	}
+
 	private void begin_class_init_function (Class cl) {
 		push_context (class_init_context);
 
@@ -1574,6 +1577,10 @@ public class Vala.GTypeModule : GErrorModule {
 	}
 
 	private void add_instance_init_function (Class cl) {
+		push_context (instance_init_context);
+		end_instance_init (cl);
+		pop_context ();
+		
 		cfile.add_function (instance_init_context.ccode);
 	}
 
@@ -1780,7 +1787,8 @@ public class Vala.GTypeModule : GErrorModule {
 			}
 		} else if (prop.property_type.data_type is Struct) {
 			var st = (Struct) prop.property_type.data_type;
-			if (get_ccode_type_id (st) == "G_TYPE_INT") {
+			var type_id = get_ccode_type_id (st);
+			if (type_id == "G_TYPE_INT") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_int");
 				cspec.add_argument (new CCodeConstant ("G_MININT"));
 				cspec.add_argument (new CCodeConstant ("G_MAXINT"));
@@ -1789,7 +1797,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_UINT") {
+			} else if (type_id == "G_TYPE_UINT") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_uint");
 				cspec.add_argument (new CCodeConstant ("0"));
 				cspec.add_argument (new CCodeConstant ("G_MAXUINT"));
@@ -1798,7 +1806,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0U"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_INT64") {
+			} else if (type_id == "G_TYPE_INT64") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_int64");
 				cspec.add_argument (new CCodeConstant ("G_MININT64"));
 				cspec.add_argument (new CCodeConstant ("G_MAXINT64"));
@@ -1807,7 +1815,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_UINT64") {
+			} else if (type_id == "G_TYPE_UINT64") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_uint64");
 				cspec.add_argument (new CCodeConstant ("0"));
 				cspec.add_argument (new CCodeConstant ("G_MAXUINT64"));
@@ -1816,7 +1824,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0U"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_LONG") {
+			} else if (type_id == "G_TYPE_LONG") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_long");
 				cspec.add_argument (new CCodeConstant ("G_MINLONG"));
 				cspec.add_argument (new CCodeConstant ("G_MAXLONG"));
@@ -1825,7 +1833,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0L"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_ULONG") {
+			} else if (type_id == "G_TYPE_ULONG") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_ulong");
 				cspec.add_argument (new CCodeConstant ("0"));
 				cspec.add_argument (new CCodeConstant ("G_MAXULONG"));
@@ -1834,14 +1842,14 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0UL"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_BOOLEAN") {
+			} else if (type_id == "G_TYPE_BOOLEAN") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_boolean");
 				if (prop.initializer != null) {
 					cspec.add_argument ((CCodeExpression) get_ccodenode (prop.initializer));
 				} else {
 					cspec.add_argument (new CCodeConstant ("FALSE"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_CHAR") {
+			} else if (type_id == "G_TYPE_CHAR") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_char");
 				cspec.add_argument (new CCodeConstant ("G_MININT8"));
 				cspec.add_argument (new CCodeConstant ("G_MAXINT8"));
@@ -1850,7 +1858,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_UCHAR") {
+			} else if (type_id == "G_TYPE_UCHAR") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_uchar");
 				cspec.add_argument (new CCodeConstant ("0"));
 				cspec.add_argument (new CCodeConstant ("G_MAXUINT8"));
@@ -1859,7 +1867,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0"));
 				}
-			}else if (get_ccode_type_id (st) == "G_TYPE_FLOAT") {
+			} else if (type_id == "G_TYPE_FLOAT") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_float");
 				cspec.add_argument (new CCodeConstant ("-G_MAXFLOAT"));
 				cspec.add_argument (new CCodeConstant ("G_MAXFLOAT"));
@@ -1868,7 +1876,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0.0F"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_DOUBLE") {
+			} else if (type_id == "G_TYPE_DOUBLE") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_double");
 				cspec.add_argument (new CCodeConstant ("-G_MAXDOUBLE"));
 				cspec.add_argument (new CCodeConstant ("G_MAXDOUBLE"));
@@ -1877,7 +1885,7 @@ public class Vala.GTypeModule : GErrorModule {
 				} else {
 					cspec.add_argument (new CCodeConstant ("0.0"));
 				}
-			} else if (get_ccode_type_id (st) == "G_TYPE_GTYPE") {
+			} else if (type_id == "G_TYPE_GTYPE") {
 				cspec.call = new CCodeIdentifier ("g_param_spec_gtype");
 				if (prop.initializer != null) {
 					cspec.add_argument ((CCodeExpression) get_ccodenode (prop.initializer));
@@ -1886,7 +1894,7 @@ public class Vala.GTypeModule : GErrorModule {
 				}
 			} else {
 				cspec.call = new CCodeIdentifier ("g_param_spec_boxed");
-				cspec.add_argument (new CCodeIdentifier (get_ccode_type_id (st)));
+				cspec.add_argument (new CCodeIdentifier (type_id));
 			}
 		} else if (prop.property_type is ArrayType && ((ArrayType)prop.property_type).element_type.data_type == string_type.data_type) {
 			cspec.call = new CCodeIdentifier ("g_param_spec_boxed");
@@ -1981,73 +1989,73 @@ public class Vala.GTypeModule : GErrorModule {
 			}
 		}
 
-		foreach (Method m in iface.get_methods ()) {
-			generate_virtual_method_declaration (m, decl_space, type_struct);
-		}
-
-		foreach (Signal sig in iface.get_signals ()) {
-			if (sig.default_handler != null) {
-				generate_virtual_method_declaration (sig.default_handler, decl_space, type_struct);
-			}
-		}
-
-		foreach (Property prop in iface.get_properties ()) {
-			if (!prop.is_abstract && !prop.is_virtual) {
-				continue;
-			}
-			generate_type_declaration (prop.property_type, decl_space);
-
-			var t = (ObjectTypeSymbol) prop.parent_symbol;
-
-			bool returns_real_struct = prop.property_type.is_real_non_null_struct_type ();
-
-			var this_type = new ObjectType (t);
-			var cselfparam = new CCodeParameter ("self", get_ccode_name (this_type));
-
-			if (prop.get_accessor != null) {
-				var vdeclarator = new CCodeFunctionDeclarator ("get_%s".printf (prop.name));
-				vdeclarator.add_parameter (cselfparam);
-				string creturn_type;
-				if (returns_real_struct) {
-					var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.get_accessor.value_type) + "*");
-					vdeclarator.add_parameter (cvalueparam);
-					creturn_type = "void";
-				} else {
-					creturn_type = get_ccode_name (prop.get_accessor.value_type);
+		foreach (Symbol sym in iface.get_virtuals ()) {
+			Method m;
+			Signal sig;
+			Property prop;
+			if ((m = sym as Method) != null) {
+				generate_virtual_method_declaration (m, decl_space, type_struct);
+			} else if ((sig = sym as Signal) != null) {
+				if (sig.default_handler != null) {
+					generate_virtual_method_declaration (sig.default_handler, decl_space, type_struct);
 				}
+			} else if ((prop = sym as Property) != null) {
+				generate_type_declaration (prop.property_type, decl_space);
 
-				var array_type = prop.property_type as ArrayType;
-				if (array_type != null) {
-					for (int dim = 1; dim <= array_type.rank; dim++) {
-						vdeclarator.add_parameter (new CCodeParameter (get_array_length_cname ("result", dim), "int*"));
+				var t = (ObjectTypeSymbol) prop.parent_symbol;
+
+				bool returns_real_struct = prop.property_type.is_real_non_null_struct_type ();
+
+				var this_type = new ObjectType (t);
+				var cselfparam = new CCodeParameter ("self", get_ccode_name (this_type));
+
+				if (prop.get_accessor != null) {
+					var vdeclarator = new CCodeFunctionDeclarator ("get_%s".printf (prop.name));
+					vdeclarator.add_parameter (cselfparam);
+					string creturn_type;
+					if (returns_real_struct) {
+						var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.get_accessor.value_type) + "*");
+						vdeclarator.add_parameter (cvalueparam);
+						creturn_type = "void";
+					} else {
+						creturn_type = get_ccode_name (prop.get_accessor.value_type);
 					}
-				}
 
-				var vdecl = new CCodeDeclaration (creturn_type);
-				vdecl.add_declarator (vdeclarator);
-				type_struct.add_declaration (vdecl);
-			}
-			if (prop.set_accessor != null) {
-				var vdeclarator = new CCodeFunctionDeclarator ("set_%s".printf (prop.name));
-				vdeclarator.add_parameter (cselfparam);
-				if (returns_real_struct) {
-					var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.set_accessor.value_type) + "*");
-					vdeclarator.add_parameter (cvalueparam);
-				} else {
-					var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.set_accessor.value_type));
-					vdeclarator.add_parameter (cvalueparam);
-				}
-
-				var array_type = prop.property_type as ArrayType;
-				if (array_type != null) {
-					for (int dim = 1; dim <= array_type.rank; dim++) {
-						vdeclarator.add_parameter (new CCodeParameter (get_array_length_cname ("value", dim), "int"));
+					var array_type = prop.property_type as ArrayType;
+					if (array_type != null) {
+						for (int dim = 1; dim <= array_type.rank; dim++) {
+							vdeclarator.add_parameter (new CCodeParameter (get_array_length_cname ("result", dim), "int*"));
+						}
 					}
-				}
 
-				var vdecl = new CCodeDeclaration ("void");
-				vdecl.add_declarator (vdeclarator);
-				type_struct.add_declaration (vdecl);
+					var vdecl = new CCodeDeclaration (creturn_type);
+					vdecl.add_declarator (vdeclarator);
+					type_struct.add_declaration (vdecl);
+				}
+				if (prop.set_accessor != null) {
+					var vdeclarator = new CCodeFunctionDeclarator ("set_%s".printf (prop.name));
+					vdeclarator.add_parameter (cselfparam);
+					if (returns_real_struct) {
+						var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.set_accessor.value_type) + "*");
+						vdeclarator.add_parameter (cvalueparam);
+					} else {
+						var cvalueparam = new CCodeParameter ("value", get_ccode_name (prop.set_accessor.value_type));
+						vdeclarator.add_parameter (cvalueparam);
+					}
+
+					var array_type = prop.property_type as ArrayType;
+					if (array_type != null) {
+						for (int dim = 1; dim <= array_type.rank; dim++) {
+							vdeclarator.add_parameter (new CCodeParameter (get_array_length_cname ("value", dim), "int"));
+						}
+					}
+
+					var vdecl = new CCodeDeclaration ("void");
+					vdecl.add_declarator (vdeclarator);
+					type_struct.add_declaration (vdecl);
+				}
+			} else {
+				assert_not_reached ();
 			}
 		}
 

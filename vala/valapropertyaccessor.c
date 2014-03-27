@@ -408,8 +408,6 @@ typedef struct _ValaReturnStatementClass ValaReturnStatementClass;
 typedef struct _ValaReferenceTransferExpression ValaReferenceTransferExpression;
 typedef struct _ValaReferenceTransferExpressionClass ValaReferenceTransferExpressionClass;
 
-#define VALA_TYPE_ASSIGNMENT_OPERATOR (vala_assignment_operator_get_type ())
-
 #define VALA_TYPE_ASSIGNMENT (vala_assignment_get_type ())
 #define VALA_ASSIGNMENT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_ASSIGNMENT, ValaAssignment))
 #define VALA_ASSIGNMENT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_ASSIGNMENT, ValaAssignmentClass))
@@ -419,6 +417,8 @@ typedef struct _ValaReferenceTransferExpressionClass ValaReferenceTransferExpres
 
 typedef struct _ValaAssignment ValaAssignment;
 typedef struct _ValaAssignmentClass ValaAssignmentClass;
+
+#define VALA_TYPE_ASSIGNMENT_OPERATOR (vala_assignment_operator_get_type ())
 
 #define VALA_TYPE_EXPRESSION_STATEMENT (vala_expression_statement_get_type ())
 #define VALA_EXPRESSION_STATEMENT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_EXPRESSION_STATEMENT, ValaExpressionStatement))
@@ -675,10 +675,10 @@ ValaSourceReference* vala_code_node_get_source_reference (ValaCodeNode* self);
 void vala_property_accessor_set_automatic_body (ValaPropertyAccessor* self, gboolean value);
 ValaBlock* vala_block_new (ValaSourceReference* source_reference);
 ValaBlock* vala_block_construct (GType object_type, ValaSourceReference* source_reference);
+GType vala_member_access_get_type (void) G_GNUC_CONST;
 const gchar* vala_symbol_get_name (ValaSymbol* self);
 ValaMemberAccess* vala_member_access_new_simple (const gchar* member_name, ValaSourceReference* source_reference);
 ValaMemberAccess* vala_member_access_construct_simple (GType object_type, const gchar* member_name, ValaSourceReference* source_reference);
-GType vala_member_access_get_type (void) G_GNUC_CONST;
 gboolean vala_property_accessor_get_readable (ValaPropertyAccessor* self);
 GType vala_statement_get_type (void) G_GNUC_CONST;
 void vala_block_add_statement (ValaBlock* self, ValaStatement* stmt);
@@ -689,10 +689,10 @@ gboolean vala_data_type_get_value_owned (ValaDataType* self);
 ValaReferenceTransferExpression* vala_reference_transfer_expression_new (ValaExpression* inner, ValaSourceReference* source_reference);
 ValaReferenceTransferExpression* vala_reference_transfer_expression_construct (GType object_type, ValaExpression* inner, ValaSourceReference* source_reference);
 GType vala_reference_transfer_expression_get_type (void) G_GNUC_CONST;
+GType vala_assignment_get_type (void) G_GNUC_CONST;
 GType vala_assignment_operator_get_type (void) G_GNUC_CONST;
 ValaAssignment* vala_assignment_new (ValaExpression* left, ValaExpression* right, ValaAssignmentOperator operator, ValaSourceReference* source_reference);
 ValaAssignment* vala_assignment_construct (GType object_type, ValaExpression* left, ValaExpression* right, ValaAssignmentOperator operator, ValaSourceReference* source_reference);
-GType vala_assignment_get_type (void) G_GNUC_CONST;
 ValaExpressionStatement* vala_expression_statement_new (ValaExpression* expression, ValaSourceReference* source_reference);
 ValaExpressionStatement* vala_expression_statement_construct (GType object_type, ValaExpression* expression, ValaSourceReference* source_reference);
 GType vala_expression_statement_get_type (void) G_GNUC_CONST;
@@ -735,13 +735,13 @@ static void vala_property_accessor_finalize (ValaCodeNode* obj);
  */
 ValaPropertyAccessor* vala_property_accessor_construct (GType object_type, gboolean readable, gboolean writable, gboolean construction, ValaDataType* value_type, ValaBlock* body, ValaSourceReference* source_reference, ValaComment* comment) {
 	ValaPropertyAccessor* self = NULL;
-	ValaSourceReference* _tmp0_;
-	ValaComment* _tmp1_;
-	gboolean _tmp2_;
-	gboolean _tmp3_;
-	gboolean _tmp4_;
-	ValaDataType* _tmp5_;
-	ValaBlock* _tmp6_;
+	ValaSourceReference* _tmp0_ = NULL;
+	ValaComment* _tmp1_ = NULL;
+	gboolean _tmp2_ = FALSE;
+	gboolean _tmp3_ = FALSE;
+	gboolean _tmp4_ = FALSE;
+	ValaDataType* _tmp5_ = NULL;
+	ValaBlock* _tmp6_ = NULL;
 	_tmp0_ = source_reference;
 	_tmp1_ = comment;
 	self = (ValaPropertyAccessor*) vala_subroutine_construct (object_type, NULL, _tmp0_, _tmp1_);
@@ -767,7 +767,7 @@ ValaPropertyAccessor* vala_property_accessor_new (gboolean readable, gboolean wr
 
 static void vala_property_accessor_real_accept (ValaCodeNode* base, ValaCodeVisitor* visitor) {
 	ValaPropertyAccessor * self;
-	ValaCodeVisitor* _tmp0_;
+	ValaCodeVisitor* _tmp0_ = NULL;
 	self = (ValaPropertyAccessor*) base;
 	g_return_if_fail (visitor != NULL);
 	_tmp0_ = visitor;
@@ -777,13 +777,13 @@ static void vala_property_accessor_real_accept (ValaCodeNode* base, ValaCodeVisi
 
 static void vala_property_accessor_real_accept_children (ValaCodeNode* base, ValaCodeVisitor* visitor) {
 	ValaPropertyAccessor * self;
-	ValaDataType* _tmp0_;
-	ValaDataType* _tmp1_;
-	ValaCodeVisitor* _tmp2_;
-	ValaLocalVariable* _tmp3_;
-	ValaLocalVariable* _tmp4_;
-	ValaBlock* _tmp8_;
-	ValaBlock* _tmp9_;
+	ValaDataType* _tmp0_ = NULL;
+	ValaDataType* _tmp1_ = NULL;
+	ValaCodeVisitor* _tmp2_ = NULL;
+	ValaLocalVariable* _tmp3_ = NULL;
+	ValaLocalVariable* _tmp4_ = NULL;
+	ValaBlock* _tmp8_ = NULL;
+	ValaBlock* _tmp9_ = NULL;
 	self = (ValaPropertyAccessor*) base;
 	g_return_if_fail (visitor != NULL);
 	_tmp0_ = vala_property_accessor_get_value_type (self);
@@ -793,9 +793,9 @@ static void vala_property_accessor_real_accept_children (ValaCodeNode* base, Val
 	_tmp3_ = vala_subroutine_get_result_var ((ValaSubroutine*) self);
 	_tmp4_ = _tmp3_;
 	if (_tmp4_ != NULL) {
-		ValaLocalVariable* _tmp5_;
-		ValaLocalVariable* _tmp6_;
-		ValaCodeVisitor* _tmp7_;
+		ValaLocalVariable* _tmp5_ = NULL;
+		ValaLocalVariable* _tmp6_ = NULL;
+		ValaCodeVisitor* _tmp7_ = NULL;
 		_tmp5_ = vala_subroutine_get_result_var ((ValaSubroutine*) self);
 		_tmp6_ = _tmp5_;
 		_tmp7_ = visitor;
@@ -804,9 +804,9 @@ static void vala_property_accessor_real_accept_children (ValaCodeNode* base, Val
 	_tmp8_ = vala_subroutine_get_body ((ValaSubroutine*) self);
 	_tmp9_ = _tmp8_;
 	if (_tmp9_ != NULL) {
-		ValaBlock* _tmp10_;
-		ValaBlock* _tmp11_;
-		ValaCodeVisitor* _tmp12_;
+		ValaBlock* _tmp10_ = NULL;
+		ValaBlock* _tmp11_ = NULL;
+		ValaCodeVisitor* _tmp12_ = NULL;
 		_tmp10_ = vala_subroutine_get_body ((ValaSubroutine*) self);
 		_tmp11_ = _tmp10_;
 		_tmp12_ = visitor;
@@ -823,41 +823,41 @@ static gpointer _vala_code_node_ref0 (gpointer self) {
 static gboolean vala_property_accessor_real_check (ValaCodeNode* base, ValaCodeContext* context) {
 	ValaPropertyAccessor * self;
 	gboolean result = FALSE;
-	gboolean _tmp0_;
-	gboolean _tmp1_;
-	ValaDataType* _tmp4_;
-	ValaDataType* _tmp5_;
-	ValaCodeContext* _tmp6_;
+	gboolean _tmp0_ = FALSE;
+	gboolean _tmp1_ = FALSE;
+	ValaDataType* _tmp4_ = NULL;
+	ValaDataType* _tmp5_ = NULL;
+	ValaCodeContext* _tmp6_ = NULL;
 	gboolean _tmp7_ = FALSE;
-	ValaCodeContext* _tmp8_;
-	ValaSemanticAnalyzer* _tmp9_;
-	ValaSemanticAnalyzer* _tmp10_;
-	ValaSymbol* _tmp11_;
-	ValaSymbol* _tmp12_;
-	ValaSymbol* _tmp13_;
-	ValaSymbol* old_symbol;
-	ValaCodeContext* _tmp14_;
-	ValaSemanticAnalyzer* _tmp15_;
-	ValaSemanticAnalyzer* _tmp16_;
-	ValaProperty* _tmp17_;
-	ValaProperty* _tmp18_;
-	ValaSourceFileType _tmp19_;
-	ValaSourceFileType _tmp20_;
-	ValaBlock* _tmp84_;
-	ValaBlock* _tmp85_;
-	ValaCodeContext* _tmp130_;
-	ValaSemanticAnalyzer* _tmp131_;
-	ValaSemanticAnalyzer* _tmp132_;
-	ValaSymbol* _tmp133_;
-	gboolean _tmp134_;
-	gboolean _tmp135_;
+	ValaSymbol* old_symbol = NULL;
+	ValaCodeContext* _tmp8_ = NULL;
+	ValaSemanticAnalyzer* _tmp9_ = NULL;
+	ValaSemanticAnalyzer* _tmp10_ = NULL;
+	ValaSymbol* _tmp11_ = NULL;
+	ValaSymbol* _tmp12_ = NULL;
+	ValaSymbol* _tmp13_ = NULL;
+	ValaCodeContext* _tmp14_ = NULL;
+	ValaSemanticAnalyzer* _tmp15_ = NULL;
+	ValaSemanticAnalyzer* _tmp16_ = NULL;
+	ValaProperty* _tmp17_ = NULL;
+	ValaProperty* _tmp18_ = NULL;
+	ValaSourceFileType _tmp19_ = 0;
+	ValaSourceFileType _tmp20_ = 0;
+	ValaBlock* _tmp82_ = NULL;
+	ValaBlock* _tmp83_ = NULL;
+	ValaCodeContext* _tmp127_ = NULL;
+	ValaSemanticAnalyzer* _tmp128_ = NULL;
+	ValaSemanticAnalyzer* _tmp129_ = NULL;
+	ValaSymbol* _tmp130_ = NULL;
+	gboolean _tmp131_ = FALSE;
+	gboolean _tmp132_ = FALSE;
 	self = (ValaPropertyAccessor*) base;
 	g_return_val_if_fail (context != NULL, FALSE);
 	_tmp0_ = vala_code_node_get_checked ((ValaCodeNode*) self);
 	_tmp1_ = _tmp0_;
 	if (_tmp1_) {
-		gboolean _tmp2_;
-		gboolean _tmp3_;
+		gboolean _tmp2_ = FALSE;
+		gboolean _tmp3_ = FALSE;
 		_tmp2_ = vala_code_node_get_error ((ValaCodeNode*) self);
 		_tmp3_ = _tmp2_;
 		result = !_tmp3_;
@@ -891,17 +891,15 @@ static gboolean vala_property_accessor_real_check (ValaCodeNode* base, ValaCodeC
 	if (_tmp20_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
 		gboolean _tmp21_ = FALSE;
 		gboolean _tmp22_ = FALSE;
-		ValaBlock* _tmp23_;
-		ValaBlock* _tmp24_;
-		gboolean _tmp29_;
-		gboolean _tmp34_;
+		ValaBlock* _tmp23_ = NULL;
+		ValaBlock* _tmp24_ = NULL;
 		_tmp23_ = vala_subroutine_get_body ((ValaSubroutine*) self);
 		_tmp24_ = _tmp23_;
 		if (_tmp24_ == NULL) {
-			ValaProperty* _tmp25_;
-			ValaProperty* _tmp26_;
-			gboolean _tmp27_;
-			gboolean _tmp28_;
+			ValaProperty* _tmp25_ = NULL;
+			ValaProperty* _tmp26_ = NULL;
+			gboolean _tmp27_ = FALSE;
+			gboolean _tmp28_ = FALSE;
 			_tmp25_ = vala_property_accessor_get_prop (self);
 			_tmp26_ = _tmp25_;
 			_tmp27_ = vala_property_get_interface_only (_tmp26_);
@@ -910,286 +908,282 @@ static gboolean vala_property_accessor_real_check (ValaCodeNode* base, ValaCodeC
 		} else {
 			_tmp22_ = FALSE;
 		}
-		_tmp29_ = _tmp22_;
-		if (_tmp29_) {
-			ValaProperty* _tmp30_;
-			ValaProperty* _tmp31_;
-			gboolean _tmp32_;
-			gboolean _tmp33_;
-			_tmp30_ = vala_property_accessor_get_prop (self);
-			_tmp31_ = _tmp30_;
-			_tmp32_ = vala_property_get_is_abstract (_tmp31_);
-			_tmp33_ = _tmp32_;
-			_tmp21_ = !_tmp33_;
+		if (_tmp22_) {
+			ValaProperty* _tmp29_ = NULL;
+			ValaProperty* _tmp30_ = NULL;
+			gboolean _tmp31_ = FALSE;
+			gboolean _tmp32_ = FALSE;
+			_tmp29_ = vala_property_accessor_get_prop (self);
+			_tmp30_ = _tmp29_;
+			_tmp31_ = vala_property_get_is_abstract (_tmp30_);
+			_tmp32_ = _tmp31_;
+			_tmp21_ = !_tmp32_;
 		} else {
 			_tmp21_ = FALSE;
 		}
-		_tmp34_ = _tmp21_;
-		if (_tmp34_) {
-			ValaProperty* _tmp35_;
-			ValaProperty* _tmp36_;
-			ValaSymbol* _tmp37_;
-			ValaSymbol* _tmp38_;
-			ValaSourceReference* _tmp41_;
-			ValaSourceReference* _tmp42_;
-			ValaBlock* _tmp43_;
-			ValaBlock* _tmp44_;
-			ValaProperty* _tmp45_;
-			ValaProperty* _tmp46_;
-			const gchar* _tmp47_;
-			const gchar* _tmp48_;
-			gchar* _tmp49_ = NULL;
-			gchar* _tmp50_;
-			ValaSourceReference* _tmp51_;
-			ValaSourceReference* _tmp52_;
-			ValaMemberAccess* _tmp53_;
-			ValaMemberAccess* _tmp54_;
-			ValaMemberAccess* ma;
-			gboolean _tmp55_;
-			_tmp35_ = vala_property_accessor_get_prop (self);
+		if (_tmp21_) {
+			ValaProperty* _tmp33_ = NULL;
+			ValaProperty* _tmp34_ = NULL;
+			ValaSymbol* _tmp35_ = NULL;
+			ValaSymbol* _tmp36_ = NULL;
+			ValaSourceReference* _tmp39_ = NULL;
+			ValaSourceReference* _tmp40_ = NULL;
+			ValaBlock* _tmp41_ = NULL;
+			ValaBlock* _tmp42_ = NULL;
+			ValaMemberAccess* ma = NULL;
+			ValaProperty* _tmp43_ = NULL;
+			ValaProperty* _tmp44_ = NULL;
+			const gchar* _tmp45_ = NULL;
+			const gchar* _tmp46_ = NULL;
+			gchar* _tmp47_ = NULL;
+			gchar* _tmp48_ = NULL;
+			ValaSourceReference* _tmp49_ = NULL;
+			ValaSourceReference* _tmp50_ = NULL;
+			ValaMemberAccess* _tmp51_ = NULL;
+			ValaMemberAccess* _tmp52_ = NULL;
+			gboolean _tmp53_ = FALSE;
+			_tmp33_ = vala_property_accessor_get_prop (self);
+			_tmp34_ = _tmp33_;
+			_tmp35_ = vala_symbol_get_parent_symbol ((ValaSymbol*) _tmp34_);
 			_tmp36_ = _tmp35_;
-			_tmp37_ = vala_symbol_get_parent_symbol ((ValaSymbol*) _tmp36_);
-			_tmp38_ = _tmp37_;
-			if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp38_, VALA_TYPE_INTERFACE)) {
-				ValaSourceReference* _tmp39_;
-				ValaSourceReference* _tmp40_;
+			if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp36_, VALA_TYPE_INTERFACE)) {
+				ValaSourceReference* _tmp37_ = NULL;
+				ValaSourceReference* _tmp38_ = NULL;
 				vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
-				_tmp39_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-				_tmp40_ = _tmp39_;
-				vala_report_error (_tmp40_, "Automatic properties can't be used in interfaces");
+				_tmp37_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+				_tmp38_ = _tmp37_;
+				vala_report_error (_tmp38_, "Automatic properties can't be used in interfaces");
 				result = FALSE;
 				_vala_code_node_unref0 (old_symbol);
 				return result;
 			}
 			vala_property_accessor_set_automatic_body (self, TRUE);
-			_tmp41_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+			_tmp39_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+			_tmp40_ = _tmp39_;
+			_tmp41_ = vala_block_new (_tmp40_);
 			_tmp42_ = _tmp41_;
-			_tmp43_ = vala_block_new (_tmp42_);
+			vala_subroutine_set_body ((ValaSubroutine*) self, _tmp42_);
+			_vala_code_node_unref0 (_tmp42_);
+			_tmp43_ = vala_property_accessor_get_prop (self);
 			_tmp44_ = _tmp43_;
-			vala_subroutine_set_body ((ValaSubroutine*) self, _tmp44_);
-			_vala_code_node_unref0 (_tmp44_);
-			_tmp45_ = vala_property_accessor_get_prop (self);
+			_tmp45_ = vala_symbol_get_name ((ValaSymbol*) _tmp44_);
 			_tmp46_ = _tmp45_;
-			_tmp47_ = vala_symbol_get_name ((ValaSymbol*) _tmp46_);
+			_tmp47_ = g_strdup_printf ("_%s", _tmp46_);
 			_tmp48_ = _tmp47_;
-			_tmp49_ = g_strdup_printf ("_%s", _tmp48_);
+			_tmp49_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
 			_tmp50_ = _tmp49_;
-			_tmp51_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+			_tmp51_ = vala_member_access_new_simple (_tmp48_, _tmp50_);
 			_tmp52_ = _tmp51_;
-			_tmp53_ = vala_member_access_new_simple (_tmp50_, _tmp52_);
-			_tmp54_ = _tmp53_;
-			_g_free0 (_tmp50_);
-			ma = _tmp54_;
-			_tmp55_ = self->priv->_readable;
-			if (_tmp55_) {
-				ValaBlock* _tmp56_;
-				ValaBlock* _tmp57_;
-				ValaMemberAccess* _tmp58_;
-				ValaSourceReference* _tmp59_;
-				ValaSourceReference* _tmp60_;
-				ValaReturnStatement* _tmp61_;
-				ValaReturnStatement* _tmp62_;
-				_tmp56_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-				_tmp57_ = _tmp56_;
-				_tmp58_ = ma;
-				_tmp59_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+			_g_free0 (_tmp48_);
+			ma = _tmp52_;
+			_tmp53_ = self->priv->_readable;
+			if (_tmp53_) {
+				ValaBlock* _tmp54_ = NULL;
+				ValaBlock* _tmp55_ = NULL;
+				ValaMemberAccess* _tmp56_ = NULL;
+				ValaSourceReference* _tmp57_ = NULL;
+				ValaSourceReference* _tmp58_ = NULL;
+				ValaReturnStatement* _tmp59_ = NULL;
+				ValaReturnStatement* _tmp60_ = NULL;
+				_tmp54_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+				_tmp55_ = _tmp54_;
+				_tmp56_ = ma;
+				_tmp57_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+				_tmp58_ = _tmp57_;
+				_tmp59_ = vala_return_statement_new ((ValaExpression*) _tmp56_, _tmp58_);
 				_tmp60_ = _tmp59_;
-				_tmp61_ = vala_return_statement_new ((ValaExpression*) _tmp58_, _tmp60_);
-				_tmp62_ = _tmp61_;
-				vala_block_add_statement (_tmp57_, (ValaStatement*) _tmp62_);
-				_vala_code_node_unref0 (_tmp62_);
+				vala_block_add_statement (_tmp55_, (ValaStatement*) _tmp60_);
+				_vala_code_node_unref0 (_tmp60_);
 			} else {
-				ValaSourceReference* _tmp63_;
-				ValaSourceReference* _tmp64_;
-				ValaMemberAccess* _tmp65_;
-				ValaExpression* value;
-				ValaDataType* _tmp66_;
-				ValaDataType* _tmp67_;
-				gboolean _tmp68_;
-				gboolean _tmp69_;
-				ValaMemberAccess* _tmp74_;
-				ValaExpression* _tmp75_;
-				ValaSourceReference* _tmp76_;
-				ValaSourceReference* _tmp77_;
-				ValaAssignment* _tmp78_;
-				ValaAssignment* assignment;
-				ValaBlock* _tmp79_;
-				ValaBlock* _tmp80_;
-				ValaAssignment* _tmp81_;
-				ValaExpressionStatement* _tmp82_;
-				ValaExpressionStatement* _tmp83_;
-				_tmp63_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-				_tmp64_ = _tmp63_;
-				_tmp65_ = vala_member_access_new_simple ("value", _tmp64_);
-				value = (ValaExpression*) _tmp65_;
-				_tmp66_ = vala_property_accessor_get_value_type (self);
+				ValaExpression* value = NULL;
+				ValaSourceReference* _tmp61_ = NULL;
+				ValaSourceReference* _tmp62_ = NULL;
+				ValaMemberAccess* _tmp63_ = NULL;
+				ValaDataType* _tmp64_ = NULL;
+				ValaDataType* _tmp65_ = NULL;
+				gboolean _tmp66_ = FALSE;
+				gboolean _tmp67_ = FALSE;
+				ValaAssignment* assignment = NULL;
+				ValaMemberAccess* _tmp72_ = NULL;
+				ValaExpression* _tmp73_ = NULL;
+				ValaSourceReference* _tmp74_ = NULL;
+				ValaSourceReference* _tmp75_ = NULL;
+				ValaAssignment* _tmp76_ = NULL;
+				ValaBlock* _tmp77_ = NULL;
+				ValaBlock* _tmp78_ = NULL;
+				ValaAssignment* _tmp79_ = NULL;
+				ValaExpressionStatement* _tmp80_ = NULL;
+				ValaExpressionStatement* _tmp81_ = NULL;
+				_tmp61_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+				_tmp62_ = _tmp61_;
+				_tmp63_ = vala_member_access_new_simple ("value", _tmp62_);
+				value = (ValaExpression*) _tmp63_;
+				_tmp64_ = vala_property_accessor_get_value_type (self);
+				_tmp65_ = _tmp64_;
+				_tmp66_ = vala_data_type_get_value_owned (_tmp65_);
 				_tmp67_ = _tmp66_;
-				_tmp68_ = vala_data_type_get_value_owned (_tmp67_);
-				_tmp69_ = _tmp68_;
-				if (_tmp69_) {
-					ValaExpression* _tmp70_;
-					ValaSourceReference* _tmp71_;
-					ValaSourceReference* _tmp72_;
-					ValaReferenceTransferExpression* _tmp73_;
-					_tmp70_ = value;
-					_tmp71_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-					_tmp72_ = _tmp71_;
-					_tmp73_ = vala_reference_transfer_expression_new (_tmp70_, _tmp72_);
+				if (_tmp67_) {
+					ValaExpression* _tmp68_ = NULL;
+					ValaSourceReference* _tmp69_ = NULL;
+					ValaSourceReference* _tmp70_ = NULL;
+					ValaReferenceTransferExpression* _tmp71_ = NULL;
+					_tmp68_ = value;
+					_tmp69_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+					_tmp70_ = _tmp69_;
+					_tmp71_ = vala_reference_transfer_expression_new (_tmp68_, _tmp70_);
 					_vala_code_node_unref0 (value);
-					value = (ValaExpression*) _tmp73_;
+					value = (ValaExpression*) _tmp71_;
 				}
-				_tmp74_ = ma;
-				_tmp75_ = value;
-				_tmp76_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-				_tmp77_ = _tmp76_;
-				_tmp78_ = vala_assignment_new ((ValaExpression*) _tmp74_, _tmp75_, VALA_ASSIGNMENT_OPERATOR_SIMPLE, _tmp77_);
-				assignment = _tmp78_;
-				_tmp79_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-				_tmp80_ = _tmp79_;
-				_tmp81_ = assignment;
-				_tmp82_ = vala_expression_statement_new ((ValaExpression*) _tmp81_, NULL);
-				_tmp83_ = _tmp82_;
-				vala_block_add_statement (_tmp80_, (ValaStatement*) _tmp83_);
-				_vala_code_node_unref0 (_tmp83_);
+				_tmp72_ = ma;
+				_tmp73_ = value;
+				_tmp74_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+				_tmp75_ = _tmp74_;
+				_tmp76_ = vala_assignment_new ((ValaExpression*) _tmp72_, _tmp73_, VALA_ASSIGNMENT_OPERATOR_SIMPLE, _tmp75_);
+				assignment = _tmp76_;
+				_tmp77_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+				_tmp78_ = _tmp77_;
+				_tmp79_ = assignment;
+				_tmp80_ = vala_expression_statement_new ((ValaExpression*) _tmp79_, NULL);
+				_tmp81_ = _tmp80_;
+				vala_block_add_statement (_tmp78_, (ValaStatement*) _tmp81_);
+				_vala_code_node_unref0 (_tmp81_);
 				_vala_code_node_unref0 (assignment);
 				_vala_code_node_unref0 (value);
 			}
 			_vala_code_node_unref0 (ma);
 		}
 	}
-	_tmp84_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-	_tmp85_ = _tmp84_;
-	if (_tmp85_ != NULL) {
-		gboolean _tmp86_ = FALSE;
-		gboolean _tmp87_;
-		gboolean _tmp89_;
-		ValaBlock* _tmp104_;
-		ValaBlock* _tmp105_;
-		ValaCodeContext* _tmp106_;
-		_tmp87_ = self->priv->_writable;
-		if (_tmp87_) {
-			_tmp86_ = TRUE;
+	_tmp82_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+	_tmp83_ = _tmp82_;
+	if (_tmp83_ != NULL) {
+		gboolean _tmp84_ = FALSE;
+		gboolean _tmp85_ = FALSE;
+		ValaBlock* _tmp101_ = NULL;
+		ValaBlock* _tmp102_ = NULL;
+		ValaCodeContext* _tmp103_ = NULL;
+		_tmp85_ = self->priv->_writable;
+		if (_tmp85_) {
+			_tmp84_ = TRUE;
 		} else {
-			gboolean _tmp88_;
-			_tmp88_ = self->priv->_construction;
-			_tmp86_ = _tmp88_;
+			gboolean _tmp86_ = FALSE;
+			_tmp86_ = self->priv->_construction;
+			_tmp84_ = _tmp86_;
 		}
-		_tmp89_ = _tmp86_;
-		if (_tmp89_) {
-			ValaDataType* _tmp90_;
-			ValaDataType* _tmp91_;
-			ValaSourceReference* _tmp92_;
-			ValaSourceReference* _tmp93_;
-			ValaParameter* _tmp94_;
-			ValaParameter* _tmp95_;
-			ValaBlock* _tmp96_;
-			ValaBlock* _tmp97_;
-			ValaScope* _tmp98_;
-			ValaScope* _tmp99_;
-			ValaParameter* _tmp100_;
-			const gchar* _tmp101_;
-			const gchar* _tmp102_;
-			ValaParameter* _tmp103_;
-			_tmp90_ = vala_property_accessor_get_value_type (self);
-			_tmp91_ = _tmp90_;
-			_tmp92_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-			_tmp93_ = _tmp92_;
-			_tmp94_ = vala_parameter_new ("value", _tmp91_, _tmp93_);
-			_tmp95_ = _tmp94_;
-			vala_property_accessor_set_value_parameter (self, _tmp95_);
-			_vala_code_node_unref0 (_tmp95_);
-			_tmp96_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-			_tmp97_ = _tmp96_;
-			_tmp98_ = vala_symbol_get_scope ((ValaSymbol*) _tmp97_);
+		if (_tmp84_) {
+			ValaDataType* _tmp87_ = NULL;
+			ValaDataType* _tmp88_ = NULL;
+			ValaSourceReference* _tmp89_ = NULL;
+			ValaSourceReference* _tmp90_ = NULL;
+			ValaParameter* _tmp91_ = NULL;
+			ValaParameter* _tmp92_ = NULL;
+			ValaBlock* _tmp93_ = NULL;
+			ValaBlock* _tmp94_ = NULL;
+			ValaScope* _tmp95_ = NULL;
+			ValaScope* _tmp96_ = NULL;
+			ValaParameter* _tmp97_ = NULL;
+			const gchar* _tmp98_ = NULL;
+			const gchar* _tmp99_ = NULL;
+			ValaParameter* _tmp100_ = NULL;
+			_tmp87_ = vala_property_accessor_get_value_type (self);
+			_tmp88_ = _tmp87_;
+			_tmp89_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+			_tmp90_ = _tmp89_;
+			_tmp91_ = vala_parameter_new ("value", _tmp88_, _tmp90_);
+			_tmp92_ = _tmp91_;
+			vala_property_accessor_set_value_parameter (self, _tmp92_);
+			_vala_code_node_unref0 (_tmp92_);
+			_tmp93_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+			_tmp94_ = _tmp93_;
+			_tmp95_ = vala_symbol_get_scope ((ValaSymbol*) _tmp94_);
+			_tmp96_ = _tmp95_;
+			_tmp97_ = self->priv->_value_parameter;
+			_tmp98_ = vala_symbol_get_name ((ValaSymbol*) _tmp97_);
 			_tmp99_ = _tmp98_;
 			_tmp100_ = self->priv->_value_parameter;
-			_tmp101_ = vala_symbol_get_name ((ValaSymbol*) _tmp100_);
-			_tmp102_ = _tmp101_;
-			_tmp103_ = self->priv->_value_parameter;
-			vala_scope_add (_tmp99_, _tmp102_, (ValaSymbol*) _tmp103_);
+			vala_scope_add (_tmp96_, _tmp99_, (ValaSymbol*) _tmp100_);
 		}
-		_tmp104_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-		_tmp105_ = _tmp104_;
-		_tmp106_ = context;
-		vala_code_node_check ((ValaCodeNode*) _tmp105_, _tmp106_);
+		_tmp101_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+		_tmp102_ = _tmp101_;
+		_tmp103_ = context;
+		vala_code_node_check ((ValaCodeNode*) _tmp102_, _tmp103_);
 		{
-			ValaBlock* _tmp107_;
-			ValaBlock* _tmp108_;
-			ValaList* _tmp109_ = NULL;
-			ValaList* _body_error_type_list;
-			ValaList* _tmp110_;
-			gint _tmp111_;
-			gint _tmp112_;
-			gint _body_error_type_size;
-			gint _body_error_type_index;
-			_tmp107_ = vala_subroutine_get_body ((ValaSubroutine*) self);
-			_tmp108_ = _tmp107_;
-			_tmp109_ = vala_code_node_get_error_types ((ValaCodeNode*) _tmp108_);
-			_body_error_type_list = _tmp109_;
-			_tmp110_ = _body_error_type_list;
-			_tmp111_ = vala_collection_get_size ((ValaCollection*) _tmp110_);
-			_tmp112_ = _tmp111_;
-			_body_error_type_size = _tmp112_;
+			ValaList* _body_error_type_list = NULL;
+			ValaBlock* _tmp104_ = NULL;
+			ValaBlock* _tmp105_ = NULL;
+			ValaList* _tmp106_ = NULL;
+			gint _body_error_type_size = 0;
+			ValaList* _tmp107_ = NULL;
+			gint _tmp108_ = 0;
+			gint _tmp109_ = 0;
+			gint _body_error_type_index = 0;
+			_tmp104_ = vala_subroutine_get_body ((ValaSubroutine*) self);
+			_tmp105_ = _tmp104_;
+			_tmp106_ = vala_code_node_get_error_types ((ValaCodeNode*) _tmp105_);
+			_body_error_type_list = _tmp106_;
+			_tmp107_ = _body_error_type_list;
+			_tmp108_ = vala_collection_get_size ((ValaCollection*) _tmp107_);
+			_tmp109_ = _tmp108_;
+			_body_error_type_size = _tmp109_;
 			_body_error_type_index = -1;
 			while (TRUE) {
-				gint _tmp113_;
-				gint _tmp114_;
-				gint _tmp115_;
-				ValaList* _tmp116_;
-				gint _tmp117_;
-				gpointer _tmp118_ = NULL;
-				ValaDataType* body_error_type;
-				ValaDataType* _tmp119_;
-				gboolean _tmp120_;
-				gboolean _tmp121_;
-				_tmp113_ = _body_error_type_index;
-				_body_error_type_index = _tmp113_ + 1;
-				_tmp114_ = _body_error_type_index;
-				_tmp115_ = _body_error_type_size;
-				if (!(_tmp114_ < _tmp115_)) {
+				gint _tmp110_ = 0;
+				gint _tmp111_ = 0;
+				gint _tmp112_ = 0;
+				ValaDataType* body_error_type = NULL;
+				ValaList* _tmp113_ = NULL;
+				gint _tmp114_ = 0;
+				gpointer _tmp115_ = NULL;
+				ValaDataType* _tmp116_ = NULL;
+				gboolean _tmp117_ = FALSE;
+				gboolean _tmp118_ = FALSE;
+				_tmp110_ = _body_error_type_index;
+				_body_error_type_index = _tmp110_ + 1;
+				_tmp111_ = _body_error_type_index;
+				_tmp112_ = _body_error_type_size;
+				if (!(_tmp111_ < _tmp112_)) {
 					break;
 				}
-				_tmp116_ = _body_error_type_list;
-				_tmp117_ = _body_error_type_index;
-				_tmp118_ = vala_list_get (_tmp116_, _tmp117_);
-				body_error_type = (ValaDataType*) _tmp118_;
-				_tmp119_ = body_error_type;
-				_tmp120_ = vala_error_type_get_dynamic_error (G_TYPE_CHECK_INSTANCE_CAST (_tmp119_, VALA_TYPE_ERROR_TYPE, ValaErrorType));
-				_tmp121_ = _tmp120_;
-				if (!_tmp121_) {
-					ValaDataType* _tmp122_;
-					ValaSourceReference* _tmp123_;
-					ValaSourceReference* _tmp124_;
-					ValaDataType* _tmp125_;
+				_tmp113_ = _body_error_type_list;
+				_tmp114_ = _body_error_type_index;
+				_tmp115_ = vala_list_get (_tmp113_, _tmp114_);
+				body_error_type = (ValaDataType*) _tmp115_;
+				_tmp116_ = body_error_type;
+				_tmp117_ = vala_error_type_get_dynamic_error (G_TYPE_CHECK_INSTANCE_CAST (_tmp116_, VALA_TYPE_ERROR_TYPE, ValaErrorType));
+				_tmp118_ = _tmp117_;
+				if (!_tmp118_) {
+					ValaDataType* _tmp119_ = NULL;
+					ValaSourceReference* _tmp120_ = NULL;
+					ValaSourceReference* _tmp121_ = NULL;
+					ValaDataType* _tmp122_ = NULL;
+					gchar* _tmp123_ = NULL;
+					gchar* _tmp124_ = NULL;
+					gchar* _tmp125_ = NULL;
 					gchar* _tmp126_ = NULL;
-					gchar* _tmp127_;
-					gchar* _tmp128_ = NULL;
-					gchar* _tmp129_;
+					_tmp119_ = body_error_type;
+					_tmp120_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp119_);
+					_tmp121_ = _tmp120_;
 					_tmp122_ = body_error_type;
-					_tmp123_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp122_);
+					_tmp123_ = vala_code_node_to_string ((ValaCodeNode*) _tmp122_);
 					_tmp124_ = _tmp123_;
-					_tmp125_ = body_error_type;
-					_tmp126_ = vala_code_node_to_string ((ValaCodeNode*) _tmp125_);
-					_tmp127_ = _tmp126_;
-					_tmp128_ = g_strdup_printf ("unhandled error `%s'", _tmp127_);
-					_tmp129_ = _tmp128_;
-					vala_report_warning (_tmp124_, _tmp129_);
-					_g_free0 (_tmp129_);
-					_g_free0 (_tmp127_);
+					_tmp125_ = g_strdup_printf ("unhandled error `%s'", _tmp124_);
+					_tmp126_ = _tmp125_;
+					vala_report_warning (_tmp121_, _tmp126_);
+					_g_free0 (_tmp126_);
+					_g_free0 (_tmp124_);
 				}
 				_vala_code_node_unref0 (body_error_type);
 			}
 			_vala_iterable_unref0 (_body_error_type_list);
 		}
 	}
-	_tmp130_ = context;
-	_tmp131_ = vala_code_context_get_analyzer (_tmp130_);
+	_tmp127_ = context;
+	_tmp128_ = vala_code_context_get_analyzer (_tmp127_);
+	_tmp129_ = _tmp128_;
+	_tmp130_ = old_symbol;
+	vala_semantic_analyzer_set_current_symbol (_tmp129_, _tmp130_);
+	_tmp131_ = vala_code_node_get_error ((ValaCodeNode*) self);
 	_tmp132_ = _tmp131_;
-	_tmp133_ = old_symbol;
-	vala_semantic_analyzer_set_current_symbol (_tmp132_, _tmp133_);
-	_tmp134_ = vala_code_node_get_error ((ValaCodeNode*) self);
-	_tmp135_ = _tmp134_;
-	result = !_tmp135_;
+	result = !_tmp132_;
 	_vala_code_node_unref0 (old_symbol);
 	return result;
 }
@@ -1197,9 +1191,9 @@ static gboolean vala_property_accessor_real_check (ValaCodeNode* base, ValaCodeC
 
 static void vala_property_accessor_real_replace_type (ValaCodeNode* base, ValaDataType* old_type, ValaDataType* new_type) {
 	ValaPropertyAccessor * self;
-	ValaDataType* _tmp0_;
-	ValaDataType* _tmp1_;
-	ValaDataType* _tmp2_;
+	ValaDataType* _tmp0_ = NULL;
+	ValaDataType* _tmp1_ = NULL;
+	ValaDataType* _tmp2_ = NULL;
 	self = (ValaPropertyAccessor*) base;
 	g_return_if_fail (old_type != NULL);
 	g_return_if_fail (new_type != NULL);
@@ -1207,7 +1201,7 @@ static void vala_property_accessor_real_replace_type (ValaCodeNode* base, ValaDa
 	_tmp1_ = _tmp0_;
 	_tmp2_ = old_type;
 	if (_tmp1_ == _tmp2_) {
-		ValaDataType* _tmp3_;
+		ValaDataType* _tmp3_ = NULL;
 		_tmp3_ = new_type;
 		vala_property_accessor_set_value_type (self, _tmp3_);
 	}
@@ -1216,8 +1210,8 @@ static void vala_property_accessor_real_replace_type (ValaCodeNode* base, ValaDa
 
 ValaProperty* vala_property_accessor_get_prop (ValaPropertyAccessor* self) {
 	ValaProperty* result;
-	ValaSymbol* _tmp0_;
-	ValaSymbol* _tmp1_;
+	ValaSymbol* _tmp0_ = NULL;
+	ValaSymbol* _tmp1_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_symbol_get_parent_symbol ((ValaSymbol*) self);
 	_tmp1_ = _tmp0_;
@@ -1228,7 +1222,7 @@ ValaProperty* vala_property_accessor_get_prop (ValaPropertyAccessor* self) {
 
 ValaDataType* vala_property_accessor_get_value_type (ValaPropertyAccessor* self) {
 	ValaDataType* result;
-	ValaDataType* _tmp0_;
+	ValaDataType* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_value_type;
 	result = _tmp0_;
@@ -1237,9 +1231,9 @@ ValaDataType* vala_property_accessor_get_value_type (ValaPropertyAccessor* self)
 
 
 void vala_property_accessor_set_value_type (ValaPropertyAccessor* self, ValaDataType* value) {
-	ValaDataType* _tmp0_;
-	ValaDataType* _tmp1_;
-	ValaDataType* _tmp2_;
+	ValaDataType* _tmp0_ = NULL;
+	ValaDataType* _tmp1_ = NULL;
+	ValaDataType* _tmp2_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_code_node_ref0 (_tmp0_);
@@ -1247,7 +1241,7 @@ void vala_property_accessor_set_value_type (ValaPropertyAccessor* self, ValaData
 	self->priv->_value_type = _tmp1_;
 	_tmp2_ = value;
 	if (_tmp2_ != NULL) {
-		ValaDataType* _tmp3_;
+		ValaDataType* _tmp3_ = NULL;
 		_tmp3_ = self->priv->_value_type;
 		vala_code_node_set_parent_node ((ValaCodeNode*) _tmp3_, (ValaCodeNode*) self);
 	}
@@ -1256,7 +1250,7 @@ void vala_property_accessor_set_value_type (ValaPropertyAccessor* self, ValaData
 
 gboolean vala_property_accessor_get_readable (ValaPropertyAccessor* self) {
 	gboolean result;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_readable;
 	result = _tmp0_;
@@ -1265,7 +1259,7 @@ gboolean vala_property_accessor_get_readable (ValaPropertyAccessor* self) {
 
 
 void vala_property_accessor_set_readable (ValaPropertyAccessor* self, gboolean value) {
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_readable = _tmp0_;
@@ -1274,7 +1268,7 @@ void vala_property_accessor_set_readable (ValaPropertyAccessor* self, gboolean v
 
 gboolean vala_property_accessor_get_writable (ValaPropertyAccessor* self) {
 	gboolean result;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_writable;
 	result = _tmp0_;
@@ -1283,7 +1277,7 @@ gboolean vala_property_accessor_get_writable (ValaPropertyAccessor* self) {
 
 
 void vala_property_accessor_set_writable (ValaPropertyAccessor* self, gboolean value) {
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_writable = _tmp0_;
@@ -1292,7 +1286,7 @@ void vala_property_accessor_set_writable (ValaPropertyAccessor* self, gboolean v
 
 gboolean vala_property_accessor_get_construction (ValaPropertyAccessor* self) {
 	gboolean result;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_construction;
 	result = _tmp0_;
@@ -1301,7 +1295,7 @@ gboolean vala_property_accessor_get_construction (ValaPropertyAccessor* self) {
 
 
 void vala_property_accessor_set_construction (ValaPropertyAccessor* self, gboolean value) {
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_construction = _tmp0_;
@@ -1310,7 +1304,7 @@ void vala_property_accessor_set_construction (ValaPropertyAccessor* self, gboole
 
 gboolean vala_property_accessor_get_automatic_body (ValaPropertyAccessor* self) {
 	gboolean result;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_automatic_body;
 	result = _tmp0_;
@@ -1319,7 +1313,7 @@ gboolean vala_property_accessor_get_automatic_body (ValaPropertyAccessor* self) 
 
 
 void vala_property_accessor_set_automatic_body (ValaPropertyAccessor* self, gboolean value) {
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_automatic_body = _tmp0_;
@@ -1329,7 +1323,7 @@ void vala_property_accessor_set_automatic_body (ValaPropertyAccessor* self, gboo
 static gboolean vala_property_accessor_real_get_has_result (ValaSubroutine* base) {
 	gboolean result;
 	ValaPropertyAccessor* self;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	self = (ValaPropertyAccessor*) base;
 	_tmp0_ = self->priv->_readable;
 	result = _tmp0_;
@@ -1339,7 +1333,7 @@ static gboolean vala_property_accessor_real_get_has_result (ValaSubroutine* base
 
 ValaParameter* vala_property_accessor_get_value_parameter (ValaPropertyAccessor* self) {
 	ValaParameter* result;
-	ValaParameter* _tmp0_;
+	ValaParameter* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_value_parameter;
 	result = _tmp0_;
@@ -1348,8 +1342,8 @@ ValaParameter* vala_property_accessor_get_value_parameter (ValaPropertyAccessor*
 
 
 void vala_property_accessor_set_value_parameter (ValaPropertyAccessor* self, ValaParameter* value) {
-	ValaParameter* _tmp0_;
-	ValaParameter* _tmp1_;
+	ValaParameter* _tmp0_ = NULL;
+	ValaParameter* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_code_node_ref0 (_tmp0_);

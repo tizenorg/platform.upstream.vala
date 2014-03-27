@@ -242,6 +242,13 @@ namespace Vala {
 		public string name { get; set; }
 	}
 	[CCode (cheader_filename = "valaccode.h")]
+	public class CCodeIfSection : Vala.CCodeFragment {
+		public CCodeIfSection (string expr);
+		public override void write (Vala.CCodeWriter writer);
+		public override void write_declaration (Vala.CCodeWriter writer);
+		public string expression { get; set; }
+	}
+	[CCode (cheader_filename = "valaccode.h")]
 	public class CCodeIfStatement : Vala.CCodeStatement {
 		public CCodeIfStatement (Vala.CCodeExpression cond, Vala.CCodeStatement true_stmt, Vala.CCodeStatement? false_stmt = null);
 		public override void write (Vala.CCodeWriter writer);

@@ -194,9 +194,29 @@ public class Vala.BinaryExpression : Expression {
 		}
 
 		if (operator == BinaryOperator.COALESCE) {
-			var local = new LocalVariable (null, get_temp_name (), left, source_reference);
+			if (!left.check (context)) {
+				error = true;
+				return false;
+			}
+
+			if (!right.check (context)) {
+				error = true;
+				return false;
+			}
+
+			DataType local_type = null;
+			if (left.value_type != null) {
+				local_type = left.value_type.copy ();
+				if (right.value_type != null && right.value_type.value_owned) {
+					// value owned if either left or right is owned
+					local_type.value_owned = true;
+				}
+			} else if (right.value_type != null) {
+				local_type = right.value_type.copy ();
+			}
+		
+			var local = new LocalVariable (local_type, get_temp_name (), left, source_reference);
 			var decl = new DeclarationStatement (local, source_reference);
-			decl.check (context);
 
 			var right_stmt = new ExpressionStatement (new Assignment (new MemberAccess.simple (local.name, right.source_reference), right, AssignmentOperator.SIMPLE, right.source_reference), right.source_reference);
 
@@ -211,16 +231,20 @@ public class Vala.BinaryExpression : Expression {
 			insert_statement (context.analyzer.insert_block, decl);
 			insert_statement (context.analyzer.insert_block, if_stmt);
 
+			if (!decl.check (context)) {
+				error = true;
+				return false;
+			}
+
 			if (!if_stmt.check (context)) {
 				error = true;
 				return false;
 			}
 
-			var ma = new MemberAccess.simple (local.name, source_reference);
-			ma.target_type = target_type;
-			ma.check (context);
+			var temp_access = SemanticAnalyzer.create_temp_access (local, target_type);
+			temp_access.check (context);
 
-			parent_node.replace_expression (this, ma);
+			parent_node.replace_expression (this, temp_access);
 
 			return true;
 		}

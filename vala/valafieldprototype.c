@@ -291,7 +291,7 @@ static void vala_field_prototype_finalize (ValaCodeNode* obj);
 
 ValaFieldPrototype* vala_field_prototype_construct (GType object_type, ValaField* field_symbol) {
 	ValaFieldPrototype* self = NULL;
-	ValaField* _tmp0_;
+	ValaField* _tmp0_ = NULL;
 	g_return_val_if_fail (field_symbol != NULL, NULL);
 	self = (ValaFieldPrototype*) vala_data_type_construct (object_type);
 	_tmp0_ = field_symbol;
@@ -308,9 +308,9 @@ ValaFieldPrototype* vala_field_prototype_new (ValaField* field_symbol) {
 static ValaDataType* vala_field_prototype_real_copy (ValaDataType* base) {
 	ValaFieldPrototype * self;
 	ValaDataType* result = NULL;
-	ValaField* _tmp0_;
-	ValaFieldPrototype* _tmp1_;
-	ValaFieldPrototype* _result_;
+	ValaFieldPrototype* _result_ = NULL;
+	ValaField* _tmp0_ = NULL;
+	ValaFieldPrototype* _tmp1_ = NULL;
 	self = (ValaFieldPrototype*) base;
 	_tmp0_ = self->priv->_field_symbol;
 	_tmp1_ = vala_field_prototype_new (_tmp0_);
@@ -323,7 +323,7 @@ static ValaDataType* vala_field_prototype_real_copy (ValaDataType* base) {
 static gchar* vala_field_prototype_real_to_qualified_string (ValaDataType* base, ValaScope* scope) {
 	ValaFieldPrototype * self;
 	gchar* result = NULL;
-	ValaField* _tmp0_;
+	ValaField* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	self = (ValaFieldPrototype*) base;
 	_tmp0_ = self->priv->_field_symbol;
@@ -335,7 +335,7 @@ static gchar* vala_field_prototype_real_to_qualified_string (ValaDataType* base,
 
 ValaField* vala_field_prototype_get_field_symbol (ValaFieldPrototype* self) {
 	ValaField* result;
-	ValaField* _tmp0_;
+	ValaField* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_field_symbol;
 	result = _tmp0_;
@@ -349,8 +349,8 @@ static gpointer _vala_code_node_ref0 (gpointer self) {
 
 
 void vala_field_prototype_set_field_symbol (ValaFieldPrototype* self, ValaField* value) {
-	ValaField* _tmp0_;
-	ValaField* _tmp1_;
+	ValaField* _tmp0_ = NULL;
+	ValaField* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_code_node_ref0 (_tmp0_);

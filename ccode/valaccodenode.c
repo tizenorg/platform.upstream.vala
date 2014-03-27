@@ -159,8 +159,8 @@ void vala_ccode_node_write_declaration (ValaCCodeNode* self, ValaCCodeWriter* wr
  * @param writer a C code writer
  */
 static void vala_ccode_node_real_write_combined (ValaCCodeNode* self, ValaCCodeWriter* writer) {
-	ValaCCodeWriter* _tmp0_;
-	ValaCCodeWriter* _tmp1_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	ValaCCodeWriter* _tmp1_ = NULL;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;
 	vala_ccode_node_write_declaration (self, _tmp0_);
@@ -184,7 +184,7 @@ ValaCCodeNode* vala_ccode_node_construct (GType object_type) {
 
 ValaCCodeLineDirective* vala_ccode_node_get_line (ValaCCodeNode* self) {
 	ValaCCodeLineDirective* result;
-	ValaCCodeLineDirective* _tmp0_;
+	ValaCCodeLineDirective* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_line;
 	result = _tmp0_;
@@ -198,8 +198,8 @@ static gpointer _vala_ccode_node_ref0 (gpointer self) {
 
 
 void vala_ccode_node_set_line (ValaCCodeNode* self, ValaCCodeLineDirective* value) {
-	ValaCCodeLineDirective* _tmp0_;
-	ValaCCodeLineDirective* _tmp1_;
+	ValaCCodeLineDirective* _tmp0_ = NULL;
+	ValaCCodeLineDirective* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_ccode_node_ref0 (_tmp0_);

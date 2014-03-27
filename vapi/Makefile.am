@@ -23,6 +23,8 @@ dist_vapi_DATA = \
 	clutter-1.0.vapi \
 	clutter-gst-1.0.deps \
 	clutter-gst-1.0.vapi \
+	clutter-gst-2.0.deps \
+	clutter-gst-2.0.vapi \
 	clutter-gtk-0.10.deps \
 	clutter-gtk-0.10.vapi \
 	clutter-gtk-1.0.deps \
@@ -38,6 +40,8 @@ dist_vapi_DATA = \
 	fuse.deps \
 	fuse.vapi \
 	gconf-2.0.vapi \
+	geocode-glib-1.0.deps \
+	geocode-glib-1.0.vapi \
 	glib-2.0.vapi \
 	gdk-2.0.deps \
 	gdk-2.0.vapi \
@@ -202,6 +206,8 @@ dist_vapi_DATA = \
 	libpanelapplet-2.0.vapi \
 	libpeas-1.0.deps \
 	libpeas-1.0.vapi \
+	libpeas-gtk-1.0.deps \
+	libpeas-gtk-1.0.vapi \
 	libpq.vapi \
 	librsvg-2.0.vapi \
 	librsvg-2.0.deps \
@@ -226,6 +232,8 @@ dist_vapi_DATA = \
 	mx-1.0.vapi \
 	mysql.vapi \
 	orc-0.4.vapi \
+	packagekit-glib2.deps \
+	packagekit-glib2.vapi \
 	pango.deps \
 	pango.vapi \
 	pangocairo.deps \
@@ -278,6 +286,7 @@ dist_vapi_DATA = \
 	webkit-1.0.vapi \
 	x11.vapi \
 	xcb.vapi \
+	xcb-icccm.vapi \
 	xtst.vapi \
 	xtst.deps \
 	zlib.vapi \
@@ -288,7 +297,7 @@ dist_noinst_DATA = \
 	$(NULL)
 
 GIDL_BINDINGS = \
-	clutter-gtk-1.0 \
+	clutter-gtk-0.10 \
 	cogl-1.0 \
 	gconf-2.0 \
 	gdk-2.0 \
@@ -298,6 +307,7 @@ GIDL_BINDINGS = \
 	gdu \
 	gdk-gtk \
 	gedit-2.20 \
+	gio-unix-2.0 \
 	gnome-desktop-2.0 \
 	gnome-keyring-1 \
 	gnome-vfs-2.0 \
@@ -334,11 +344,10 @@ GIDL_BINDINGS = \
 	libgnome-menu \
 	libgnomeui-2.0 \
 	libgsf-1 \
-	libnotify \
 	liboobs-1 \
-	librsvg-2.0 \
 	libsexy \
 	libsoup-2.2 \
+	libwnck-1.0 \
 	loudmouth-1.0 \
 	purple \
 	rest-0.6 \
@@ -372,19 +381,26 @@ GIR_BINDINGS = \
 	atk \
 	atspi-2 \
 	clutter-1.0 \
-	cogl-pango \
+	clutter-gtk-1.0 \
+	clutter-gst-1.0 \
+	clutter-gst-2.0 \
+	cogl-pango-1.0 \
 	gdk-3.0 \
 	gdk-pixbuf-2.0 \
 	gdl-3.0 \
 	gedit \
+	geocode-glib-1.0 \
 	gio-2.0 \
 	gobject-introspection-1.0 \
 	gtksourceview-3.0 \
 	gudev-1.0 \
 	json-glib-1.0 \
 	libgdata \
-	libgnome-menu-3.0.vapi \
+	libgnome-menu-3.0 \
+	libnotify \
 	libpeas-1.0 \
+	libpeas-gtk-1.0 \
+	librsvg-2.0 \
 	libsoup-2.4 \
 	libwnck-3.0 \
 	mx-1.0 \
@@ -422,7 +438,7 @@ atk:
 	$(GENVAPI) --library $(srcdir)/atk --metadatadir $(METADATADIR) $(METADATADIR)/Atk-1.0-custom.vala $(GIRDIR)/Atk-1.0.gir
 
 atspi-2:
-	$(GENVAPI) --library $(srcdir)/atspi-2 --metadatadir $(METADATADIR) $(GIRDIR)/Atspi-2.0.gir
+	$(GENVAPI) --library $(srcdir)/atspi-2 --metadatadir $(METADATADIR) $(METADATADIR)/Atspi-2.0-custom.vala $(GIRDIR)/Atspi-2.0.gir
 
 clutter-1.0:
 	$(GENVAPI) --library $(srcdir)/clutter-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Clutter-1.0-custom.vala --pkg atk --pkg cairo --pkg pango --pkg cogl-1.0 --pkg cogl-pango-1.0 --pkg json-glib-1.0 $(GIRDIR)/Clutter-1.0.gir
@@ -433,6 +449,12 @@ clutter-gtk-0.10:
 clutter-gtk-1.0:
 	$(GENVAPI) --library $(srcdir)/clutter-gtk-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/GtkClutter-1.0-custom.vala --pkg clutter-1.0 --pkg gtk+-3.0 --pkg cogl-pango-1.0 $(GIRDIR)/GtkClutter-1.0.gir
 
+clutter-gst-1.0:
+	$(GENVAPI) --library $(srcdir)/clutter-gst-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/ClutterGst-1.0-custom.vala --pkg clutter-1.0 --pkg gstreamer-base-0.10 --pkg gstreamer-video-0.10 gstreamer-interfaces-0.10.vapi $(GIRDIR)/ClutterGst-1.0.gir
+
+clutter-gst-2.0:
+	$(GENVAPI) --library $(srcdir)/clutter-gst-2.0 --metadatadir $(METADATADIR) $(METADATADIR)/ClutterGst-2.0-custom.vala --pkg cogl-1.0 --pkg clutter-1.0 --pkg gstreamer-base-1.0 --pkg gstreamer-video-1.0 $(GIRDIR)/ClutterGst-2.0.gir
+
 cogl-1.0:
 	$(GENVAPI) --library $(srcdir)/cogl-1.0 $(PACKAGESDIR)/cogl-1.0/cogl-1.0-custom.vala $(PACKAGESDIR)/cogl-1.0/cogl-1.0.gi
 
@@ -441,6 +463,9 @@ cogl-pango-1.0:
 
 gconf-2.0:
 	$(GENVAPI) --library $(srcdir)/gconf-2.0 $(PACKAGESDIR)/gconf-2.0/gconf-2.0.gi
+
+geocode-glib-1.0:
+	$(GENVAPI) --library $(srcdir)/geocode-glib-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GeocodeGlib-1.0.gir
 
 gdk-2.0:
 	$(GENVAPI) --library $(srcdir)/gdk-2.0 $(PACKAGESDIR)/gdk-2.0/gdk-2.0-custom.vala $(PACKAGESDIR)/gdk-2.0/gdk-2.0.gi
@@ -452,10 +477,10 @@ gdk-pixbuf-2.0:
 	$(GENVAPI) --library $(srcdir)/gdk-pixbuf-2.0 --pkg gio-2.0 --metadatadir $(METADATADIR) $(METADATADIR)/GdkPixbuf-2.0-custom.vala $(GIRDIR)/GdkPixbuf-2.0.gir
 
 gdk-x11-2.0:
-	$(GENVAPI) --library $(srcdir)/gdk-x11-2.0 $(PACKAGESDIR)/gdk-x11-2.0/gdk-x11-2.0.gi
+	$(GENVAPI) --library $(srcdir)/gdk-x11-2.0 $(PACKAGESDIR)/gdk-x11-2.0/gdk-x11-2.0-custom.vala $(PACKAGESDIR)/gdk-x11-2.0/gdk-x11-2.0.gi
 
 gdk-x11-3.0:
-	$(GENVAPI) --library $(srcdir)/gdk-x11-3.0 $(PACKAGESDIR)/gdk-x11-3.0/gdk-x11-3.0.gi
+	$(GENVAPI) --library $(srcdir)/gdk-x11-3.0 --pkg gio-2.0 --pkg gdk-3.0 --pkg x11 --metadatadir $(METADATADIR) $(METADATADIR)/GdkX11-3.0-custom.vala $(GIRDIR)/GdkX11-3.0.gir
 
 gdl-1.0:
 	$(GENVAPI) --library $(srcdir)/gdl-1.0 $(PACKAGESDIR)/gdl-1.0/gdl-1.0-custom.vala $(PACKAGESDIR)/gdl-1.0/gdl-1.0.gi
@@ -596,7 +621,7 @@ gstreamer-tag-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-tag-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstTag-1.0.gir
 
 gstreamer-video-1.0:
-	$(GENVAPI) --library $(srcdir)/gstreamer-video-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstVideo-1.0.gir
+	$(GENVAPI) --library $(srcdir)/gstreamer-video-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/GstVideo-1.0-custom.vala $(GIRDIR)/GstVideo-1.0.gir
 
 gtk+-2.0:
 	$(GENVAPI) --library $(srcdir)/gtk+-2.0 $(PACKAGESDIR)/gtk+-2.0/gtk+-2.0-custom.vala $(PACKAGESDIR)/gtk+-2.0/gtk+-2.0.gi
@@ -653,7 +678,7 @@ libgsf-1:
 	$(GENVAPI) --library $(srcdir)/libgsf-1 $(PACKAGESDIR)/libgsf-1/libgsf-1-custom.vala $(PACKAGESDIR)/libgsf-1/libgsf-1.gi
 
 libnotify:
-	$(GENVAPI) --library $(srcdir)/libnotify $(PACKAGESDIR)/libnotify/libnotify.gi
+	$(GENVAPI) --library $(srcdir)/libnotify --pkg gdk-pixbuf-2.0 --pkg gio-2.0 --metadatadir $(METADATADIR) $(GIRDIR)/Notify-0.7.gir
 
 liboobs-1:
 	$(GENVAPI) --library $(srcdir)/liboobs-1 $(PACKAGESDIR)/liboobs-1/liboobs-1.gi
@@ -661,8 +686,11 @@ liboobs-1:
 libpeas-1.0:
 	$(GENVAPI) --library $(srcdir)/libpeas-1.0 --pkg gio-2.0 --metadatadir $(METADATADIR) $(GIRDIR)/Peas-1.0.gir
 
+libpeas-gtk-1.0:
+	$(GENVAPI) --library $(srcdir)/libpeas-gtk-1.0 --pkg libpeas-1.0 --pkg gtk+-3.0 --metadatadir $(METADATADIR) $(GIRDIR)/PeasGtk-1.0.gir
+
 librsvg-2.0:
-	$(GENVAPI) --library $(srcdir)/librsvg-2.0 $(PACKAGESDIR)/librsvg-2.0/librsvg-2.0.gi
+	$(GENVAPI) --library $(srcdir)/librsvg-2.0 --pkg gdk-pixbuf-2.0 --pkg gio-2.0 --metadatadir $(METADATADIR) $(METADATADIR)/Rsvg-2.0-custom.vala $(GIRDIR)/Rsvg-2.0.gir
 
 libsexy:
 	$(GENVAPI) --library $(srcdir)/libsexy $(PACKAGESDIR)/libsexy/libsexy.gi
@@ -695,7 +723,7 @@ pangocairo:
 	$(GENVAPI) --library $(srcdir)/pangocairo --metadatadir $(METADATADIR) $(GIRDIR)/PangoCairo-1.0.gir
 
 poppler-glib:
-	$(GENVAPI) --library $(srcdir)/poppler-glib --metadatadir $(METADATADIR) $(GIRDIR)/Poppler-0.18.gir
+	$(GENVAPI) --library $(srcdir)/poppler-glib --pkg cairo --pkg gio-2.0 --metadatadir $(METADATADIR) $(GIRDIR)/Poppler-0.18.gir
 
 purple:
 	$(GENVAPI) --library $(srcdir)/purple $(PACKAGESDIR)/purple/purple-custom.vala $(PACKAGESDIR)/purple/purple.gi

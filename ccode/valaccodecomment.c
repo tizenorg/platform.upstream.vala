@@ -123,7 +123,7 @@ static void vala_ccode_comment_finalize (ValaCCodeNode* obj);
 
 ValaCCodeComment* vala_ccode_comment_construct (GType object_type, const gchar* _text) {
 	ValaCCodeComment* self = NULL;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (_text != NULL, NULL);
 	self = (ValaCCodeComment*) vala_ccode_node_construct (object_type);
 	_tmp0_ = _text;
@@ -139,8 +139,8 @@ ValaCCodeComment* vala_ccode_comment_new (const gchar* _text) {
 
 static void vala_ccode_comment_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeComment * self;
-	ValaCCodeWriter* _tmp0_;
-	const gchar* _tmp1_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
 	self = (ValaCCodeComment*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;
@@ -151,7 +151,7 @@ static void vala_ccode_comment_real_write (ValaCCodeNode* base, ValaCCodeWriter*
 
 const gchar* vala_ccode_comment_get_text (ValaCCodeComment* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_text;
 	result = _tmp0_;
@@ -160,8 +160,8 @@ const gchar* vala_ccode_comment_get_text (ValaCCodeComment* self) {
 
 
 void vala_ccode_comment_set_text (ValaCCodeComment* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);

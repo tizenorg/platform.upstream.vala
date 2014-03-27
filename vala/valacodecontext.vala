@@ -188,6 +188,8 @@ public class Vala.CodeContext {
 
 	public bool run_output { get; set; }
 
+	public string[] gresources;
+
 	private List<SourceFile> source_files = new ArrayList<SourceFile> ();
 	private List<string> c_source_files = new ArrayList<string> ();
 	private Namespace _root = new Namespace (null);
@@ -329,7 +331,7 @@ public class Vala.CodeContext {
 	 */
 	public bool add_external_package (string pkg) {
 		if (has_package (pkg)) {
-			// ignore multiple occurences of the same package
+			// ignore multiple occurrences of the same package
 			return true;
 		}
 

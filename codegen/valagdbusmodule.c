@@ -185,6 +185,17 @@ typedef struct _ValaGSignalModule ValaGSignalModule;
 typedef struct _ValaGSignalModuleClass ValaGSignalModuleClass;
 typedef struct _ValaGSignalModulePrivate ValaGSignalModulePrivate;
 
+#define VALA_TYPE_GTK_MODULE (vala_gtk_module_get_type ())
+#define VALA_GTK_MODULE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_GTK_MODULE, ValaGtkModule))
+#define VALA_GTK_MODULE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_GTK_MODULE, ValaGtkModuleClass))
+#define VALA_IS_GTK_MODULE(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VALA_TYPE_GTK_MODULE))
+#define VALA_IS_GTK_MODULE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), VALA_TYPE_GTK_MODULE))
+#define VALA_GTK_MODULE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), VALA_TYPE_GTK_MODULE, ValaGtkModuleClass))
+
+typedef struct _ValaGtkModule ValaGtkModule;
+typedef struct _ValaGtkModuleClass ValaGtkModuleClass;
+typedef struct _ValaGtkModulePrivate ValaGtkModulePrivate;
+
 #define VALA_TYPE_GASYNC_MODULE (vala_gasync_module_get_type ())
 #define VALA_GASYNC_MODULE(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_GASYNC_MODULE, ValaGAsyncModule))
 #define VALA_GASYNC_MODULE_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_GASYNC_MODULE, ValaGAsyncModuleClass))
@@ -292,6 +303,7 @@ struct _ValaCCodeBaseModule {
 	ValaClass* gsource_type;
 	ValaTypeSymbol* type_module_type;
 	ValaTypeSymbol* dbus_proxy_type;
+	ValaClass* gtk_widget_type;
 	gboolean in_plugin;
 	gchar* module_init_param_name;
 	gboolean gvaluecollector_h_needed;
@@ -451,6 +463,7 @@ struct _ValaGTypeModuleClass {
 	ValaGErrorModuleClass parent_class;
 	void (*generate_virtual_method_declaration) (ValaGTypeModule* self, ValaMethod* m, ValaCCodeFile* decl_space, ValaCCodeStruct* type_struct);
 	void (*generate_class_init) (ValaGTypeModule* self, ValaClass* cl);
+	void (*end_instance_init) (ValaGTypeModule* self, ValaClass* cl);
 };
 
 struct _ValaGObjectModule {
@@ -471,13 +484,22 @@ struct _ValaGSignalModuleClass {
 	ValaGObjectModuleClass parent_class;
 };
 
-struct _ValaGAsyncModule {
+struct _ValaGtkModule {
 	ValaGSignalModule parent_instance;
+	ValaGtkModulePrivate * priv;
+};
+
+struct _ValaGtkModuleClass {
+	ValaGSignalModuleClass parent_class;
+};
+
+struct _ValaGAsyncModule {
+	ValaGtkModule parent_instance;
 	ValaGAsyncModulePrivate * priv;
 };
 
 struct _ValaGAsyncModuleClass {
-	ValaGSignalModuleClass parent_class;
+	ValaGtkModuleClass parent_class;
 };
 
 struct _ValaGVariantModule {
@@ -521,6 +543,7 @@ GType vala_gerror_module_get_type (void) G_GNUC_CONST;
 GType vala_gtype_module_get_type (void) G_GNUC_CONST;
 GType vala_gobject_module_get_type (void) G_GNUC_CONST;
 GType vala_gsignal_module_get_type (void) G_GNUC_CONST;
+GType vala_gtk_module_get_type (void) G_GNUC_CONST;
 GType vala_gasync_module_get_type (void) G_GNUC_CONST;
 GType vala_gvariant_module_get_type (void) G_GNUC_CONST;
 GType vala_gd_bus_module_get_type (void) G_GNUC_CONST;
@@ -554,11 +577,11 @@ ValaGVariantModule* vala_gvariant_module_construct (GType object_type);
 
 gchar* vala_gd_bus_module_get_dbus_name (ValaTypeSymbol* symbol) {
 	gchar* result = NULL;
-	ValaTypeSymbol* _tmp0_;
+	ValaTypeSymbol* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	g_return_val_if_fail (symbol != NULL, NULL);
 	_tmp0_ = symbol;
-	_tmp1_ = vala_code_node_get_attribute_string ((ValaCodeNode*) _tmp0_, "DBus", "name");
+	_tmp1_ = vala_code_node_get_attribute_string ((ValaCodeNode*) _tmp0_, "DBus", "name", NULL);
 	result = _tmp1_;
 	return result;
 }
@@ -566,17 +589,17 @@ gchar* vala_gd_bus_module_get_dbus_name (ValaTypeSymbol* symbol) {
 
 gchar* vala_gd_bus_module_get_dbus_name_for_member (ValaSymbol* symbol) {
 	gchar* result = NULL;
-	ValaSymbol* _tmp0_;
+	gchar* dbus_name = NULL;
+	ValaSymbol* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* dbus_name;
-	const gchar* _tmp2_;
-	ValaSymbol* _tmp3_;
-	const gchar* _tmp4_;
-	const gchar* _tmp5_;
+	const gchar* _tmp2_ = NULL;
+	ValaSymbol* _tmp3_ = NULL;
+	const gchar* _tmp4_ = NULL;
+	const gchar* _tmp5_ = NULL;
 	gchar* _tmp6_ = NULL;
 	g_return_val_if_fail (symbol != NULL, NULL);
 	_tmp0_ = symbol;
-	_tmp1_ = vala_code_node_get_attribute_string ((ValaCodeNode*) _tmp0_, "DBus", "name");
+	_tmp1_ = vala_code_node_get_attribute_string ((ValaCodeNode*) _tmp0_, "DBus", "name", NULL);
 	dbus_name = _tmp1_;
 	_tmp2_ = dbus_name;
 	if (_tmp2_ != NULL) {
@@ -595,7 +618,7 @@ gchar* vala_gd_bus_module_get_dbus_name_for_member (ValaSymbol* symbol) {
 
 gboolean vala_gd_bus_module_is_dbus_no_reply (ValaMethod* m) {
 	gboolean result = FALSE;
-	ValaMethod* _tmp0_;
+	ValaMethod* _tmp0_ = NULL;
 	gboolean _tmp1_ = FALSE;
 	g_return_val_if_fail (m != NULL, FALSE);
 	_tmp0_ = m;
@@ -607,118 +630,118 @@ gboolean vala_gd_bus_module_is_dbus_no_reply (ValaMethod* m) {
 
 static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, ValaErrorDomain* edomain) {
 	ValaGDBusModule * self;
-	ValaErrorDomain* _tmp0_;
+	gchar* edomain_dbus_name = NULL;
+	ValaErrorDomain* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* edomain_dbus_name;
-	const gchar* _tmp2_;
-	ValaCCodeFile* _tmp4_;
-	ValaErrorDomain* _tmp5_;
-	ValaCCodeFile* _tmp6_;
-	ValaErrorDomain* _tmp7_;
+	const gchar* _tmp2_ = NULL;
+	ValaCCodeFile* _tmp4_ = NULL;
+	ValaErrorDomain* _tmp5_ = NULL;
+	ValaCCodeFile* _tmp6_ = NULL;
+	ValaErrorDomain* _tmp7_ = NULL;
 	gboolean _tmp8_ = FALSE;
-	ValaErrorDomain* _tmp11_;
+	ValaErrorDomain* _tmp11_ = NULL;
 	gboolean _tmp12_ = FALSE;
-	ValaCCodeInitializerList* _tmp15_;
-	ValaCCodeInitializerList* error_entries;
-	ValaCCodeDeclaration* _tmp52_;
-	ValaCCodeDeclaration* _cdecl_;
-	ValaCCodeDeclaration* _tmp53_;
-	ValaErrorDomain* _tmp54_;
+	ValaCCodeInitializerList* error_entries = NULL;
+	ValaCCodeInitializerList* _tmp15_ = NULL;
+	ValaCCodeDeclaration* _cdecl_ = NULL;
+	ValaCCodeDeclaration* _tmp52_ = NULL;
+	ValaCCodeDeclaration* _tmp53_ = NULL;
+	ValaErrorDomain* _tmp54_ = NULL;
 	gchar* _tmp55_ = NULL;
-	gchar* _tmp56_;
-	gchar* _tmp57_;
-	gchar* _tmp58_;
-	ValaCCodeInitializerList* _tmp59_;
-	ValaCCodeVariableDeclarator* _tmp60_;
-	ValaCCodeVariableDeclarator* _tmp61_;
-	ValaCCodeDeclaration* _tmp62_;
-	ValaCCodeFile* _tmp63_;
-	ValaCCodeDeclaration* _tmp64_;
-	ValaErrorDomain* _tmp65_;
+	gchar* _tmp56_ = NULL;
+	gchar* _tmp57_ = NULL;
+	gchar* _tmp58_ = NULL;
+	ValaCCodeInitializerList* _tmp59_ = NULL;
+	ValaCCodeVariableDeclarator* _tmp60_ = NULL;
+	ValaCCodeVariableDeclarator* _tmp61_ = NULL;
+	ValaCCodeDeclaration* _tmp62_ = NULL;
+	ValaCCodeFile* _tmp63_ = NULL;
+	ValaCCodeDeclaration* _tmp64_ = NULL;
+	gchar* quark_fun_name = NULL;
+	ValaErrorDomain* _tmp65_ = NULL;
 	gchar* _tmp66_ = NULL;
-	gchar* _tmp67_;
-	gchar* _tmp68_;
-	gchar* _tmp69_;
-	gchar* quark_fun_name;
-	const gchar* _tmp70_;
-	ValaDataType* _tmp71_;
-	ValaTypeSymbol* _tmp72_;
-	ValaTypeSymbol* _tmp73_;
+	gchar* _tmp67_ = NULL;
+	gchar* _tmp68_ = NULL;
+	gchar* _tmp69_ = NULL;
+	ValaCCodeFunction* cquark_fun = NULL;
+	const gchar* _tmp70_ = NULL;
+	ValaDataType* _tmp71_ = NULL;
+	ValaTypeSymbol* _tmp72_ = NULL;
+	ValaTypeSymbol* _tmp73_ = NULL;
 	gchar* _tmp74_ = NULL;
-	gchar* _tmp75_;
-	ValaCCodeFunction* _tmp76_;
-	ValaCCodeFunction* _tmp77_;
-	ValaCCodeFunction* cquark_fun;
-	ValaCCodeFunction* _tmp78_;
-	ValaErrorDomain* _tmp79_;
+	gchar* _tmp75_ = NULL;
+	ValaCCodeFunction* _tmp76_ = NULL;
+	ValaCCodeFunction* _tmp77_ = NULL;
+	ValaCCodeFunction* _tmp78_ = NULL;
+	gchar* quark_name = NULL;
+	ValaErrorDomain* _tmp79_ = NULL;
 	gchar* _tmp80_ = NULL;
-	gchar* _tmp81_;
+	gchar* _tmp81_ = NULL;
 	gchar* _tmp82_ = NULL;
-	gchar* _tmp83_;
-	gchar* quark_name;
-	ValaCCodeFunction* _tmp84_;
-	ValaCCodeFunction* _tmp85_;
-	const gchar* _tmp86_;
-	ValaCCodeConstant* _tmp87_;
-	ValaCCodeConstant* _tmp88_;
-	ValaCCodeVariableDeclarator* _tmp89_;
-	ValaCCodeVariableDeclarator* _tmp90_;
-	ValaCCodeIdentifier* _tmp91_;
-	ValaCCodeIdentifier* _tmp92_;
-	ValaCCodeFunctionCall* _tmp93_;
-	ValaCCodeFunctionCall* _tmp94_;
-	ValaCCodeFunctionCall* register_call;
-	ValaCCodeFunctionCall* _tmp95_;
-	ValaErrorDomain* _tmp96_;
+	gchar* _tmp83_ = NULL;
+	ValaCCodeFunction* _tmp84_ = NULL;
+	ValaCCodeFunction* _tmp85_ = NULL;
+	const gchar* _tmp86_ = NULL;
+	ValaCCodeConstant* _tmp87_ = NULL;
+	ValaCCodeConstant* _tmp88_ = NULL;
+	ValaCCodeVariableDeclarator* _tmp89_ = NULL;
+	ValaCCodeVariableDeclarator* _tmp90_ = NULL;
+	ValaCCodeFunctionCall* register_call = NULL;
+	ValaCCodeIdentifier* _tmp91_ = NULL;
+	ValaCCodeIdentifier* _tmp92_ = NULL;
+	ValaCCodeFunctionCall* _tmp93_ = NULL;
+	ValaCCodeFunctionCall* _tmp94_ = NULL;
+	ValaCCodeFunctionCall* _tmp95_ = NULL;
+	ValaErrorDomain* _tmp96_ = NULL;
 	gchar* _tmp97_ = NULL;
-	gchar* _tmp98_;
-	gchar* _tmp99_;
-	gchar* _tmp100_;
-	gchar* _tmp101_;
-	gchar* _tmp102_;
-	ValaCCodeConstant* _tmp103_;
-	ValaCCodeConstant* _tmp104_;
-	ValaCCodeFunctionCall* _tmp105_;
-	const gchar* _tmp106_;
-	ValaCCodeIdentifier* _tmp107_;
-	ValaCCodeIdentifier* _tmp108_;
-	ValaCCodeUnaryExpression* _tmp109_;
-	ValaCCodeUnaryExpression* _tmp110_;
-	ValaCCodeFunctionCall* _tmp111_;
-	ValaErrorDomain* _tmp112_;
+	gchar* _tmp98_ = NULL;
+	gchar* _tmp99_ = NULL;
+	gchar* _tmp100_ = NULL;
+	gchar* _tmp101_ = NULL;
+	gchar* _tmp102_ = NULL;
+	ValaCCodeConstant* _tmp103_ = NULL;
+	ValaCCodeConstant* _tmp104_ = NULL;
+	ValaCCodeFunctionCall* _tmp105_ = NULL;
+	const gchar* _tmp106_ = NULL;
+	ValaCCodeIdentifier* _tmp107_ = NULL;
+	ValaCCodeIdentifier* _tmp108_ = NULL;
+	ValaCCodeUnaryExpression* _tmp109_ = NULL;
+	ValaCCodeUnaryExpression* _tmp110_ = NULL;
+	ValaCCodeFunctionCall* _tmp111_ = NULL;
+	ValaErrorDomain* _tmp112_ = NULL;
 	gchar* _tmp113_ = NULL;
-	gchar* _tmp114_;
-	gchar* _tmp115_;
-	gchar* _tmp116_;
-	ValaCCodeIdentifier* _tmp117_;
-	ValaCCodeIdentifier* _tmp118_;
-	ValaCCodeIdentifier* _tmp119_;
-	ValaCCodeIdentifier* _tmp120_;
-	ValaCCodeFunctionCall* _tmp121_;
-	ValaCCodeFunctionCall* _tmp122_;
-	ValaCCodeFunctionCall* nentries;
-	ValaCCodeFunctionCall* _tmp123_;
-	ValaErrorDomain* _tmp124_;
+	gchar* _tmp114_ = NULL;
+	gchar* _tmp115_ = NULL;
+	gchar* _tmp116_ = NULL;
+	ValaCCodeIdentifier* _tmp117_ = NULL;
+	ValaCCodeIdentifier* _tmp118_ = NULL;
+	ValaCCodeFunctionCall* nentries = NULL;
+	ValaCCodeIdentifier* _tmp119_ = NULL;
+	ValaCCodeIdentifier* _tmp120_ = NULL;
+	ValaCCodeFunctionCall* _tmp121_ = NULL;
+	ValaCCodeFunctionCall* _tmp122_ = NULL;
+	ValaCCodeFunctionCall* _tmp123_ = NULL;
+	ValaErrorDomain* _tmp124_ = NULL;
 	gchar* _tmp125_ = NULL;
-	gchar* _tmp126_;
-	gchar* _tmp127_;
-	gchar* _tmp128_;
-	ValaCCodeIdentifier* _tmp129_;
-	ValaCCodeIdentifier* _tmp130_;
-	ValaCCodeFunctionCall* _tmp131_;
-	ValaCCodeFunctionCall* _tmp132_;
-	ValaCCodeFunction* _tmp133_;
-	ValaCCodeFunction* _tmp134_;
-	ValaCCodeFunctionCall* _tmp135_;
-	ValaCCodeFunction* _tmp136_;
-	ValaCCodeFunction* _tmp137_;
-	const gchar* _tmp138_;
-	ValaCCodeIdentifier* _tmp139_;
-	ValaCCodeIdentifier* _tmp140_;
-	ValaCCodeCastExpression* _tmp141_;
-	ValaCCodeCastExpression* _tmp142_;
-	ValaCCodeFile* _tmp143_;
-	ValaCCodeFunction* _tmp144_;
+	gchar* _tmp126_ = NULL;
+	gchar* _tmp127_ = NULL;
+	gchar* _tmp128_ = NULL;
+	ValaCCodeIdentifier* _tmp129_ = NULL;
+	ValaCCodeIdentifier* _tmp130_ = NULL;
+	ValaCCodeFunctionCall* _tmp131_ = NULL;
+	ValaCCodeFunctionCall* _tmp132_ = NULL;
+	ValaCCodeFunction* _tmp133_ = NULL;
+	ValaCCodeFunction* _tmp134_ = NULL;
+	ValaCCodeFunctionCall* _tmp135_ = NULL;
+	ValaCCodeFunction* _tmp136_ = NULL;
+	ValaCCodeFunction* _tmp137_ = NULL;
+	const gchar* _tmp138_ = NULL;
+	ValaCCodeIdentifier* _tmp139_ = NULL;
+	ValaCCodeIdentifier* _tmp140_ = NULL;
+	ValaCCodeCastExpression* _tmp141_ = NULL;
+	ValaCCodeCastExpression* _tmp142_ = NULL;
+	ValaCCodeFile* _tmp143_ = NULL;
+	ValaCCodeFunction* _tmp144_ = NULL;
 	self = (ValaGDBusModule*) base;
 	g_return_if_fail (edomain != NULL);
 	_tmp0_ = edomain;
@@ -726,7 +749,7 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 	edomain_dbus_name = _tmp1_;
 	_tmp2_ = edomain_dbus_name;
 	if (_tmp2_ == NULL) {
-		ValaErrorDomain* _tmp3_;
+		ValaErrorDomain* _tmp3_ = NULL;
 		_tmp3_ = edomain;
 		VALA_CODE_VISITOR_CLASS (vala_gd_bus_module_parent_class)->visit_error_domain ((ValaCodeVisitor*) G_TYPE_CHECK_INSTANCE_CAST (self, VALA_TYPE_GVARIANT_MODULE, ValaGVariantModule), _tmp3_);
 		_g_free0 (edomain_dbus_name);
@@ -740,8 +763,8 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 	_tmp7_ = edomain;
 	_tmp8_ = vala_symbol_is_internal_symbol ((ValaSymbol*) _tmp7_);
 	if (!_tmp8_) {
-		ValaErrorDomain* _tmp9_;
-		ValaCCodeFile* _tmp10_;
+		ValaErrorDomain* _tmp9_ = NULL;
+		ValaCCodeFile* _tmp10_ = NULL;
 		_tmp9_ = edomain;
 		_tmp10_ = ((ValaCCodeBaseModule*) self)->header_file;
 		vala_ccode_base_module_generate_error_domain_declaration ((ValaCCodeBaseModule*) self, _tmp9_, _tmp10_);
@@ -749,8 +772,8 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 	_tmp11_ = edomain;
 	_tmp12_ = vala_symbol_is_private_symbol ((ValaSymbol*) _tmp11_);
 	if (!_tmp12_) {
-		ValaErrorDomain* _tmp13_;
-		ValaCCodeFile* _tmp14_;
+		ValaErrorDomain* _tmp13_ = NULL;
+		ValaCCodeFile* _tmp14_ = NULL;
 		_tmp13_ = edomain;
 		_tmp14_ = ((ValaCCodeBaseModule*) self)->internal_header_file;
 		vala_ccode_base_module_generate_error_domain_declaration ((ValaCCodeBaseModule*) self, _tmp13_, _tmp14_);
@@ -758,14 +781,14 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 	_tmp15_ = vala_ccode_initializer_list_new ();
 	error_entries = _tmp15_;
 	{
-		ValaErrorDomain* _tmp16_;
+		ValaList* _ecode_list = NULL;
+		ValaErrorDomain* _tmp16_ = NULL;
 		ValaList* _tmp17_ = NULL;
-		ValaList* _ecode_list;
-		ValaList* _tmp18_;
-		gint _tmp19_;
-		gint _tmp20_;
-		gint _ecode_size;
-		gint _ecode_index;
+		gint _ecode_size = 0;
+		ValaList* _tmp18_ = NULL;
+		gint _tmp19_ = 0;
+		gint _tmp20_ = 0;
+		gint _ecode_index = 0;
 		_tmp16_ = edomain;
 		_tmp17_ = vala_error_domain_get_codes (_tmp16_);
 		_ecode_list = _tmp17_;
@@ -775,34 +798,34 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 		_ecode_size = _tmp20_;
 		_ecode_index = -1;
 		while (TRUE) {
-			gint _tmp21_;
-			gint _tmp22_;
-			gint _tmp23_;
-			ValaList* _tmp24_;
-			gint _tmp25_;
+			gint _tmp21_ = 0;
+			gint _tmp22_ = 0;
+			gint _tmp23_ = 0;
+			ValaErrorCode* ecode = NULL;
+			ValaList* _tmp24_ = NULL;
+			gint _tmp25_ = 0;
 			gpointer _tmp26_ = NULL;
-			ValaErrorCode* ecode;
-			ValaErrorCode* _tmp27_;
+			gchar* ecode_dbus_name = NULL;
+			ValaErrorCode* _tmp27_ = NULL;
 			gchar* _tmp28_ = NULL;
-			gchar* ecode_dbus_name;
-			const gchar* _tmp29_;
-			ValaCCodeInitializerList* _tmp36_;
-			ValaCCodeInitializerList* error_entry;
-			ValaCCodeInitializerList* _tmp37_;
-			ValaErrorCode* _tmp38_;
+			const gchar* _tmp29_ = NULL;
+			ValaCCodeInitializerList* error_entry = NULL;
+			ValaCCodeInitializerList* _tmp36_ = NULL;
+			ValaCCodeInitializerList* _tmp37_ = NULL;
+			ValaErrorCode* _tmp38_ = NULL;
 			gchar* _tmp39_ = NULL;
-			gchar* _tmp40_;
-			ValaCCodeIdentifier* _tmp41_;
-			ValaCCodeIdentifier* _tmp42_;
-			ValaCCodeInitializerList* _tmp43_;
-			const gchar* _tmp44_;
-			const gchar* _tmp45_;
+			gchar* _tmp40_ = NULL;
+			ValaCCodeIdentifier* _tmp41_ = NULL;
+			ValaCCodeIdentifier* _tmp42_ = NULL;
+			ValaCCodeInitializerList* _tmp43_ = NULL;
+			const gchar* _tmp44_ = NULL;
+			const gchar* _tmp45_ = NULL;
 			gchar* _tmp46_ = NULL;
-			gchar* _tmp47_;
-			ValaCCodeConstant* _tmp48_;
-			ValaCCodeConstant* _tmp49_;
-			ValaCCodeInitializerList* _tmp50_;
-			ValaCCodeInitializerList* _tmp51_;
+			gchar* _tmp47_ = NULL;
+			ValaCCodeConstant* _tmp48_ = NULL;
+			ValaCCodeConstant* _tmp49_ = NULL;
+			ValaCCodeInitializerList* _tmp50_ = NULL;
+			ValaCCodeInitializerList* _tmp51_ = NULL;
 			_tmp21_ = _ecode_index;
 			_ecode_index = _tmp21_ + 1;
 			_tmp22_ = _ecode_index;
@@ -819,11 +842,11 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 			ecode_dbus_name = _tmp28_;
 			_tmp29_ = ecode_dbus_name;
 			if (_tmp29_ == NULL) {
-				ValaErrorCode* _tmp30_;
-				const gchar* _tmp31_;
-				const gchar* _tmp32_;
+				ValaErrorCode* _tmp30_ = NULL;
+				const gchar* _tmp31_ = NULL;
+				const gchar* _tmp32_ = NULL;
 				gchar* _tmp33_ = NULL;
-				gchar* _tmp34_;
+				gchar* _tmp34_ = NULL;
 				gchar* _tmp35_ = NULL;
 				_tmp30_ = ecode;
 				_tmp31_ = vala_symbol_get_name ((ValaSymbol*) _tmp30_);
@@ -1015,7 +1038,7 @@ static void vala_gd_bus_module_real_visit_error_domain (ValaCodeVisitor* base, V
 
 static gboolean vala_gd_bus_module_is_file_descriptor (ValaGDBusModule* self, ValaDataType* type) {
 	gboolean result = FALSE;
-	ValaDataType* _tmp0_;
+	ValaDataType* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (type != NULL, FALSE);
 	_tmp0_ = type;
@@ -1023,15 +1046,12 @@ static gboolean vala_gd_bus_module_is_file_descriptor (ValaGDBusModule* self, Va
 		gboolean _tmp1_ = FALSE;
 		gboolean _tmp2_ = FALSE;
 		gboolean _tmp3_ = FALSE;
-		ValaDataType* _tmp4_;
-		ValaTypeSymbol* _tmp5_;
-		ValaTypeSymbol* _tmp6_;
+		ValaDataType* _tmp4_ = NULL;
+		ValaTypeSymbol* _tmp5_ = NULL;
+		ValaTypeSymbol* _tmp6_ = NULL;
 		gchar* _tmp7_ = NULL;
-		gchar* _tmp8_;
-		gboolean _tmp9_;
-		gboolean _tmp15_;
-		gboolean _tmp21_;
-		gboolean _tmp27_;
+		gchar* _tmp8_ = NULL;
+		gboolean _tmp9_ = FALSE;
 		_tmp4_ = type;
 		_tmp5_ = vala_data_type_get_data_type (_tmp4_);
 		_tmp6_ = _tmp5_;
@@ -1042,11 +1062,11 @@ static gboolean vala_gd_bus_module_is_file_descriptor (ValaGDBusModule* self, Va
 		if (_tmp9_) {
 			_tmp3_ = TRUE;
 		} else {
-			ValaDataType* _tmp10_;
-			ValaTypeSymbol* _tmp11_;
-			ValaTypeSymbol* _tmp12_;
+			ValaDataType* _tmp10_ = NULL;
+			ValaTypeSymbol* _tmp11_ = NULL;
+			ValaTypeSymbol* _tmp12_ = NULL;
 			gchar* _tmp13_ = NULL;
-			gchar* _tmp14_;
+			gchar* _tmp14_ = NULL;
 			_tmp10_ = type;
 			_tmp11_ = vala_data_type_get_data_type (_tmp10_);
 			_tmp12_ = _tmp11_;
@@ -1055,42 +1075,39 @@ static gboolean vala_gd_bus_module_is_file_descriptor (ValaGDBusModule* self, Va
 			_tmp3_ = g_strcmp0 (_tmp14_, "GLib.UnixOutputStream") == 0;
 			_g_free0 (_tmp14_);
 		}
-		_tmp15_ = _tmp3_;
-		if (_tmp15_) {
+		if (_tmp3_) {
 			_tmp2_ = TRUE;
 		} else {
-			ValaDataType* _tmp16_;
-			ValaTypeSymbol* _tmp17_;
-			ValaTypeSymbol* _tmp18_;
+			ValaDataType* _tmp15_ = NULL;
+			ValaTypeSymbol* _tmp16_ = NULL;
+			ValaTypeSymbol* _tmp17_ = NULL;
+			gchar* _tmp18_ = NULL;
 			gchar* _tmp19_ = NULL;
-			gchar* _tmp20_;
-			_tmp16_ = type;
-			_tmp17_ = vala_data_type_get_data_type (_tmp16_);
-			_tmp18_ = _tmp17_;
-			_tmp19_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp18_);
-			_tmp20_ = _tmp19_;
-			_tmp2_ = g_strcmp0 (_tmp20_, "GLib.Socket") == 0;
-			_g_free0 (_tmp20_);
+			_tmp15_ = type;
+			_tmp16_ = vala_data_type_get_data_type (_tmp15_);
+			_tmp17_ = _tmp16_;
+			_tmp18_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp17_);
+			_tmp19_ = _tmp18_;
+			_tmp2_ = g_strcmp0 (_tmp19_, "GLib.Socket") == 0;
+			_g_free0 (_tmp19_);
 		}
-		_tmp21_ = _tmp2_;
-		if (_tmp21_) {
+		if (_tmp2_) {
 			_tmp1_ = TRUE;
 		} else {
-			ValaDataType* _tmp22_;
-			ValaTypeSymbol* _tmp23_;
-			ValaTypeSymbol* _tmp24_;
-			gchar* _tmp25_ = NULL;
-			gchar* _tmp26_;
-			_tmp22_ = type;
-			_tmp23_ = vala_data_type_get_data_type (_tmp22_);
+			ValaDataType* _tmp20_ = NULL;
+			ValaTypeSymbol* _tmp21_ = NULL;
+			ValaTypeSymbol* _tmp22_ = NULL;
+			gchar* _tmp23_ = NULL;
+			gchar* _tmp24_ = NULL;
+			_tmp20_ = type;
+			_tmp21_ = vala_data_type_get_data_type (_tmp20_);
+			_tmp22_ = _tmp21_;
+			_tmp23_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp22_);
 			_tmp24_ = _tmp23_;
-			_tmp25_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp24_);
-			_tmp26_ = _tmp25_;
-			_tmp1_ = g_strcmp0 (_tmp26_, "GLib.FileDescriptorBased") == 0;
-			_g_free0 (_tmp26_);
+			_tmp1_ = g_strcmp0 (_tmp24_, "GLib.FileDescriptorBased") == 0;
+			_g_free0 (_tmp24_);
 		}
-		_tmp27_ = _tmp1_;
-		if (_tmp27_) {
+		if (_tmp1_) {
 			result = TRUE;
 			return result;
 		}
@@ -1102,21 +1119,21 @@ static gboolean vala_gd_bus_module_is_file_descriptor (ValaGDBusModule* self, Va
 
 gboolean vala_gd_bus_module_dbus_method_uses_file_descriptor (ValaGDBusModule* self, ValaMethod* method) {
 	gboolean result = FALSE;
-	ValaMethod* _tmp15_;
-	ValaDataType* _tmp16_;
-	ValaDataType* _tmp17_;
+	ValaMethod* _tmp15_ = NULL;
+	ValaDataType* _tmp16_ = NULL;
+	ValaDataType* _tmp17_ = NULL;
 	gboolean _tmp18_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (method != NULL, FALSE);
 	{
-		ValaMethod* _tmp0_;
+		ValaList* _param_list = NULL;
+		ValaMethod* _tmp0_ = NULL;
 		ValaList* _tmp1_ = NULL;
-		ValaList* _param_list;
-		ValaList* _tmp2_;
-		gint _tmp3_;
-		gint _tmp4_;
-		gint _param_size;
-		gint _param_index;
+		gint _param_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _param_index = 0;
 		_tmp0_ = method;
 		_tmp1_ = vala_method_get_parameters (_tmp0_);
 		_param_list = _tmp1_;
@@ -1126,16 +1143,16 @@ gboolean vala_gd_bus_module_dbus_method_uses_file_descriptor (ValaGDBusModule* s
 		_param_size = _tmp4_;
 		_param_index = -1;
 		while (TRUE) {
-			gint _tmp5_;
-			gint _tmp6_;
-			gint _tmp7_;
-			ValaList* _tmp8_;
-			gint _tmp9_;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaParameter* param = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
 			gpointer _tmp10_ = NULL;
-			ValaParameter* param;
-			ValaParameter* _tmp11_;
-			ValaDataType* _tmp12_;
-			ValaDataType* _tmp13_;
+			ValaParameter* _tmp11_ = NULL;
+			ValaDataType* _tmp12_ = NULL;
+			ValaDataType* _tmp13_ = NULL;
 			gboolean _tmp14_ = FALSE;
 			_tmp5_ = _param_index;
 			_param_index = _tmp5_ + 1;
@@ -1177,18 +1194,18 @@ gboolean vala_gd_bus_module_dbus_method_uses_file_descriptor (ValaGDBusModule* s
 
 static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusModule* self, ValaDataType* type, ValaCCodeExpression* expr) {
 	ValaCCodeExpression* result = NULL;
-	ValaDataType* _tmp0_;
+	ValaDataType* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (type != NULL, NULL);
 	g_return_val_if_fail (expr != NULL, NULL);
 	_tmp0_ = type;
 	if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp0_, VALA_TYPE_OBJECT_TYPE)) {
-		ValaDataType* _tmp1_;
-		ValaTypeSymbol* _tmp2_;
-		ValaTypeSymbol* _tmp3_;
+		ValaDataType* _tmp1_ = NULL;
+		ValaTypeSymbol* _tmp2_ = NULL;
+		ValaTypeSymbol* _tmp3_ = NULL;
 		gchar* _tmp4_ = NULL;
-		gchar* _tmp5_;
-		gboolean _tmp6_;
+		gchar* _tmp5_ = NULL;
+		gboolean _tmp6_ = FALSE;
 		_tmp1_ = type;
 		_tmp2_ = vala_data_type_get_data_type (_tmp1_);
 		_tmp3_ = _tmp2_;
@@ -1197,13 +1214,13 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 		_tmp6_ = g_strcmp0 (_tmp5_, "GLib.UnixInputStream") == 0;
 		_g_free0 (_tmp5_);
 		if (_tmp6_) {
-			ValaCCodeIdentifier* _tmp7_;
-			ValaCCodeIdentifier* _tmp8_;
-			ValaCCodeFunctionCall* _tmp9_;
-			ValaCCodeFunctionCall* _tmp10_;
-			ValaCCodeFunctionCall* _result_;
-			ValaCCodeFunctionCall* _tmp11_;
-			ValaCCodeExpression* _tmp12_;
+			ValaCCodeFunctionCall* _result_ = NULL;
+			ValaCCodeIdentifier* _tmp7_ = NULL;
+			ValaCCodeIdentifier* _tmp8_ = NULL;
+			ValaCCodeFunctionCall* _tmp9_ = NULL;
+			ValaCCodeFunctionCall* _tmp10_ = NULL;
+			ValaCCodeFunctionCall* _tmp11_ = NULL;
+			ValaCCodeExpression* _tmp12_ = NULL;
 			_tmp7_ = vala_ccode_identifier_new ("g_unix_input_stream_get_fd");
 			_tmp8_ = _tmp7_;
 			_tmp9_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp8_);
@@ -1216,12 +1233,12 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 			result = (ValaCCodeExpression*) _result_;
 			return result;
 		} else {
-			ValaDataType* _tmp13_;
-			ValaTypeSymbol* _tmp14_;
-			ValaTypeSymbol* _tmp15_;
+			ValaDataType* _tmp13_ = NULL;
+			ValaTypeSymbol* _tmp14_ = NULL;
+			ValaTypeSymbol* _tmp15_ = NULL;
 			gchar* _tmp16_ = NULL;
-			gchar* _tmp17_;
-			gboolean _tmp18_;
+			gchar* _tmp17_ = NULL;
+			gboolean _tmp18_ = FALSE;
 			_tmp13_ = type;
 			_tmp14_ = vala_data_type_get_data_type (_tmp13_);
 			_tmp15_ = _tmp14_;
@@ -1230,13 +1247,13 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 			_tmp18_ = g_strcmp0 (_tmp17_, "GLib.UnixOutputStream") == 0;
 			_g_free0 (_tmp17_);
 			if (_tmp18_) {
-				ValaCCodeIdentifier* _tmp19_;
-				ValaCCodeIdentifier* _tmp20_;
-				ValaCCodeFunctionCall* _tmp21_;
-				ValaCCodeFunctionCall* _tmp22_;
-				ValaCCodeFunctionCall* _result_;
-				ValaCCodeFunctionCall* _tmp23_;
-				ValaCCodeExpression* _tmp24_;
+				ValaCCodeFunctionCall* _result_ = NULL;
+				ValaCCodeIdentifier* _tmp19_ = NULL;
+				ValaCCodeIdentifier* _tmp20_ = NULL;
+				ValaCCodeFunctionCall* _tmp21_ = NULL;
+				ValaCCodeFunctionCall* _tmp22_ = NULL;
+				ValaCCodeFunctionCall* _tmp23_ = NULL;
+				ValaCCodeExpression* _tmp24_ = NULL;
 				_tmp19_ = vala_ccode_identifier_new ("g_unix_output_stream_get_fd");
 				_tmp20_ = _tmp19_;
 				_tmp21_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp20_);
@@ -1249,12 +1266,12 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 				result = (ValaCCodeExpression*) _result_;
 				return result;
 			} else {
-				ValaDataType* _tmp25_;
-				ValaTypeSymbol* _tmp26_;
-				ValaTypeSymbol* _tmp27_;
+				ValaDataType* _tmp25_ = NULL;
+				ValaTypeSymbol* _tmp26_ = NULL;
+				ValaTypeSymbol* _tmp27_ = NULL;
 				gchar* _tmp28_ = NULL;
-				gchar* _tmp29_;
-				gboolean _tmp30_;
+				gchar* _tmp29_ = NULL;
+				gboolean _tmp30_ = FALSE;
 				_tmp25_ = type;
 				_tmp26_ = vala_data_type_get_data_type (_tmp25_);
 				_tmp27_ = _tmp26_;
@@ -1263,13 +1280,13 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 				_tmp30_ = g_strcmp0 (_tmp29_, "GLib.Socket") == 0;
 				_g_free0 (_tmp29_);
 				if (_tmp30_) {
-					ValaCCodeIdentifier* _tmp31_;
-					ValaCCodeIdentifier* _tmp32_;
-					ValaCCodeFunctionCall* _tmp33_;
-					ValaCCodeFunctionCall* _tmp34_;
-					ValaCCodeFunctionCall* _result_;
-					ValaCCodeFunctionCall* _tmp35_;
-					ValaCCodeExpression* _tmp36_;
+					ValaCCodeFunctionCall* _result_ = NULL;
+					ValaCCodeIdentifier* _tmp31_ = NULL;
+					ValaCCodeIdentifier* _tmp32_ = NULL;
+					ValaCCodeFunctionCall* _tmp33_ = NULL;
+					ValaCCodeFunctionCall* _tmp34_ = NULL;
+					ValaCCodeFunctionCall* _tmp35_ = NULL;
+					ValaCCodeExpression* _tmp36_ = NULL;
 					_tmp31_ = vala_ccode_identifier_new ("g_socket_get_fd");
 					_tmp32_ = _tmp31_;
 					_tmp33_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp32_);
@@ -1282,12 +1299,12 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 					result = (ValaCCodeExpression*) _result_;
 					return result;
 				} else {
-					ValaDataType* _tmp37_;
-					ValaTypeSymbol* _tmp38_;
-					ValaTypeSymbol* _tmp39_;
+					ValaDataType* _tmp37_ = NULL;
+					ValaTypeSymbol* _tmp38_ = NULL;
+					ValaTypeSymbol* _tmp39_ = NULL;
 					gchar* _tmp40_ = NULL;
-					gchar* _tmp41_;
-					gboolean _tmp42_;
+					gchar* _tmp41_ = NULL;
+					gboolean _tmp42_ = FALSE;
 					_tmp37_ = type;
 					_tmp38_ = vala_data_type_get_data_type (_tmp37_);
 					_tmp39_ = _tmp38_;
@@ -1296,13 +1313,13 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 					_tmp42_ = g_strcmp0 (_tmp41_, "GLib.FileDescriptorBased") == 0;
 					_g_free0 (_tmp41_);
 					if (_tmp42_) {
-						ValaCCodeIdentifier* _tmp43_;
-						ValaCCodeIdentifier* _tmp44_;
-						ValaCCodeFunctionCall* _tmp45_;
-						ValaCCodeFunctionCall* _tmp46_;
-						ValaCCodeFunctionCall* _result_;
-						ValaCCodeFunctionCall* _tmp47_;
-						ValaCCodeExpression* _tmp48_;
+						ValaCCodeFunctionCall* _result_ = NULL;
+						ValaCCodeIdentifier* _tmp43_ = NULL;
+						ValaCCodeIdentifier* _tmp44_ = NULL;
+						ValaCCodeFunctionCall* _tmp45_ = NULL;
+						ValaCCodeFunctionCall* _tmp46_ = NULL;
+						ValaCCodeFunctionCall* _tmp47_ = NULL;
+						ValaCCodeExpression* _tmp48_ = NULL;
 						_tmp43_ = vala_ccode_identifier_new ("g_file_descriptor_based_get_fd");
 						_tmp44_ = _tmp43_;
 						_tmp45_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp44_);
@@ -1325,11 +1342,11 @@ static ValaCCodeExpression* vala_gd_bus_module_get_file_descriptor (ValaGDBusMod
 
 
 void vala_gd_bus_module_send_dbus_value (ValaGDBusModule* self, ValaDataType* type, ValaCCodeExpression* builder_expr, ValaCCodeExpression* expr, ValaSymbol* sym) {
-	ValaDataType* _tmp0_;
-	ValaCCodeExpression* _tmp1_;
+	ValaCCodeExpression* fd = NULL;
+	ValaDataType* _tmp0_ = NULL;
+	ValaCCodeExpression* _tmp1_ = NULL;
 	ValaCCodeExpression* _tmp2_ = NULL;
-	ValaCCodeExpression* fd;
-	ValaCCodeExpression* _tmp3_;
+	ValaCCodeExpression* _tmp3_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (type != NULL);
 	g_return_if_fail (builder_expr != NULL);
@@ -1340,36 +1357,36 @@ void vala_gd_bus_module_send_dbus_value (ValaGDBusModule* self, ValaDataType* ty
 	fd = _tmp2_;
 	_tmp3_ = fd;
 	if (_tmp3_ != NULL) {
-		ValaCCodeIdentifier* _tmp4_;
-		ValaCCodeIdentifier* _tmp5_;
-		ValaCCodeFunctionCall* _tmp6_;
-		ValaCCodeFunctionCall* _tmp7_;
-		ValaCCodeFunctionCall* fd_append;
-		ValaCCodeFunctionCall* _tmp8_;
-		ValaCCodeIdentifier* _tmp9_;
-		ValaCCodeIdentifier* _tmp10_;
-		ValaCCodeFunctionCall* _tmp11_;
-		ValaCCodeExpression* _tmp12_;
-		ValaCCodeFunctionCall* _tmp13_;
-		ValaCCodeConstant* _tmp14_;
-		ValaCCodeConstant* _tmp15_;
-		ValaCCodeIdentifier* _tmp16_;
-		ValaCCodeIdentifier* _tmp17_;
-		ValaCCodeFunctionCall* _tmp18_;
-		ValaCCodeFunctionCall* _tmp19_;
-		ValaCCodeFunctionCall* builder_add;
-		ValaCCodeFunctionCall* _tmp20_;
-		ValaCCodeExpression* _tmp21_;
-		ValaCCodeUnaryExpression* _tmp22_;
-		ValaCCodeUnaryExpression* _tmp23_;
-		ValaCCodeFunctionCall* _tmp24_;
-		ValaCCodeConstant* _tmp25_;
-		ValaCCodeConstant* _tmp26_;
-		ValaCCodeFunctionCall* _tmp27_;
-		ValaCCodeFunctionCall* _tmp28_;
-		ValaCCodeFunction* _tmp29_;
-		ValaCCodeFunction* _tmp30_;
-		ValaCCodeFunctionCall* _tmp31_;
+		ValaCCodeFunctionCall* fd_append = NULL;
+		ValaCCodeIdentifier* _tmp4_ = NULL;
+		ValaCCodeIdentifier* _tmp5_ = NULL;
+		ValaCCodeFunctionCall* _tmp6_ = NULL;
+		ValaCCodeFunctionCall* _tmp7_ = NULL;
+		ValaCCodeFunctionCall* _tmp8_ = NULL;
+		ValaCCodeIdentifier* _tmp9_ = NULL;
+		ValaCCodeIdentifier* _tmp10_ = NULL;
+		ValaCCodeFunctionCall* _tmp11_ = NULL;
+		ValaCCodeExpression* _tmp12_ = NULL;
+		ValaCCodeFunctionCall* _tmp13_ = NULL;
+		ValaCCodeConstant* _tmp14_ = NULL;
+		ValaCCodeConstant* _tmp15_ = NULL;
+		ValaCCodeFunctionCall* builder_add = NULL;
+		ValaCCodeIdentifier* _tmp16_ = NULL;
+		ValaCCodeIdentifier* _tmp17_ = NULL;
+		ValaCCodeFunctionCall* _tmp18_ = NULL;
+		ValaCCodeFunctionCall* _tmp19_ = NULL;
+		ValaCCodeFunctionCall* _tmp20_ = NULL;
+		ValaCCodeExpression* _tmp21_ = NULL;
+		ValaCCodeUnaryExpression* _tmp22_ = NULL;
+		ValaCCodeUnaryExpression* _tmp23_ = NULL;
+		ValaCCodeFunctionCall* _tmp24_ = NULL;
+		ValaCCodeConstant* _tmp25_ = NULL;
+		ValaCCodeConstant* _tmp26_ = NULL;
+		ValaCCodeFunctionCall* _tmp27_ = NULL;
+		ValaCCodeFunctionCall* _tmp28_ = NULL;
+		ValaCCodeFunction* _tmp29_ = NULL;
+		ValaCCodeFunction* _tmp30_ = NULL;
+		ValaCCodeFunctionCall* _tmp31_ = NULL;
 		_tmp4_ = vala_ccode_identifier_new ("g_unix_fd_list_append");
 		_tmp5_ = _tmp4_;
 		_tmp6_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp5_);
@@ -1416,10 +1433,10 @@ void vala_gd_bus_module_send_dbus_value (ValaGDBusModule* self, ValaDataType* ty
 		_vala_ccode_node_unref0 (builder_add);
 		_vala_ccode_node_unref0 (fd_append);
 	} else {
-		ValaDataType* _tmp32_;
-		ValaCCodeExpression* _tmp33_;
-		ValaCCodeExpression* _tmp34_;
-		ValaSymbol* _tmp35_;
+		ValaDataType* _tmp32_ = NULL;
+		ValaCCodeExpression* _tmp33_ = NULL;
+		ValaCCodeExpression* _tmp34_ = NULL;
+		ValaSymbol* _tmp35_ = NULL;
 		_tmp32_ = type;
 		_tmp33_ = builder_expr;
 		_tmp34_ = expr;
@@ -1432,18 +1449,18 @@ void vala_gd_bus_module_send_dbus_value (ValaGDBusModule* self, ValaDataType* ty
 
 static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (ValaGDBusModule* self, ValaDataType* type, ValaCCodeExpression* expr) {
 	ValaCCodeExpression* result = NULL;
-	ValaDataType* _tmp0_;
+	ValaDataType* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (type != NULL, NULL);
 	g_return_val_if_fail (expr != NULL, NULL);
 	_tmp0_ = type;
 	if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp0_, VALA_TYPE_OBJECT_TYPE)) {
-		ValaDataType* _tmp1_;
-		ValaTypeSymbol* _tmp2_;
-		ValaTypeSymbol* _tmp3_;
+		ValaDataType* _tmp1_ = NULL;
+		ValaTypeSymbol* _tmp2_ = NULL;
+		ValaTypeSymbol* _tmp3_ = NULL;
 		gchar* _tmp4_ = NULL;
-		gchar* _tmp5_;
-		gboolean _tmp6_;
+		gchar* _tmp5_ = NULL;
+		gboolean _tmp6_ = FALSE;
 		_tmp1_ = type;
 		_tmp2_ = vala_data_type_get_data_type (_tmp1_);
 		_tmp3_ = _tmp2_;
@@ -1452,18 +1469,18 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 		_tmp6_ = g_strcmp0 (_tmp5_, "GLib.UnixInputStream") == 0;
 		_g_free0 (_tmp5_);
 		if (_tmp6_) {
-			ValaCCodeIdentifier* _tmp7_;
-			ValaCCodeIdentifier* _tmp8_;
-			ValaCCodeFunctionCall* _tmp9_;
-			ValaCCodeFunctionCall* _tmp10_;
-			ValaCCodeFunctionCall* _result_;
-			ValaCCodeFunctionCall* _tmp11_;
-			ValaCCodeExpression* _tmp12_;
-			ValaCCodeFunctionCall* _tmp13_;
-			ValaCCodeConstant* _tmp14_;
-			ValaCCodeConstant* _tmp15_;
-			ValaCCodeFunctionCall* _tmp16_;
-			ValaCCodeCastExpression* _tmp17_;
+			ValaCCodeFunctionCall* _result_ = NULL;
+			ValaCCodeIdentifier* _tmp7_ = NULL;
+			ValaCCodeIdentifier* _tmp8_ = NULL;
+			ValaCCodeFunctionCall* _tmp9_ = NULL;
+			ValaCCodeFunctionCall* _tmp10_ = NULL;
+			ValaCCodeFunctionCall* _tmp11_ = NULL;
+			ValaCCodeExpression* _tmp12_ = NULL;
+			ValaCCodeFunctionCall* _tmp13_ = NULL;
+			ValaCCodeConstant* _tmp14_ = NULL;
+			ValaCCodeConstant* _tmp15_ = NULL;
+			ValaCCodeFunctionCall* _tmp16_ = NULL;
+			ValaCCodeCastExpression* _tmp17_ = NULL;
 			_tmp7_ = vala_ccode_identifier_new ("g_unix_input_stream_new");
 			_tmp8_ = _tmp7_;
 			_tmp9_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp8_);
@@ -1484,12 +1501,12 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 			_vala_ccode_node_unref0 (_result_);
 			return result;
 		} else {
-			ValaDataType* _tmp18_;
-			ValaTypeSymbol* _tmp19_;
-			ValaTypeSymbol* _tmp20_;
+			ValaDataType* _tmp18_ = NULL;
+			ValaTypeSymbol* _tmp19_ = NULL;
+			ValaTypeSymbol* _tmp20_ = NULL;
 			gchar* _tmp21_ = NULL;
-			gchar* _tmp22_;
-			gboolean _tmp23_;
+			gchar* _tmp22_ = NULL;
+			gboolean _tmp23_ = FALSE;
 			_tmp18_ = type;
 			_tmp19_ = vala_data_type_get_data_type (_tmp18_);
 			_tmp20_ = _tmp19_;
@@ -1498,18 +1515,18 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 			_tmp23_ = g_strcmp0 (_tmp22_, "GLib.UnixOutputStream") == 0;
 			_g_free0 (_tmp22_);
 			if (_tmp23_) {
-				ValaCCodeIdentifier* _tmp24_;
-				ValaCCodeIdentifier* _tmp25_;
-				ValaCCodeFunctionCall* _tmp26_;
-				ValaCCodeFunctionCall* _tmp27_;
-				ValaCCodeFunctionCall* _result_;
-				ValaCCodeFunctionCall* _tmp28_;
-				ValaCCodeExpression* _tmp29_;
-				ValaCCodeFunctionCall* _tmp30_;
-				ValaCCodeConstant* _tmp31_;
-				ValaCCodeConstant* _tmp32_;
-				ValaCCodeFunctionCall* _tmp33_;
-				ValaCCodeCastExpression* _tmp34_;
+				ValaCCodeFunctionCall* _result_ = NULL;
+				ValaCCodeIdentifier* _tmp24_ = NULL;
+				ValaCCodeIdentifier* _tmp25_ = NULL;
+				ValaCCodeFunctionCall* _tmp26_ = NULL;
+				ValaCCodeFunctionCall* _tmp27_ = NULL;
+				ValaCCodeFunctionCall* _tmp28_ = NULL;
+				ValaCCodeExpression* _tmp29_ = NULL;
+				ValaCCodeFunctionCall* _tmp30_ = NULL;
+				ValaCCodeConstant* _tmp31_ = NULL;
+				ValaCCodeConstant* _tmp32_ = NULL;
+				ValaCCodeFunctionCall* _tmp33_ = NULL;
+				ValaCCodeCastExpression* _tmp34_ = NULL;
 				_tmp24_ = vala_ccode_identifier_new ("g_unix_output_stream_new");
 				_tmp25_ = _tmp24_;
 				_tmp26_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp25_);
@@ -1530,12 +1547,12 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 				_vala_ccode_node_unref0 (_result_);
 				return result;
 			} else {
-				ValaDataType* _tmp35_;
-				ValaTypeSymbol* _tmp36_;
-				ValaTypeSymbol* _tmp37_;
+				ValaDataType* _tmp35_ = NULL;
+				ValaTypeSymbol* _tmp36_ = NULL;
+				ValaTypeSymbol* _tmp37_ = NULL;
 				gchar* _tmp38_ = NULL;
-				gchar* _tmp39_;
-				gboolean _tmp40_;
+				gchar* _tmp39_ = NULL;
+				gboolean _tmp40_ = FALSE;
 				_tmp35_ = type;
 				_tmp36_ = vala_data_type_get_data_type (_tmp35_);
 				_tmp37_ = _tmp36_;
@@ -1544,16 +1561,16 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 				_tmp40_ = g_strcmp0 (_tmp39_, "GLib.Socket") == 0;
 				_g_free0 (_tmp39_);
 				if (_tmp40_) {
-					ValaCCodeIdentifier* _tmp41_;
-					ValaCCodeIdentifier* _tmp42_;
-					ValaCCodeFunctionCall* _tmp43_;
-					ValaCCodeFunctionCall* _tmp44_;
-					ValaCCodeFunctionCall* _result_;
-					ValaCCodeFunctionCall* _tmp45_;
-					ValaCCodeExpression* _tmp46_;
-					ValaCCodeFunctionCall* _tmp47_;
-					ValaCCodeConstant* _tmp48_;
-					ValaCCodeConstant* _tmp49_;
+					ValaCCodeFunctionCall* _result_ = NULL;
+					ValaCCodeIdentifier* _tmp41_ = NULL;
+					ValaCCodeIdentifier* _tmp42_ = NULL;
+					ValaCCodeFunctionCall* _tmp43_ = NULL;
+					ValaCCodeFunctionCall* _tmp44_ = NULL;
+					ValaCCodeFunctionCall* _tmp45_ = NULL;
+					ValaCCodeExpression* _tmp46_ = NULL;
+					ValaCCodeFunctionCall* _tmp47_ = NULL;
+					ValaCCodeConstant* _tmp48_ = NULL;
+					ValaCCodeConstant* _tmp49_ = NULL;
 					_tmp41_ = vala_ccode_identifier_new ("g_socket_new_from_fd");
 					_tmp42_ = _tmp41_;
 					_tmp43_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp42_);
@@ -1581,31 +1598,31 @@ static ValaCCodeExpression* vala_gd_bus_module_create_from_file_descriptor (Vala
 
 void vala_gd_bus_module_receive_dbus_value (ValaGDBusModule* self, ValaDataType* type, ValaCCodeExpression* message_expr, ValaCCodeExpression* iter_expr, ValaCCodeExpression* target_expr, ValaSymbol* sym, ValaCCodeExpression* error_expr, gboolean* may_fail) {
 	gboolean _vala_may_fail = FALSE;
-	ValaCCodeIdentifier* _tmp0_;
-	ValaCCodeIdentifier* _tmp1_;
-	ValaCCodeFunctionCall* _tmp2_;
-	ValaCCodeFunctionCall* _tmp3_;
-	ValaCCodeFunctionCall* fd_list;
-	ValaCCodeFunctionCall* _tmp4_;
-	ValaCCodeExpression* _tmp5_;
-	ValaCCodeIdentifier* _tmp6_;
-	ValaCCodeIdentifier* _tmp7_;
-	ValaCCodeFunctionCall* _tmp8_;
-	ValaCCodeFunctionCall* _tmp9_;
-	ValaCCodeFunctionCall* fd;
-	ValaCCodeFunctionCall* _tmp10_;
-	ValaCCodeFunctionCall* _tmp11_;
-	ValaCCodeFunctionCall* _tmp12_;
-	ValaCCodeIdentifier* _tmp13_;
-	ValaCCodeIdentifier* _tmp14_;
-	ValaCCodeFunctionCall* _tmp15_;
-	ValaCCodeConstant* _tmp16_;
-	ValaCCodeConstant* _tmp17_;
-	ValaDataType* _tmp18_;
-	ValaCCodeFunctionCall* _tmp19_;
+	ValaCCodeFunctionCall* fd_list = NULL;
+	ValaCCodeIdentifier* _tmp0_ = NULL;
+	ValaCCodeIdentifier* _tmp1_ = NULL;
+	ValaCCodeFunctionCall* _tmp2_ = NULL;
+	ValaCCodeFunctionCall* _tmp3_ = NULL;
+	ValaCCodeFunctionCall* _tmp4_ = NULL;
+	ValaCCodeExpression* _tmp5_ = NULL;
+	ValaCCodeFunctionCall* fd = NULL;
+	ValaCCodeIdentifier* _tmp6_ = NULL;
+	ValaCCodeIdentifier* _tmp7_ = NULL;
+	ValaCCodeFunctionCall* _tmp8_ = NULL;
+	ValaCCodeFunctionCall* _tmp9_ = NULL;
+	ValaCCodeFunctionCall* _tmp10_ = NULL;
+	ValaCCodeFunctionCall* _tmp11_ = NULL;
+	ValaCCodeFunctionCall* _tmp12_ = NULL;
+	ValaCCodeIdentifier* _tmp13_ = NULL;
+	ValaCCodeIdentifier* _tmp14_ = NULL;
+	ValaCCodeFunctionCall* _tmp15_ = NULL;
+	ValaCCodeConstant* _tmp16_ = NULL;
+	ValaCCodeConstant* _tmp17_ = NULL;
+	ValaCCodeExpression* stream = NULL;
+	ValaDataType* _tmp18_ = NULL;
+	ValaCCodeFunctionCall* _tmp19_ = NULL;
 	ValaCCodeExpression* _tmp20_ = NULL;
-	ValaCCodeExpression* stream;
-	ValaCCodeExpression* _tmp21_;
+	ValaCCodeExpression* _tmp21_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (type != NULL);
 	g_return_if_fail (message_expr != NULL);
@@ -1645,30 +1662,30 @@ void vala_gd_bus_module_receive_dbus_value (ValaGDBusModule* self, ValaDataType*
 	stream = _tmp20_;
 	_tmp21_ = stream;
 	if (_tmp21_ != NULL) {
-		ValaCCodeIdentifier* _tmp22_;
-		ValaCCodeIdentifier* _tmp23_;
-		ValaCCodeFunctionCall* _tmp24_;
-		ValaCCodeFunctionCall* _tmp25_;
-		ValaCCodeFunctionCall* get_fd;
-		ValaCCodeFunctionCall* _tmp26_;
-		ValaCCodeExpression* _tmp27_;
-		ValaCCodeUnaryExpression* _tmp28_;
-		ValaCCodeUnaryExpression* _tmp29_;
-		ValaCCodeFunctionCall* _tmp30_;
-		ValaCCodeConstant* _tmp31_;
-		ValaCCodeConstant* _tmp32_;
-		ValaCCodeFunctionCall* _tmp33_;
-		ValaCCodeIdentifier* _tmp34_;
-		ValaCCodeIdentifier* _tmp35_;
-		ValaCCodeUnaryExpression* _tmp36_;
-		ValaCCodeUnaryExpression* _tmp37_;
-		ValaCCodeFunction* _tmp38_;
-		ValaCCodeFunction* _tmp39_;
-		ValaCCodeFunctionCall* _tmp40_;
-		ValaCCodeFunction* _tmp41_;
-		ValaCCodeFunction* _tmp42_;
-		ValaCCodeExpression* _tmp43_;
-		ValaCCodeExpression* _tmp44_;
+		ValaCCodeFunctionCall* get_fd = NULL;
+		ValaCCodeIdentifier* _tmp22_ = NULL;
+		ValaCCodeIdentifier* _tmp23_ = NULL;
+		ValaCCodeFunctionCall* _tmp24_ = NULL;
+		ValaCCodeFunctionCall* _tmp25_ = NULL;
+		ValaCCodeFunctionCall* _tmp26_ = NULL;
+		ValaCCodeExpression* _tmp27_ = NULL;
+		ValaCCodeUnaryExpression* _tmp28_ = NULL;
+		ValaCCodeUnaryExpression* _tmp29_ = NULL;
+		ValaCCodeFunctionCall* _tmp30_ = NULL;
+		ValaCCodeConstant* _tmp31_ = NULL;
+		ValaCCodeConstant* _tmp32_ = NULL;
+		ValaCCodeFunctionCall* _tmp33_ = NULL;
+		ValaCCodeIdentifier* _tmp34_ = NULL;
+		ValaCCodeIdentifier* _tmp35_ = NULL;
+		ValaCCodeUnaryExpression* _tmp36_ = NULL;
+		ValaCCodeUnaryExpression* _tmp37_ = NULL;
+		ValaCCodeFunction* _tmp38_ = NULL;
+		ValaCCodeFunction* _tmp39_ = NULL;
+		ValaCCodeFunctionCall* _tmp40_ = NULL;
+		ValaCCodeFunction* _tmp41_ = NULL;
+		ValaCCodeFunction* _tmp42_ = NULL;
+		ValaCCodeExpression* _tmp43_ = NULL;
+		ValaCCodeExpression* _tmp44_ = NULL;
 		_tmp22_ = vala_ccode_identifier_new ("g_variant_iter_next");
 		_tmp23_ = _tmp22_;
 		_tmp24_ = vala_ccode_function_call_new ((ValaCCodeExpression*) _tmp23_);
@@ -1706,11 +1723,11 @@ void vala_gd_bus_module_receive_dbus_value (ValaGDBusModule* self, ValaDataType*
 		_vala_may_fail = FALSE;
 		_vala_ccode_node_unref0 (get_fd);
 	} else {
-		ValaDataType* _tmp45_;
-		ValaCCodeExpression* _tmp46_;
-		ValaCCodeExpression* _tmp47_;
-		ValaSymbol* _tmp48_;
-		ValaCCodeExpression* _tmp49_;
+		ValaDataType* _tmp45_ = NULL;
+		ValaCCodeExpression* _tmp46_ = NULL;
+		ValaCCodeExpression* _tmp47_ = NULL;
+		ValaSymbol* _tmp48_ = NULL;
+		ValaCCodeExpression* _tmp49_ = NULL;
 		gboolean _tmp50_ = FALSE;
 		_tmp45_ = type;
 		_tmp46_ = iter_expr;

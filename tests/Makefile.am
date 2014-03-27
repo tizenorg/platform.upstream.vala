@@ -16,6 +16,7 @@ TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) CFLAGS='$(CFLAGS)' CPPFLAGS='$(CPPFLAGS)' L
 
 TESTS = \
 	basic-types/integers.vala \
+	basic-types/escape-chars.vala \
 	basic-types/floats.vala \
 	basic-types/strings.vala \
 	basic-types/arrays.vala \
@@ -36,6 +37,7 @@ TESTS = \
 	namespaces.vala \
 	methods/lambda.vala \
 	methods/closures.vala \
+	methods/prepostconditions.vala \
 	methods/symbolresolution.vala \
 	methods/bug595538.vala \
 	methods/bug596726.vala \
@@ -46,6 +48,7 @@ TESTS = \
 	methods/bug620673.vala \
 	methods/bug622570.vala \
 	methods/bug639054.vala \
+	methods/bug642885.vala \
 	methods/bug642899.vala \
 	methods/bug646345.vala \
 	methods/bug648320.vala \
@@ -53,6 +56,9 @@ TESTS = \
 	methods/bug653391.vala \
 	methods/bug653908.vala \
 	methods/bug663210.vala \
+	methods/bug723009.vala \
+	methods/bug723195.vala \
+	methods/bug726347.vala \
 	methods/generics.vala \
 	control-flow/break.vala \
 	control-flow/expressions-conditional.vala \
@@ -60,8 +66,11 @@ TESTS = \
 	control-flow/foreach.vala \
 	control-flow/switch.vala \
 	control-flow/sideeffects.vala \
+	control-flow/bug639482.vala \
 	control-flow/bug652549.vala \
+	control-flow/bug661985.vala \
 	control-flow/bug665904.vala \
+	control-flow/bug691514.vala	\
 	enums/enums.vala \
 	enums/bug673879.vala \
 	structs/structs.vala \
@@ -90,6 +99,7 @@ TESTS = \
 	structs/bug667890.vala \
 	structs/bug669580.vala \
 	structs/bug685177.vala \
+	structs/bug686190.vala \
 	structs/bug690380.vala \
 	delegates/delegates.vala \
 	delegates/bug539166.vala \
@@ -97,6 +107,9 @@ TESTS = \
 	delegates/bug595639.vala \
 	delegates/bug638415.vala \
 	delegates/bug639751.vala \
+	delegates/bug659778.vala \
+	delegates/bug703804.vala \
+	objects/chainup.vala \
 	objects/classes.vala \
 	objects/fields.vala \
 	objects/interfaces.vala \
@@ -134,6 +147,9 @@ TESTS = \
 	objects/bug667668.vala \
 	objects/bug683646.vala \
 	objects/bug695671.vala \
+	objects/bug701978.vala \
+	objects/bug702736.vala \
+	objects/bug702846.vala \
 	errors/errors.vala \
 	errors/bug567181.vala \
 	errors/bug579101.vala \
@@ -176,6 +192,7 @@ TESTS = \
 	dbus/bug596862.vala \
 	dbus/bug602003.test \
 	gir/bug651773.test \
+	gir/bug667751.test \
 	$(NULL)
 
 check-TESTS: $(TESTS)

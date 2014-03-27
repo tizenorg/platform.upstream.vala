@@ -1,6 +1,6 @@
 /* valaparser.vala
  *
- * Copyright (C) 2006-2011  Jürg Billeter
+ * Copyright (C) 2006-2013  Jürg Billeter
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1751,6 +1751,13 @@ public class Vala.Parser : CodeVisitor {
 	void parse_local_constant_declarations (Block block) throws ParseError {
 		expect (TokenType.CONST);
 		var constant_type = parse_type (false, false);
+
+		// constant arrays don't own their element
+		var array_type = constant_type as ArrayType;
+		if (array_type != null) {
+			array_type.element_type.value_owned = false;
+		}
+
 		do {
 			DataType type_copy = constant_type.copy ();
 			var local = parse_local_constant (type_copy);
@@ -2678,6 +2685,12 @@ public class Vala.Parser : CodeVisitor {
 		if (ModifierFlags.EXTERN in flags || scanner.source_file.file_type == SourceFileType.PACKAGE) {
 			prop.external = true;
 		}
+		if ((prop.is_abstract && prop.is_virtual)
+			|| (prop.is_abstract && prop.overrides)
+			|| (prop.is_virtual && prop.overrides)) {
+			throw new ParseError.SYNTAX (get_error ("only one of `abstract', `virtual', or `override' may be specified"));
+		}
+
 		if (accept (TokenType.THROWS)) {
 			do {
 				prop.add_error_type (parse_type (true, false));

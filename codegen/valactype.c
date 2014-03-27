@@ -73,7 +73,7 @@ static void vala_ctype_finalize (ValaCodeNode* obj);
 
 ValaCType* vala_ctype_construct (GType object_type, const gchar* ctype_name) {
 	ValaCType* self = NULL;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (ctype_name != NULL, NULL);
 	self = (ValaCType*) vala_data_type_construct (object_type);
 	_tmp0_ = ctype_name;
@@ -90,8 +90,8 @@ ValaCType* vala_ctype_new (const gchar* ctype_name) {
 static ValaDataType* vala_ctype_real_copy (ValaDataType* base) {
 	ValaCType * self;
 	ValaDataType* result = NULL;
-	const gchar* _tmp0_;
-	ValaCType* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	ValaCType* _tmp1_ = NULL;
 	self = (ValaCType*) base;
 	_tmp0_ = self->priv->_ctype_name;
 	_tmp1_ = vala_ctype_new (_tmp0_);
@@ -102,7 +102,7 @@ static ValaDataType* vala_ctype_real_copy (ValaDataType* base) {
 
 const gchar* vala_ctype_get_ctype_name (ValaCType* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_ctype_name;
 	result = _tmp0_;
@@ -111,8 +111,8 @@ const gchar* vala_ctype_get_ctype_name (ValaCType* self) {
 
 
 void vala_ctype_set_ctype_name (ValaCType* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);

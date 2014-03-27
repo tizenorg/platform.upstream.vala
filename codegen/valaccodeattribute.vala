@@ -255,6 +255,21 @@ public class Vala.CCodeAttribute : AttributeCache {
 		}
 	}
 
+	public string ctype {
+		get {
+			if (!ctype_set) {
+				if (ccode != null) {
+					_ctype = ccode.get_string ("type");
+					if (_ctype == null) {
+						_ctype = ccode.get_string ("ctype");
+					}
+				}
+				ctype_set = true;
+			}
+			return _ctype;
+		}
+	}
+
 	public string type_id {
 		get {
 			if (_type_id == null) {
@@ -409,6 +424,9 @@ public class Vala.CCodeAttribute : AttributeCache {
 			if (_finish_name == null) {
 				if (ccode != null) {
 					_finish_name = ccode.get_string ("finish_name");
+					if (_finish_name == null) {
+						_finish_name = ccode.get_string ("finish_function");
+					}
 				}
 				if (_finish_name == null) {
 					_finish_name = get_finish_name_for_basename (name);
@@ -450,9 +468,36 @@ public class Vala.CCodeAttribute : AttributeCache {
 		}
 	}
 
-	public bool array_length { get; private set; }
+	public bool array_length {
+		get {
+			if (_array_length == null) {
+				if (node.get_attribute ("NoArrayLength") != null) {
+					// deprecated
+					_array_length = false;
+				} else if (ccode != null && ccode.has_argument ("array_length")) {
+					_array_length = ccode.get_bool ("array_length");
+				} else {
+					_array_length = get_default_array_length ();
+				}
+			}
+			return _array_length;
+		}
+	}
+
+	public bool array_null_terminated {
+		get {
+			if (_array_null_terminated == null) {
+				if (ccode != null && ccode.has_argument ("array_null_terminated")) {
+					_array_null_terminated = ccode.get_bool ("array_null_terminated");
+				} else {
+					_array_null_terminated = get_default_array_null_terminated ();
+				}
+			}
+			return _array_null_terminated;
+		}
+	}
+
 	public string? array_length_type { get; private set; }
-	public bool array_null_terminated { get; private set; }
 	public string? array_length_name { get; private set; }
 	public string? array_length_expr { get; private set; }
 	public bool delegate_target { get; private set; }
@@ -492,6 +537,10 @@ public class Vala.CCodeAttribute : AttributeCache {
 	private string _finish_real_name;
 	private string _real_name;
 	private string _delegate_target_name;
+	private string _ctype;
+	private bool ctype_set = false;
+	private bool? _array_length;
+	private bool? _array_null_terminated;
 
 	private static int dynamic_method_id;
 
@@ -499,13 +548,10 @@ public class Vala.CCodeAttribute : AttributeCache {
 		this.node = node;
 		this.sym = node as Symbol;
 
-		array_length = true;
 		delegate_target = true;
 		ccode = node.get_attribute ("CCode");
 		if (ccode != null) {
-			array_length = ccode.get_bool ("array_length", true);
 			array_length_type = ccode.get_string ("array_length_type");
-			array_null_terminated = ccode.get_bool ("array_null_terminated");
 			array_length_name = ccode.get_string ("array_length_cname");
 			array_length_expr = ccode.get_string ("array_length_cexpr");
 			if (ccode.has_argument ("pos")) {
@@ -513,10 +559,6 @@ public class Vala.CCodeAttribute : AttributeCache {
 			}
 			delegate_target = ccode.get_bool ("delegate_target", true);
 			sentinel = ccode.get_string ("sentinel");
-		}
-		if (node.get_attribute ("NoArrayLength") != null) {
-			// deprecated
-			array_length = false;
 		}
 		if (sentinel == null) {
 			sentinel = "NULL";
@@ -1093,27 +1135,78 @@ public class Vala.CCodeAttribute : AttributeCache {
 	}
 
 	private string get_default_param_spec_function () {
-		if (sym is Class) {
-			var cl = (Class) sym;
-			if (cl.is_fundamental ()) {
-				return CCodeBaseModule.get_ccode_lower_case_name (cl, "param_spec_");
-			} else if (cl.base_class != null) {
-				return CCodeBaseModule.get_ccode_param_spec_function (cl.base_class);
-			} else if (type_id == "G_TYPE_POINTER") {
+		if (node is Symbol) {
+			if (sym is Class) {
+				var cl = (Class) sym;
+				if (cl.is_fundamental ()) {
+					return CCodeBaseModule.get_ccode_lower_case_name (cl, "param_spec_");
+				} else if (cl.base_class != null) {
+					return CCodeBaseModule.get_ccode_param_spec_function (cl.base_class);
+				} else if (type_id == "G_TYPE_POINTER") {
+					return "g_param_spec_pointer";
+				} else {
+					return "g_param_spec_boxed";
+				}
+			} else if (sym is Interface) {
+				foreach (var prereq in ((Interface) sym).get_prerequisites ()) {
+					var func = CCodeBaseModule.get_ccode_param_spec_function (prereq.data_type);
+					if (func != "") {
+						return func;
+					}
+				}
 				return "g_param_spec_pointer";
-			} else {
-				return "g_param_spec_boxed";
-			}
-		} else if (sym is Interface) {
-			foreach (var prereq in ((Interface) sym).get_prerequisites ()) {
-				var func = CCodeBaseModule.get_ccode_param_spec_function (prereq.data_type);
-				if (func != "") {
-					return func;
+			} else if (sym is Enum) {
+				var e = sym as Enum;
+				if (CCodeBaseModule.get_ccode_has_type_id (e)) {
+					if (e.is_flags) {
+						return "g_param_spec_flags";
+					} else {
+						return "g_param_spec_enum";
+					}
+				} else {
+					if (e.is_flags) {
+						return "g_param_spec_uint";
+					} else {
+						return "g_param_spec_int";
+					}
+				}
+			} else if (sym is Struct) {
+				var type_id = CCodeBaseModule.get_ccode_type_id (sym);
+				if (type_id == "G_TYPE_INT") {
+					return "g_param_spec_int";
+				} else if (type_id == "G_TYPE_UINT") {
+					return "g_param_spec_uint";
+				} else if (type_id == "G_TYPE_INT64") {
+					return "g_param_spec_int64";
+				} else if (type_id == "G_TYPE_UINT64") {
+					return "g_param_spec_uint64";
+				} else if (type_id == "G_TYPE_LONG") {
+					return "g_param_spec_long";
+				} else if (type_id == "G_TYPE_ULONG") {
+					return "g_param_spec_ulong";
+				} else if (type_id == "G_TYPE_BOOLEAN") {
+					return "g_param_spec_boolean";
+				} else if (type_id == "G_TYPE_CHAR") {
+					return "g_param_spec_char";
+				} else if (type_id == "G_TYPE_UCHAR") {
+					return "g_param_spec_uchar";
+				}else if (type_id == "G_TYPE_FLOAT") {
+					return "g_param_spec_float";
+				} else if (type_id == "G_TYPE_DOUBLE") {
+					return "g_param_spec_double";
+				} else if (type_id == "G_TYPE_GTYPE") {
+					return "g_param_spec_gtype";
+				} else {
+					return "g_param_spec_boxed";
 				}
 			}
-			return "g_param_spec_pointer";
+		} else if (node is ArrayType && ((ArrayType)node).element_type.data_type == CodeContext.get().analyzer.string_type.data_type) {
+			return "g_param_spec_boxed";
+		} else if (node is DataType && ((DataType) node).data_type != null) {
+			return CCodeBaseModule.get_ccode_param_spec_function (((DataType) node).data_type);
 		}
-		return "";
+
+		return "g_param_spec_pointer";
 	}
 
 	private string get_default_default_value () {
@@ -1202,5 +1295,39 @@ public class Vala.CCodeAttribute : AttributeCache {
 				return name;
 			}
 		}
+	}
+
+	private bool get_default_array_length () {
+		if (node is Parameter) {
+			var param = (Parameter) node;
+			if (param.base_parameter != null) {
+				return CCodeBaseModule.get_ccode_array_length (param.base_parameter);
+			}
+		} else if (node is Method) {
+			var method = (Method) node;
+			if (method.base_method != null && method.base_method != method) {
+				return CCodeBaseModule.get_ccode_array_length (method.base_method);
+			} else if (method.base_interface_method != null && method.base_interface_method != method) {
+				return CCodeBaseModule.get_ccode_array_length (method.base_interface_method);
+			}
+		}
+		return true;
+	}
+
+	private bool get_default_array_null_terminated () {
+		if (node is Parameter) {
+			var param = (Parameter) node;
+			if (param.base_parameter != null) {
+				return CCodeBaseModule.get_ccode_array_null_terminated (param.base_parameter);
+			}
+		} else if (node is Method) {
+			var method = (Method) node;
+			if (method.base_method != null && method.base_method != method) {
+				return CCodeBaseModule.get_ccode_array_null_terminated (method.base_method);
+			} else if (method.base_interface_method != null && method.base_interface_method != method) {
+				return CCodeBaseModule.get_ccode_array_null_terminated (method.base_interface_method);
+			}
+		}
+		return false;
 	}
 }

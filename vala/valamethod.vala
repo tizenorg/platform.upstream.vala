@@ -180,7 +180,7 @@ public class Vala.Method : Subroutine {
 	private DataType _return_type;
 
 	private weak Method _base_method;
-	private Method _base_interface_method;
+	private weak Method _base_interface_method;
 	private bool base_methods_valid;
 
 	Method? callback_method;
@@ -648,17 +648,26 @@ public class Vala.Method : Subroutine {
 			return_type.check (context);
 		}
 
-		if (parameters.size == 1 && parameters[0].ellipsis && body != null) {
-			// accept just `...' for external methods for convenience
+		if (parameters.size == 1 && parameters[0].ellipsis && body != null && binding != MemberBinding.INSTANCE) {
+			// accept just `...' for external methods and instance methods
 			error = true;
 			Report.error (parameters[0].source_reference, "Named parameter required before `...'");
 		}
 
-		foreach (Parameter param in parameters) {
-			param.check (context);
-			if (coroutine && param.direction == ParameterDirection.REF) {
-				error = true;
-				Report.error (param.source_reference, "Reference parameters are not supported for async methods");
+		if (!coroutine) {
+			// TODO: begin and end parameters must be checked separately for coroutines
+			var optional_param = false;
+			foreach (Parameter param in parameters) {
+				param.check (context);
+				if (coroutine && param.direction == ParameterDirection.REF) {
+					error = true;
+					Report.error (param.source_reference, "Reference parameters are not supported for async methods");
+				}
+				if (optional_param && param.initializer == null && !param.ellipsis) {
+					Report.warning (param.source_reference, "parameter without default follows parameter with default");
+				} else if (param.initializer != null) {
+					optional_param = true;
+				}
 			}
 		}
 
@@ -779,6 +788,10 @@ public class Vala.Method : Subroutine {
 			}
 		}
 
+		if (get_attribute ("GtkCallback") != null) {
+			used = true;
+		}
+
 		return !error;
 	}
 
@@ -879,14 +892,18 @@ public class Vala.Method : Subroutine {
 		var glib_ns = CodeContext.get ().root.scope.lookup ("GLib");
 
 		var params = new ArrayList<Parameter> ();
+		Parameter ellipsis = null;
 		foreach (var param in parameters) {
-			if (param.direction == ParameterDirection.IN) {
+			if (param.ellipsis) {
+				ellipsis = param;
+			} else if (param.direction == ParameterDirection.IN) {
 				params.add (param);
 			}
 		}
 
 		var callback_type = new DelegateType ((Delegate) glib_ns.scope.lookup ("AsyncReadyCallback"));
 		callback_type.nullable = true;
+		callback_type.value_owned = true;
 		callback_type.is_called_once = true;
 
 		var callback_param = new Parameter ("_callback_", callback_type);
@@ -896,6 +913,10 @@ public class Vala.Method : Subroutine {
 		callback_param.set_attribute_double ("CCode", "delegate_target_pos", -0.9);
 
 		params.add (callback_param);
+
+		if (ellipsis != null) {
+			params.add (ellipsis);
+		}
 
 		return params;
 	}
