@@ -1,12 +1,12 @@
-%define         baseline 0.20
-%define         vala_version 0.20
-%define         vala_libversion 0_20
-%define         vala_priority 19
+%define         baseline 0.24
+%define         vala_version 0.24
+%define         vala_libversion 0_24
+%define         vala_priority 24
 
 
 Name:           vala
-Version:        0.20.1
-Release:        1
+Version:        0.24.0
+Release:        0
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
 Group:          Development/Gnome
