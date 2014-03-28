@@ -167,7 +167,7 @@ gboolean vala_collection_add (ValaCollection* self, gconstpointer item) {
 
 
 /**
- * Removes the first occurence of an item from this collection. Must not
+ * Removes the first occurrence of an item from this collection. Must not
  * be called on read-only collections.
  *
  * @param item the item to remove from the collection

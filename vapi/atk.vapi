@@ -23,7 +23,7 @@ namespace Atk {
 		public virtual int get_start_index ();
 		public virtual string get_uri (int i);
 		public bool is_inline ();
-		[NoWrapper]
+		[Deprecated]
 		public virtual bool is_selected_link ();
 		public virtual bool is_valid ();
 		[NoWrapper]
@@ -31,6 +31,7 @@ namespace Atk {
 		public int end_index { get; }
 		[NoAccessorMethod]
 		public int number_of_anchors { get; }
+		[Deprecated]
 		[NoAccessorMethod]
 		public bool selected_link { get; }
 		public int start_index { get; }
@@ -65,12 +66,12 @@ namespace Atk {
 		protected Object ();
 		public bool add_relationship (Atk.RelationType relationship, Atk.Object target);
 		public virtual uint connect_property_change_handler (Atk.PropertyChangeHandler handler);
-		public virtual unowned Atk.AttributeSet get_attributes ();
+		public virtual Atk.AttributeSet get_attributes ();
 		public virtual unowned string get_description ();
 		public virtual int get_index_in_parent ();
-		[NoWrapper]
+		[Deprecated]
 		public virtual Atk.Layer get_layer ();
-		[NoWrapper]
+		[Deprecated]
 		public virtual int get_mdi_zorder ();
 		public int get_n_accessible_children ();
 		[NoWrapper]
@@ -122,8 +123,9 @@ namespace Atk {
 		public double accessible_value { get; set; }
 		public virtual signal void active_descendant_changed (void* child);
 		public virtual signal void children_changed (uint change_index, void* changed_child);
+		[Deprecated]
 		public virtual signal void focus_event (bool focus_in);
-		public signal void property_change (void* object);
+		public signal void property_change (void* arg1);
 		public virtual signal void state_change (string name, bool state_set);
 		public virtual signal void visible_data_changed ();
 	}
@@ -229,14 +231,17 @@ namespace Atk {
 		[CCode (has_construct_function = false)]
 		protected Util ();
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_add_focus_tracker")]
+		[Deprecated]
 		public static uint add_focus_tracker (Atk.EventListener focus_tracker);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_add_global_event_listener")]
 		public static uint add_global_event_listener ([CCode (type = "GSignalEmissionHook")] Atk.SignalEmissionHook listener, string event_type);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_add_key_event_listener")]
 		public static uint add_key_event_listener (Atk.KeySnoopFunc listener);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_focus_tracker_init")]
+		[Deprecated]
 		public static void focus_tracker_init (Atk.EventListenerInit init);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_focus_tracker_notify")]
+		[Deprecated]
 		public static void focus_tracker_notify (Atk.Object object);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_get_focus_object")]
 		public static unowned Atk.Object get_focus_object ();
@@ -249,6 +254,7 @@ namespace Atk {
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_get_version")]
 		public static unowned string get_version ();
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_remove_focus_tracker")]
+		[Deprecated]
 		public static void remove_focus_tracker (uint tracker_id);
 		[CCode (cheader_filename = "atk/atk.h", cname = "atk_remove_global_event_listener")]
 		public static void remove_global_event_listener (uint listener_id);
@@ -267,6 +273,7 @@ namespace Atk {
 	}
 	[CCode (cheader_filename = "atk/atk.h", type_id = "atk_component_get_type ()")]
 	public interface Component : GLib.Object {
+		[Deprecated]
 		public abstract uint add_focus_handler (Atk.FocusHandler handler);
 		public abstract bool contains (int x, int y, Atk.CoordType coord_type);
 		public abstract double get_alpha ();
@@ -277,6 +284,7 @@ namespace Atk {
 		public abstract void get_size (int width, int height);
 		public abstract bool grab_focus ();
 		public abstract Atk.Object ref_accessible_at_point (int x, int y, Atk.CoordType coord_type);
+		[Deprecated]
 		public abstract void remove_focus_handler (uint handler_id);
 		public abstract bool set_extents (int x, int y, int width, int height, Atk.CoordType coord_type);
 		public abstract bool set_position (int x, int y, Atk.CoordType coord_type);
@@ -289,14 +297,22 @@ namespace Atk {
 		public virtual unowned string get_attribute_value (string attribute_name);
 		[CCode (vfunc_name = "get_document_attributes")]
 		public virtual unowned Atk.AttributeSet get_attributes ();
+		public virtual int get_current_page_number ();
+		[Deprecated]
 		public virtual void* get_document ();
-		[NoWrapper]
+		[Deprecated (replacement = "Document.get_locale", since = "vala-0.22")]
 		public virtual unowned string get_document_locale ();
+		[Deprecated]
 		public virtual unowned string get_document_type ();
+		[CCode (vfunc_name = "get_document_locale")]
+		[Deprecated]
+		public virtual unowned string get_locale ();
+		public virtual int get_page_count ();
 		[CCode (vfunc_name = "set_document_attribute")]
 		public virtual bool set_attribute_value (string attribute_name, string attribute_value);
 		public signal void load_complete ();
 		public signal void load_stopped ();
+		public signal void page_changed (int page_number);
 		public signal void reload ();
 	}
 	[CCode (cheader_filename = "atk/atk.h", type_id = "atk_editable_text_get_type ()")]
@@ -413,20 +429,24 @@ namespace Atk {
 		public abstract void get_range_extents (int start_offset, int end_offset, Atk.CoordType coord_type, Atk.TextRectangle rect);
 		public abstract Atk.AttributeSet get_run_attributes (int offset, out int start_offset, out int end_offset);
 		public abstract string get_selection (int selection_num, out int start_offset, out int end_offset);
+		public abstract string get_string_at_offset (int offset, Atk.TextGranularity granularity, out int start_offset, out int end_offset);
 		public abstract string get_text (int start_offset, int end_offset);
+		[Deprecated]
 		public abstract string get_text_after_offset (int offset, Atk.TextBoundary boundary_type, out int start_offset, out int end_offset);
+		[Deprecated]
 		public abstract string get_text_at_offset (int offset, Atk.TextBoundary boundary_type, out int start_offset, out int end_offset);
+		[Deprecated]
 		public abstract string get_text_before_offset (int offset, Atk.TextBoundary boundary_type, out int start_offset, out int end_offset);
 		public abstract bool remove_selection (int selection_num);
 		public abstract bool set_caret_offset (int offset);
 		public abstract bool set_selection (int selection_num, int start_offset, int end_offset);
 		public virtual signal void text_attributes_changed ();
 		public virtual signal void text_caret_moved (int location);
+		[Deprecated]
 		public virtual signal void text_changed (int position, int length);
-		public signal void text_insert (int object, int p0, string p1);
-		public signal void text_remove (int object, int p0, string p1);
+		public signal void text_insert (int arg1, int arg2, string arg3);
+		public signal void text_remove (int arg1, int arg2, string arg3);
 		public virtual signal void text_selection_changed ();
-		public signal void text_update (int object, int p0, int p1, string p2);
 	}
 	[CCode (cheader_filename = "atk/atk.h", type_id = "atk_value_get_type ()")]
 	public interface Value : GLib.Object {
@@ -459,6 +479,7 @@ namespace Atk {
 		public uint state;
 		public uint keyval;
 		public int length;
+		[CCode (cname = "string")]
 		public weak string str;
 		public uint16 keycode;
 		public uint32 timestamp;
@@ -550,8 +571,11 @@ namespace Atk {
 	}
 	[CCode (cheader_filename = "atk/atk.h", cprefix = "ATK_ROLE_", type_id = "atk_role_get_type ()")]
 	public enum Role {
-		INVALID,
+		[Deprecated (replacement = "Role.ACCELERATOR_LABEL", since = "vala-0.22")]
 		ACCEL_LABEL,
+		INVALID,
+		[CCode (cname = "ATK_ROLE_ACCEL_LABEL")]
+		ACCELERATOR_LABEL,
 		ALERT,
 		ANIMATION,
 		ARROW,
@@ -652,6 +676,18 @@ namespace Atk {
 		NOTIFICATION,
 		INFO_BAR,
 		LEVEL_BAR,
+		TITLE_BAR,
+		BLOCK_QUOTE,
+		AUDIO,
+		VIDEO,
+		DEFINITION,
+		ARTICLE,
+		LANDMARK,
+		LOG,
+		MARQUEE,
+		MATH,
+		RATING,
+		TIMER,
 		LAST_DEFINED;
 		[CCode (cheader_filename = "atk/atk.h")]
 		public static Atk.Role for_name (string name);
@@ -703,6 +739,8 @@ namespace Atk {
 		DEFAULT,
 		ANIMATED,
 		VISITED,
+		CHECKABLE,
+		HAS_POPUP,
 		LAST_DEFINED;
 		[CCode (cheader_filename = "atk/atk.h")]
 		public static Atk.StateType for_name (string name);
@@ -768,12 +806,21 @@ namespace Atk {
 		MAX,
 		BOTH
 	}
+	[CCode (cheader_filename = "atk/atk.h", cprefix = "ATK_TEXT_GRANULARITY_", type_id = "atk_text_granularity_get_type ()")]
+	public enum TextGranularity {
+		CHAR,
+		WORD,
+		SENTENCE,
+		LINE,
+		PARAGRAPH
+	}
 	[CCode (cheader_filename = "atk/atk.h", has_target = false)]
 	public delegate void EventListener (Atk.Object obj);
 	[CCode (cheader_filename = "atk/atk.h", has_target = false)]
 	public delegate void EventListenerInit ();
 	[CCode (cheader_filename = "atk/atk.h", has_target = false)]
-	public delegate void FocusHandler (Atk.Object arg0, bool arg1);
+	[Deprecated]
+	public delegate void FocusHandler (Atk.Object object, bool focus_in);
 	[CCode (cheader_filename = "atk/atk.h", instance_pos = 0.9)]
 	public delegate bool Function ();
 	[CCode (cheader_filename = "atk/atk.h", instance_pos = 1.9)]

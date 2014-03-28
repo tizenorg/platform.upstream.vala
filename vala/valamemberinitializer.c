@@ -253,9 +253,9 @@ static void vala_member_initializer_finalize (ValaCodeNode* obj);
  */
 ValaMemberInitializer* vala_member_initializer_construct (GType object_type, const gchar* name, ValaExpression* initializer, ValaSourceReference* source_reference) {
 	ValaMemberInitializer* self = NULL;
-	ValaExpression* _tmp0_;
-	ValaSourceReference* _tmp1_;
-	const gchar* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaSourceReference* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
 	g_return_val_if_fail (name != NULL, NULL);
 	g_return_val_if_fail (initializer != NULL, NULL);
 	self = (ValaMemberInitializer*) vala_code_node_construct (object_type);
@@ -276,9 +276,9 @@ ValaMemberInitializer* vala_member_initializer_new (const gchar* name, ValaExpre
 
 static void vala_member_initializer_real_accept (ValaCodeNode* base, ValaCodeVisitor* visitor) {
 	ValaMemberInitializer * self;
-	ValaExpression* _tmp0_;
-	ValaExpression* _tmp1_;
-	ValaCodeVisitor* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaCodeVisitor* _tmp2_ = NULL;
 	self = (ValaMemberInitializer*) base;
 	g_return_if_fail (visitor != NULL);
 	_tmp0_ = vala_member_initializer_get_initializer (self);
@@ -291,9 +291,9 @@ static void vala_member_initializer_real_accept (ValaCodeNode* base, ValaCodeVis
 static gboolean vala_member_initializer_real_check (ValaCodeNode* base, ValaCodeContext* context) {
 	ValaMemberInitializer * self;
 	gboolean result = FALSE;
-	ValaExpression* _tmp0_;
-	ValaExpression* _tmp1_;
-	ValaCodeContext* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaCodeContext* _tmp2_ = NULL;
 	gboolean _tmp3_ = FALSE;
 	self = (ValaMemberInitializer*) base;
 	g_return_val_if_fail (context != NULL, FALSE);
@@ -308,9 +308,9 @@ static gboolean vala_member_initializer_real_check (ValaCodeNode* base, ValaCode
 
 static void vala_member_initializer_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen) {
 	ValaMemberInitializer * self;
-	ValaExpression* _tmp0_;
-	ValaExpression* _tmp1_;
-	ValaCodeGenerator* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaCodeGenerator* _tmp2_ = NULL;
 	self = (ValaMemberInitializer*) base;
 	g_return_if_fail (codegen != NULL);
 	_tmp0_ = vala_member_initializer_get_initializer (self);
@@ -322,9 +322,9 @@ static void vala_member_initializer_real_emit (ValaCodeNode* base, ValaCodeGener
 
 static void vala_member_initializer_real_replace_expression (ValaCodeNode* base, ValaExpression* old_node, ValaExpression* new_node) {
 	ValaMemberInitializer * self;
-	ValaExpression* _tmp0_;
-	ValaExpression* _tmp1_;
-	ValaExpression* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaExpression* _tmp2_ = NULL;
 	self = (ValaMemberInitializer*) base;
 	g_return_if_fail (old_node != NULL);
 	g_return_if_fail (new_node != NULL);
@@ -332,7 +332,7 @@ static void vala_member_initializer_real_replace_expression (ValaCodeNode* base,
 	_tmp1_ = _tmp0_;
 	_tmp2_ = old_node;
 	if (_tmp1_ == _tmp2_) {
-		ValaExpression* _tmp3_;
+		ValaExpression* _tmp3_ = NULL;
 		_tmp3_ = new_node;
 		vala_member_initializer_set_initializer (self, _tmp3_);
 	}
@@ -341,7 +341,7 @@ static void vala_member_initializer_real_replace_expression (ValaCodeNode* base,
 
 const gchar* vala_member_initializer_get_name (ValaMemberInitializer* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_name;
 	result = _tmp0_;
@@ -350,8 +350,8 @@ const gchar* vala_member_initializer_get_name (ValaMemberInitializer* self) {
 
 
 void vala_member_initializer_set_name (ValaMemberInitializer* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);
@@ -362,7 +362,7 @@ void vala_member_initializer_set_name (ValaMemberInitializer* self, const gchar*
 
 ValaExpression* vala_member_initializer_get_initializer (ValaMemberInitializer* self) {
 	ValaExpression* result;
-	ValaExpression* _tmp0_;
+	ValaExpression* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_initializer;
 	result = _tmp0_;
@@ -376,9 +376,9 @@ static gpointer _vala_code_node_ref0 (gpointer self) {
 
 
 void vala_member_initializer_set_initializer (ValaMemberInitializer* self, ValaExpression* value) {
-	ValaExpression* _tmp0_;
-	ValaExpression* _tmp1_;
-	ValaExpression* _tmp2_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaExpression* _tmp2_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_code_node_ref0 (_tmp0_);
@@ -391,7 +391,7 @@ void vala_member_initializer_set_initializer (ValaMemberInitializer* self, ValaE
 
 ValaSymbol* vala_member_initializer_get_symbol_reference (ValaMemberInitializer* self) {
 	ValaSymbol* result;
-	ValaSymbol* _tmp0_;
+	ValaSymbol* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_symbol_reference;
 	result = _tmp0_;
@@ -400,7 +400,7 @@ ValaSymbol* vala_member_initializer_get_symbol_reference (ValaMemberInitializer*
 
 
 void vala_member_initializer_set_symbol_reference (ValaMemberInitializer* self, ValaSymbol* value) {
-	ValaSymbol* _tmp0_;
+	ValaSymbol* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_symbol_reference = _tmp0_;

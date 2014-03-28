@@ -3,7 +3,7 @@
 
 /* valaparser.vala
  *
- * Copyright (C) 2006-2011  Jürg Billeter
+ * Copyright (C) 2006-2013  Jürg Billeter
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -1740,10 +1740,10 @@ ValaPointerType* vala_pointer_type_construct (GType object_type, ValaDataType* b
 GType vala_pointer_type_get_type (void) G_GNUC_CONST;
 void vala_data_type_set_nullable (ValaDataType* self, gboolean value);
 void vala_data_type_set_value_owned (ValaDataType* self, gboolean value);
-ValaArrayType* vala_array_type_new (ValaDataType* element_type, gint rank, ValaSourceReference* source_reference);
-ValaArrayType* vala_array_type_construct (GType object_type, ValaDataType* element_type, gint rank, ValaSourceReference* source_reference);
 GType vala_reference_type_get_type (void) G_GNUC_CONST;
 GType vala_array_type_get_type (void) G_GNUC_CONST;
+ValaArrayType* vala_array_type_new (ValaDataType* element_type, gint rank, ValaSourceReference* source_reference);
+ValaArrayType* vala_array_type_construct (GType object_type, ValaDataType* element_type, gint rank, ValaSourceReference* source_reference);
 void vala_array_type_set_invalid_syntax (ValaArrayType* self, gboolean value);
 void vala_data_type_set_is_dynamic (ValaDataType* self, gboolean value);
 static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, ValaDataType* type, GError** error);
@@ -1925,6 +1925,7 @@ ValaMemberAccess* vala_member_access_new_simple (const gchar* member_name, ValaS
 ValaMemberAccess* vala_member_access_construct_simple (GType object_type, const gchar* member_name, ValaSourceReference* source_reference);
 ValaDataType* vala_data_type_copy (ValaDataType* self);
 static ValaLocalVariable* vala_parser_parse_local_variable (ValaParser* self, ValaDataType* variable_type, GError** error);
+ValaDataType* vala_array_type_get_element_type (ValaArrayType* self);
 static ValaConstant* vala_parser_parse_local_constant (ValaParser* self, ValaDataType* constant_type, GError** error);
 void vala_block_add_local_constant (ValaBlock* self, ValaConstant* constant);
 void vala_symbol_set_active (ValaSymbol* self, gboolean value);
@@ -2031,12 +2032,11 @@ ValaSourceFileType vala_source_file_get_file_type (ValaSourceFile* self);
 void vala_symbol_set_external (ValaSymbol* self, gboolean value);
 void vala_object_type_symbol_add_type_parameter (ValaObjectTypeSymbol* self, ValaTypeParameter* p);
 void vala_class_add_base_type (ValaClass* self, ValaDataType* type);
-ValaMethod* vala_class_get_default_construction_method (ValaClass* self);
+ValaCreationMethod* vala_class_get_default_construction_method (ValaClass* self);
 ValaCreationMethod* vala_creation_method_new (const gchar* class_name, const gchar* name, ValaSourceReference* source_reference, ValaComment* comment);
 ValaCreationMethod* vala_creation_method_construct (GType object_type, const gchar* class_name, const gchar* name, ValaSourceReference* source_reference, ValaComment* comment);
 void vala_symbol_add_class (ValaSymbol* self, ValaClass* cl);
 static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (ValaParser* self);
-ValaDataType* vala_array_type_get_element_type (ValaArrayType* self);
 void vala_symbol_set_hides (ValaSymbol* self, gboolean value);
 void vala_symbol_add_constant (ValaSymbol* self, ValaConstant* constant);
 ValaField* vala_field_new (const gchar* name, ValaDataType* variable_type, ValaExpression* initializer, ValaSourceReference* source_reference, ValaComment* comment);
@@ -2070,6 +2070,9 @@ void vala_property_set_binding (ValaProperty* self, ValaMemberBinding value);
 void vala_property_set_is_abstract (ValaProperty* self, gboolean value);
 void vala_property_set_is_virtual (ValaProperty* self, gboolean value);
 void vala_property_set_overrides (ValaProperty* self, gboolean value);
+gboolean vala_property_get_is_abstract (ValaProperty* self);
+gboolean vala_property_get_is_virtual (ValaProperty* self);
+gboolean vala_property_get_overrides (ValaProperty* self);
 ValaExpression* vala_property_get_initializer (ValaProperty* self);
 void vala_property_set_initializer (ValaProperty* self, ValaExpression* value);
 ValaPropertyAccessor* vala_property_get_get_accessor (ValaProperty* self);
@@ -2078,7 +2081,6 @@ ValaPropertyAccessor* vala_property_accessor_construct (GType object_type, gbool
 void vala_property_set_get_accessor (ValaProperty* self, ValaPropertyAccessor* value);
 ValaPropertyAccessor* vala_property_get_set_accessor (ValaProperty* self);
 void vala_property_set_set_accessor (ValaProperty* self, ValaPropertyAccessor* value);
-gboolean vala_property_get_is_abstract (ValaProperty* self);
 ValaSourceFileType vala_symbol_get_source_type (ValaSymbol* self);
 void vala_code_node_set_error (ValaCodeNode* self, gboolean value);
 ValaDataType* vala_property_get_property_type (ValaProperty* self);
@@ -2194,9 +2196,9 @@ static gpointer _vala_code_context_ref0 (gpointer self) {
 
 
 void vala_parser_parse (ValaParser* self, ValaCodeContext* context) {
-	ValaCodeContext* _tmp0_;
-	ValaCodeContext* _tmp1_;
-	ValaCodeContext* _tmp2_;
+	ValaCodeContext* _tmp0_ = NULL;
+	ValaCodeContext* _tmp1_ = NULL;
+	ValaCodeContext* _tmp2_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (context != NULL);
 	_tmp0_ = context;
@@ -2212,11 +2214,9 @@ static void vala_parser_real_visit_source_file (ValaCodeVisitor* base, ValaSourc
 	ValaParser * self;
 	gboolean _tmp0_ = FALSE;
 	gboolean _tmp1_ = FALSE;
-	ValaCodeContext* _tmp2_;
-	gboolean _tmp3_;
-	gboolean _tmp4_;
-	gboolean _tmp9_;
-	gboolean _tmp14_;
+	ValaCodeContext* _tmp2_ = NULL;
+	gboolean _tmp3_ = FALSE;
+	gboolean _tmp4_ = FALSE;
 	self = (ValaParser*) base;
 	g_return_if_fail (source_file != NULL);
 	_tmp2_ = self->priv->context;
@@ -2225,9 +2225,9 @@ static void vala_parser_real_visit_source_file (ValaCodeVisitor* base, ValaSourc
 	if (_tmp4_) {
 		_tmp1_ = TRUE;
 	} else {
-		ValaSourceFile* _tmp5_;
-		const gchar* _tmp6_;
-		const gchar* _tmp7_;
+		ValaSourceFile* _tmp5_ = NULL;
+		const gchar* _tmp6_ = NULL;
+		const gchar* _tmp7_ = NULL;
 		gboolean _tmp8_ = FALSE;
 		_tmp5_ = source_file;
 		_tmp6_ = vala_source_file_get_filename (_tmp5_);
@@ -2235,39 +2235,37 @@ static void vala_parser_real_visit_source_file (ValaCodeVisitor* base, ValaSourc
 		_tmp8_ = g_str_has_suffix (_tmp7_, ".vala");
 		_tmp1_ = _tmp8_;
 	}
-	_tmp9_ = _tmp1_;
-	if (_tmp9_) {
+	if (_tmp1_) {
 		_tmp0_ = TRUE;
 	} else {
-		ValaSourceFile* _tmp10_;
-		const gchar* _tmp11_;
-		const gchar* _tmp12_;
-		gboolean _tmp13_ = FALSE;
-		_tmp10_ = source_file;
-		_tmp11_ = vala_source_file_get_filename (_tmp10_);
-		_tmp12_ = _tmp11_;
-		_tmp13_ = g_str_has_suffix (_tmp12_, ".vapi");
-		_tmp0_ = _tmp13_;
+		ValaSourceFile* _tmp9_ = NULL;
+		const gchar* _tmp10_ = NULL;
+		const gchar* _tmp11_ = NULL;
+		gboolean _tmp12_ = FALSE;
+		_tmp9_ = source_file;
+		_tmp10_ = vala_source_file_get_filename (_tmp9_);
+		_tmp11_ = _tmp10_;
+		_tmp12_ = g_str_has_suffix (_tmp11_, ".vapi");
+		_tmp0_ = _tmp12_;
 	}
-	_tmp14_ = _tmp0_;
-	if (_tmp14_) {
-		ValaSourceFile* _tmp15_;
-		_tmp15_ = source_file;
-		vala_parser_parse_file (self, _tmp15_);
+	if (_tmp0_) {
+		ValaSourceFile* _tmp13_ = NULL;
+		_tmp13_ = source_file;
+		vala_parser_parse_file (self, _tmp13_);
 	}
 }
 
 
 static inline gboolean vala_parser_next (ValaParser* self) {
 	gboolean result = FALSE;
-	gint _tmp0_;
-	gint _tmp1_;
-	gint _tmp2_;
-	ValaParserTokenInfo* _tmp16_;
-	gint _tmp16__length1;
-	gint _tmp17_;
-	ValaParserTokenInfo _tmp18_;
-	ValaTokenType _tmp19_;
+	gint _tmp0_ = 0;
+	gint _tmp1_ = 0;
+	gint _tmp2_ = 0;
+	ValaParserTokenInfo* _tmp16_ = NULL;
+	gint _tmp16__length1 = 0;
+	gint _tmp17_ = 0;
+	ValaParserTokenInfo _tmp18_ = {0};
+	ValaTokenType _tmp19_ = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->index;
 	self->priv->index = (_tmp0_ + 1) % VALA_PARSER_BUFFER_SIZE;
@@ -2277,23 +2275,23 @@ static inline gboolean vala_parser_next (ValaParser* self) {
 	if (_tmp2_ <= 0) {
 		ValaSourceLocation begin = {0};
 		ValaSourceLocation end = {0};
-		ValaScanner* _tmp3_;
+		ValaTokenType type = 0;
+		ValaScanner* _tmp3_ = NULL;
 		ValaSourceLocation _tmp4_ = {0};
 		ValaSourceLocation _tmp5_ = {0};
 		ValaTokenType _tmp6_ = 0;
-		ValaTokenType type;
-		ValaParserTokenInfo* _tmp7_;
-		gint _tmp7__length1;
-		gint _tmp8_;
-		ValaTokenType _tmp9_;
-		ValaParserTokenInfo* _tmp10_;
-		gint _tmp10__length1;
-		gint _tmp11_;
-		ValaSourceLocation _tmp12_;
-		ValaParserTokenInfo* _tmp13_;
-		gint _tmp13__length1;
-		gint _tmp14_;
-		ValaSourceLocation _tmp15_;
+		ValaParserTokenInfo* _tmp7_ = NULL;
+		gint _tmp7__length1 = 0;
+		gint _tmp8_ = 0;
+		ValaTokenType _tmp9_ = 0;
+		ValaParserTokenInfo* _tmp10_ = NULL;
+		gint _tmp10__length1 = 0;
+		gint _tmp11_ = 0;
+		ValaSourceLocation _tmp12_ = {0};
+		ValaParserTokenInfo* _tmp13_ = NULL;
+		gint _tmp13__length1 = 0;
+		gint _tmp14_ = 0;
+		ValaSourceLocation _tmp15_ = {0};
 		_tmp3_ = self->priv->scanner;
 		_tmp6_ = vala_scanner_read_token (_tmp3_, &_tmp4_, &_tmp5_);
 		begin = _tmp4_;
@@ -2327,9 +2325,9 @@ static inline gboolean vala_parser_next (ValaParser* self) {
 
 
 static inline void vala_parser_prev (ValaParser* self) {
-	gint _tmp0_;
-	gint _tmp1_;
-	gint _tmp2_;
+	gint _tmp0_ = 0;
+	gint _tmp1_ = 0;
+	gint _tmp2_ = 0;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = self->priv->index;
 	self->priv->index = ((_tmp0_ - 1) + VALA_PARSER_BUFFER_SIZE) % VALA_PARSER_BUFFER_SIZE;
@@ -2342,11 +2340,11 @@ static inline void vala_parser_prev (ValaParser* self) {
 
 static inline ValaTokenType vala_parser_current (ValaParser* self) {
 	ValaTokenType result = 0;
-	ValaParserTokenInfo* _tmp0_;
-	gint _tmp0__length1;
-	gint _tmp1_;
-	ValaParserTokenInfo _tmp2_;
-	ValaTokenType _tmp3_;
+	ValaParserTokenInfo* _tmp0_ = NULL;
+	gint _tmp0__length1 = 0;
+	gint _tmp1_ = 0;
+	ValaParserTokenInfo _tmp2_ = {0};
+	ValaTokenType _tmp3_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = self->priv->tokens;
 	_tmp0__length1 = self->priv->tokens_length1;
@@ -2361,7 +2359,7 @@ static inline ValaTokenType vala_parser_current (ValaParser* self) {
 static inline gboolean vala_parser_accept (ValaParser* self, ValaTokenType type) {
 	gboolean result = FALSE;
 	ValaTokenType _tmp0_ = 0;
-	ValaTokenType _tmp1_;
+	ValaTokenType _tmp1_ = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = vala_parser_current (self);
 	_tmp1_ = type;
@@ -2377,16 +2375,16 @@ static inline gboolean vala_parser_accept (ValaParser* self, ValaTokenType type)
 
 static gchar* vala_parser_get_error (ValaParser* self, const gchar* msg) {
 	gchar* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	const gchar* _tmp4_;
-	gchar* _tmp5_;
-	gchar* _tmp6_;
-	const gchar* _tmp7_;
-	gchar* _tmp8_;
+	ValaSourceReference* _tmp3_ = NULL;
+	const gchar* _tmp4_ = NULL;
+	gchar* _tmp5_ = NULL;
+	gchar* _tmp6_ = NULL;
+	const gchar* _tmp7_ = NULL;
+	gchar* _tmp8_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (msg != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -2410,16 +2408,16 @@ static gchar* vala_parser_get_error (ValaParser* self, const gchar* msg) {
 
 static inline gboolean vala_parser_expect (ValaParser* self, ValaTokenType type, GError** error) {
 	gboolean result = FALSE;
-	ValaTokenType _tmp0_;
+	ValaTokenType _tmp0_ = 0;
 	gboolean _tmp1_ = FALSE;
-	ValaTokenType _tmp2_;
+	ValaTokenType _tmp2_ = 0;
 	const gchar* _tmp3_ = NULL;
 	gchar* _tmp4_ = NULL;
-	gchar* _tmp5_;
+	gchar* _tmp5_ = NULL;
 	gchar* _tmp6_ = NULL;
-	gchar* _tmp7_;
-	GError* _tmp8_;
-	GError* _tmp9_;
+	gchar* _tmp7_ = NULL;
+	GError* _tmp8_ = NULL;
+	GError* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = type;
@@ -2451,11 +2449,11 @@ static inline gboolean vala_parser_expect (ValaParser* self, ValaTokenType type,
 
 
 static inline void vala_parser_get_location (ValaParser* self, ValaSourceLocation* result) {
-	ValaParserTokenInfo* _tmp0_;
-	gint _tmp0__length1;
-	gint _tmp1_;
-	ValaParserTokenInfo _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaParserTokenInfo* _tmp0_ = NULL;
+	gint _tmp0__length1 = 0;
+	gint _tmp1_ = 0;
+	ValaParserTokenInfo _tmp2_ = {0};
+	ValaSourceLocation _tmp3_ = {0};
 	g_return_if_fail (self != NULL);
 	_tmp0_ = self->priv->tokens;
 	_tmp0__length1 = self->priv->tokens_length1;
@@ -2469,24 +2467,24 @@ static inline void vala_parser_get_location (ValaParser* self, ValaSourceLocatio
 
 static glong string_strnlen (gchar* str, glong maxlen) {
 	glong result = 0L;
-	gchar* _tmp0_;
-	glong _tmp1_;
+	gchar* end = NULL;
+	gchar* _tmp0_ = NULL;
+	glong _tmp1_ = 0L;
 	gchar* _tmp2_ = NULL;
-	gchar* end;
-	gchar* _tmp3_;
+	gchar* _tmp3_ = NULL;
 	_tmp0_ = str;
 	_tmp1_ = maxlen;
 	_tmp2_ = memchr (_tmp0_, 0, (gsize) _tmp1_);
 	end = _tmp2_;
 	_tmp3_ = end;
 	if (_tmp3_ == NULL) {
-		glong _tmp4_;
+		glong _tmp4_ = 0L;
 		_tmp4_ = maxlen;
 		result = _tmp4_;
 		return result;
 	} else {
-		gchar* _tmp5_;
-		gchar* _tmp6_;
+		gchar* _tmp5_ = NULL;
+		gchar* _tmp6_ = NULL;
 		_tmp5_ = end;
 		_tmp6_ = str;
 		result = (glong) (_tmp5_ - _tmp6_);
@@ -2499,98 +2497,96 @@ static gchar* string_substring (const gchar* self, glong offset, glong len) {
 	gchar* result = NULL;
 	glong string_length = 0L;
 	gboolean _tmp0_ = FALSE;
-	glong _tmp1_;
-	gboolean _tmp3_;
-	glong _tmp9_;
-	glong _tmp15_;
-	glong _tmp18_;
-	glong _tmp19_;
-	glong _tmp20_;
-	glong _tmp21_;
-	glong _tmp22_;
-	gchar* _tmp23_ = NULL;
+	glong _tmp1_ = 0L;
+	glong _tmp8_ = 0L;
+	glong _tmp14_ = 0L;
+	glong _tmp17_ = 0L;
+	glong _tmp18_ = 0L;
+	glong _tmp19_ = 0L;
+	glong _tmp20_ = 0L;
+	glong _tmp21_ = 0L;
+	gchar* _tmp22_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp1_ = offset;
 	if (_tmp1_ >= ((glong) 0)) {
-		glong _tmp2_;
+		glong _tmp2_ = 0L;
 		_tmp2_ = len;
 		_tmp0_ = _tmp2_ >= ((glong) 0);
 	} else {
 		_tmp0_ = FALSE;
 	}
-	_tmp3_ = _tmp0_;
-	if (_tmp3_) {
-		glong _tmp4_;
-		glong _tmp5_;
-		glong _tmp6_ = 0L;
-		_tmp4_ = offset;
-		_tmp5_ = len;
-		_tmp6_ = string_strnlen ((gchar*) self, _tmp4_ + _tmp5_);
-		string_length = _tmp6_;
+	if (_tmp0_) {
+		glong _tmp3_ = 0L;
+		glong _tmp4_ = 0L;
+		glong _tmp5_ = 0L;
+		_tmp3_ = offset;
+		_tmp4_ = len;
+		_tmp5_ = string_strnlen ((gchar*) self, _tmp3_ + _tmp4_);
+		string_length = _tmp5_;
 	} else {
-		gint _tmp7_;
-		gint _tmp8_;
-		_tmp7_ = strlen (self);
-		_tmp8_ = _tmp7_;
-		string_length = (glong) _tmp8_;
+		gint _tmp6_ = 0;
+		gint _tmp7_ = 0;
+		_tmp6_ = strlen (self);
+		_tmp7_ = _tmp6_;
+		string_length = (glong) _tmp7_;
 	}
-	_tmp9_ = offset;
-	if (_tmp9_ < ((glong) 0)) {
-		glong _tmp10_;
-		glong _tmp11_;
-		glong _tmp12_;
-		_tmp10_ = string_length;
+	_tmp8_ = offset;
+	if (_tmp8_ < ((glong) 0)) {
+		glong _tmp9_ = 0L;
+		glong _tmp10_ = 0L;
+		glong _tmp11_ = 0L;
+		_tmp9_ = string_length;
+		_tmp10_ = offset;
+		offset = _tmp9_ + _tmp10_;
 		_tmp11_ = offset;
-		offset = _tmp10_ + _tmp11_;
-		_tmp12_ = offset;
-		g_return_val_if_fail (_tmp12_ >= ((glong) 0), NULL);
+		g_return_val_if_fail (_tmp11_ >= ((glong) 0), NULL);
 	} else {
-		glong _tmp13_;
-		glong _tmp14_;
-		_tmp13_ = offset;
-		_tmp14_ = string_length;
-		g_return_val_if_fail (_tmp13_ <= _tmp14_, NULL);
+		glong _tmp12_ = 0L;
+		glong _tmp13_ = 0L;
+		_tmp12_ = offset;
+		_tmp13_ = string_length;
+		g_return_val_if_fail (_tmp12_ <= _tmp13_, NULL);
 	}
-	_tmp15_ = len;
-	if (_tmp15_ < ((glong) 0)) {
-		glong _tmp16_;
-		glong _tmp17_;
-		_tmp16_ = string_length;
-		_tmp17_ = offset;
-		len = _tmp16_ - _tmp17_;
+	_tmp14_ = len;
+	if (_tmp14_ < ((glong) 0)) {
+		glong _tmp15_ = 0L;
+		glong _tmp16_ = 0L;
+		_tmp15_ = string_length;
+		_tmp16_ = offset;
+		len = _tmp15_ - _tmp16_;
 	}
-	_tmp18_ = offset;
-	_tmp19_ = len;
-	_tmp20_ = string_length;
-	g_return_val_if_fail ((_tmp18_ + _tmp19_) <= _tmp20_, NULL);
-	_tmp21_ = offset;
-	_tmp22_ = len;
-	_tmp23_ = g_strndup (((gchar*) self) + _tmp21_, (gsize) _tmp22_);
-	result = _tmp23_;
+	_tmp17_ = offset;
+	_tmp18_ = len;
+	_tmp19_ = string_length;
+	g_return_val_if_fail ((_tmp17_ + _tmp18_) <= _tmp19_, NULL);
+	_tmp20_ = offset;
+	_tmp21_ = len;
+	_tmp22_ = g_strndup (((gchar*) self) + _tmp20_, (gsize) _tmp21_);
+	result = _tmp22_;
 	return result;
 }
 
 
 static gchar* vala_parser_get_current_string (ValaParser* self) {
 	gchar* result = NULL;
-	ValaParserTokenInfo* _tmp0_;
-	gint _tmp0__length1;
-	gint _tmp1_;
-	ValaParserTokenInfo _tmp2_;
-	ValaSourceLocation _tmp3_;
-	gchar* _tmp4_;
-	ValaParserTokenInfo* _tmp5_;
-	gint _tmp5__length1;
-	gint _tmp6_;
-	ValaParserTokenInfo _tmp7_;
-	ValaSourceLocation _tmp8_;
-	gchar* _tmp9_;
-	ValaParserTokenInfo* _tmp10_;
-	gint _tmp10__length1;
-	gint _tmp11_;
-	ValaParserTokenInfo _tmp12_;
-	ValaSourceLocation _tmp13_;
-	gchar* _tmp14_;
+	ValaParserTokenInfo* _tmp0_ = NULL;
+	gint _tmp0__length1 = 0;
+	gint _tmp1_ = 0;
+	ValaParserTokenInfo _tmp2_ = {0};
+	ValaSourceLocation _tmp3_ = {0};
+	gchar* _tmp4_ = NULL;
+	ValaParserTokenInfo* _tmp5_ = NULL;
+	gint _tmp5__length1 = 0;
+	gint _tmp6_ = 0;
+	ValaParserTokenInfo _tmp7_ = {0};
+	ValaSourceLocation _tmp8_ = {0};
+	gchar* _tmp9_ = NULL;
+	ValaParserTokenInfo* _tmp10_ = NULL;
+	gint _tmp10__length1 = 0;
+	gint _tmp11_ = 0;
+	ValaParserTokenInfo _tmp12_ = {0};
+	ValaSourceLocation _tmp13_ = {0};
+	gchar* _tmp14_ = NULL;
 	gchar* _tmp15_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->tokens;
@@ -2619,23 +2615,23 @@ static gchar* vala_parser_get_current_string (ValaParser* self) {
 
 static gchar* vala_parser_get_last_string (ValaParser* self) {
 	gchar* result = NULL;
-	gint _tmp0_;
-	gint last_index;
-	ValaParserTokenInfo* _tmp1_;
-	gint _tmp1__length1;
-	ValaParserTokenInfo _tmp2_;
-	ValaSourceLocation _tmp3_;
-	gchar* _tmp4_;
-	ValaParserTokenInfo* _tmp5_;
-	gint _tmp5__length1;
-	ValaParserTokenInfo _tmp6_;
-	ValaSourceLocation _tmp7_;
-	gchar* _tmp8_;
-	ValaParserTokenInfo* _tmp9_;
-	gint _tmp9__length1;
-	ValaParserTokenInfo _tmp10_;
-	ValaSourceLocation _tmp11_;
-	gchar* _tmp12_;
+	gint last_index = 0;
+	gint _tmp0_ = 0;
+	ValaParserTokenInfo* _tmp1_ = NULL;
+	gint _tmp1__length1 = 0;
+	ValaParserTokenInfo _tmp2_ = {0};
+	ValaSourceLocation _tmp3_ = {0};
+	gchar* _tmp4_ = NULL;
+	ValaParserTokenInfo* _tmp5_ = NULL;
+	gint _tmp5__length1 = 0;
+	ValaParserTokenInfo _tmp6_ = {0};
+	ValaSourceLocation _tmp7_ = {0};
+	gchar* _tmp8_ = NULL;
+	ValaParserTokenInfo* _tmp9_ = NULL;
+	gint _tmp9__length1 = 0;
+	ValaParserTokenInfo _tmp10_ = {0};
+	ValaSourceLocation _tmp11_ = {0};
+	gchar* _tmp12_ = NULL;
 	gchar* _tmp13_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->index;
@@ -2663,17 +2659,17 @@ static gchar* vala_parser_get_last_string (ValaParser* self) {
 
 static ValaSourceReference* vala_parser_get_src (ValaParser* self, ValaSourceLocation* begin) {
 	ValaSourceReference* result = NULL;
-	gint _tmp0_;
-	gint last_index;
-	ValaScanner* _tmp1_;
-	ValaSourceFile* _tmp2_;
-	ValaSourceFile* _tmp3_;
-	ValaSourceLocation _tmp4_;
-	ValaParserTokenInfo* _tmp5_;
-	gint _tmp5__length1;
-	ValaParserTokenInfo _tmp6_;
-	ValaSourceLocation _tmp7_;
-	ValaSourceReference* _tmp8_;
+	gint last_index = 0;
+	gint _tmp0_ = 0;
+	ValaScanner* _tmp1_ = NULL;
+	ValaSourceFile* _tmp2_ = NULL;
+	ValaSourceFile* _tmp3_ = NULL;
+	ValaSourceLocation _tmp4_ = {0};
+	ValaParserTokenInfo* _tmp5_ = NULL;
+	gint _tmp5__length1 = 0;
+	ValaParserTokenInfo _tmp6_ = {0};
+	ValaSourceLocation _tmp7_ = {0};
+	ValaSourceReference* _tmp8_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
 	_tmp0_ = self->priv->index;
@@ -2694,20 +2690,20 @@ static ValaSourceReference* vala_parser_get_src (ValaParser* self, ValaSourceLoc
 
 static ValaSourceReference* vala_parser_get_current_src (ValaParser* self) {
 	ValaSourceReference* result = NULL;
-	ValaScanner* _tmp0_;
-	ValaSourceFile* _tmp1_;
-	ValaSourceFile* _tmp2_;
-	ValaParserTokenInfo* _tmp3_;
-	gint _tmp3__length1;
-	gint _tmp4_;
-	ValaParserTokenInfo _tmp5_;
-	ValaSourceLocation _tmp6_;
-	ValaParserTokenInfo* _tmp7_;
-	gint _tmp7__length1;
-	gint _tmp8_;
-	ValaParserTokenInfo _tmp9_;
-	ValaSourceLocation _tmp10_;
-	ValaSourceReference* _tmp11_;
+	ValaScanner* _tmp0_ = NULL;
+	ValaSourceFile* _tmp1_ = NULL;
+	ValaSourceFile* _tmp2_ = NULL;
+	ValaParserTokenInfo* _tmp3_ = NULL;
+	gint _tmp3__length1 = 0;
+	gint _tmp4_ = 0;
+	ValaParserTokenInfo _tmp5_ = {0};
+	ValaSourceLocation _tmp6_ = {0};
+	ValaParserTokenInfo* _tmp7_ = NULL;
+	gint _tmp7__length1 = 0;
+	gint _tmp8_ = 0;
+	ValaParserTokenInfo _tmp9_ = {0};
+	ValaSourceLocation _tmp10_ = {0};
+	ValaSourceReference* _tmp11_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->scanner;
 	_tmp1_ = vala_scanner_get_source_file (_tmp0_);
@@ -2730,20 +2726,20 @@ static ValaSourceReference* vala_parser_get_current_src (ValaParser* self) {
 
 static ValaSourceReference* vala_parser_get_last_src (ValaParser* self) {
 	ValaSourceReference* result = NULL;
-	gint _tmp0_;
-	gint last_index;
-	ValaScanner* _tmp1_;
-	ValaSourceFile* _tmp2_;
-	ValaSourceFile* _tmp3_;
-	ValaParserTokenInfo* _tmp4_;
-	gint _tmp4__length1;
-	ValaParserTokenInfo _tmp5_;
-	ValaSourceLocation _tmp6_;
-	ValaParserTokenInfo* _tmp7_;
-	gint _tmp7__length1;
-	ValaParserTokenInfo _tmp8_;
-	ValaSourceLocation _tmp9_;
-	ValaSourceReference* _tmp10_;
+	gint last_index = 0;
+	gint _tmp0_ = 0;
+	ValaScanner* _tmp1_ = NULL;
+	ValaSourceFile* _tmp2_ = NULL;
+	ValaSourceFile* _tmp3_ = NULL;
+	ValaParserTokenInfo* _tmp4_ = NULL;
+	gint _tmp4__length1 = 0;
+	ValaParserTokenInfo _tmp5_ = {0};
+	ValaSourceLocation _tmp6_ = {0};
+	ValaParserTokenInfo* _tmp7_ = NULL;
+	gint _tmp7__length1 = 0;
+	ValaParserTokenInfo _tmp8_ = {0};
+	ValaSourceLocation _tmp9_ = {0};
+	ValaSourceReference* _tmp10_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->index;
 	last_index = ((_tmp0_ + VALA_PARSER_BUFFER_SIZE) - 1) % VALA_PARSER_BUFFER_SIZE;
@@ -2768,17 +2764,17 @@ static void vala_parser_rollback (ValaParser* self, ValaSourceLocation* location
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (location != NULL);
 	while (TRUE) {
-		ValaParserTokenInfo* _tmp0_;
-		gint _tmp0__length1;
-		gint _tmp1_;
-		ValaParserTokenInfo _tmp2_;
-		ValaSourceLocation _tmp3_;
-		gchar* _tmp4_;
-		ValaSourceLocation _tmp5_;
-		gchar* _tmp6_;
-		gint _tmp7_;
-		gint _tmp8_;
-		gint _tmp9_;
+		ValaParserTokenInfo* _tmp0_ = NULL;
+		gint _tmp0__length1 = 0;
+		gint _tmp1_ = 0;
+		ValaParserTokenInfo _tmp2_ = {0};
+		ValaSourceLocation _tmp3_ = {0};
+		gchar* _tmp4_ = NULL;
+		ValaSourceLocation _tmp5_ = {0};
+		gchar* _tmp6_ = NULL;
+		gint _tmp7_ = 0;
+		gint _tmp8_ = 0;
+		gint _tmp9_ = 0;
 		_tmp0_ = self->priv->tokens;
 		_tmp0__length1 = self->priv->tokens_length1;
 		_tmp1_ = self->priv->index;
@@ -2796,8 +2792,8 @@ static void vala_parser_rollback (ValaParser* self, ValaSourceLocation* location
 		self->priv->size = _tmp8_ + 1;
 		_tmp9_ = self->priv->size;
 		if (_tmp9_ > VALA_PARSER_BUFFER_SIZE) {
-			ValaScanner* _tmp10_;
-			ValaSourceLocation _tmp11_;
+			ValaScanner* _tmp10_ = NULL;
+			ValaSourceLocation _tmp11_ = {0};
 			_tmp10_ = self->priv->scanner;
 			_tmp11_ = *location;
 			vala_scanner_seek (_tmp10_, &_tmp11_);
@@ -2811,8 +2807,8 @@ static void vala_parser_rollback (ValaParser* self, ValaSourceLocation* location
 
 static gchar string_get (const gchar* self, glong index) {
 	gchar result = '\0';
-	glong _tmp0_;
-	gchar _tmp1_;
+	glong _tmp0_ = 0L;
+	gchar _tmp1_ = '\0';
 	g_return_val_if_fail (self != NULL, '\0');
 	_tmp0_ = index;
 	_tmp1_ = ((gchar*) self)[_tmp0_];
@@ -2823,7 +2819,7 @@ static gchar string_get (const gchar* self, glong index) {
 
 static gboolean string_contains (const gchar* self, const gchar* needle) {
 	gboolean result = FALSE;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (needle != NULL, FALSE);
@@ -2916,16 +2912,15 @@ static void vala_parser_skip_identifier (ValaParser* self, GError** error) {
 		case VALA_TOKEN_TYPE_INTEGER_LITERAL:
 		case VALA_TOKEN_TYPE_REAL_LITERAL:
 		{
+			gchar* id = NULL;
 			gchar* _tmp1_ = NULL;
-			gchar* id;
 			gboolean _tmp2_ = FALSE;
-			const gchar* _tmp3_;
-			const gchar* _tmp4_;
-			gint _tmp5_;
-			gint _tmp6_;
+			const gchar* _tmp3_ = NULL;
+			const gchar* _tmp4_ = NULL;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
 			gchar _tmp7_ = '\0';
 			gboolean _tmp8_ = FALSE;
-			gboolean _tmp11_;
 			_tmp1_ = vala_parser_get_current_string (self);
 			id = _tmp1_;
 			_tmp3_ = id;
@@ -2935,7 +2930,7 @@ static void vala_parser_skip_identifier (ValaParser* self, GError** error) {
 			_tmp7_ = string_get (_tmp3_, (glong) (_tmp6_ - 1));
 			_tmp8_ = g_ascii_isalpha (_tmp7_);
 			if (_tmp8_) {
-				const gchar* _tmp9_;
+				const gchar* _tmp9_ = NULL;
 				gboolean _tmp10_ = FALSE;
 				_tmp9_ = id;
 				_tmp10_ = string_contains (_tmp9_, ".");
@@ -2943,8 +2938,7 @@ static void vala_parser_skip_identifier (ValaParser* self, GError** error) {
 			} else {
 				_tmp2_ = FALSE;
 			}
-			_tmp11_ = _tmp2_;
-			if (_tmp11_) {
+			if (_tmp2_) {
 				vala_parser_next (self);
 				_g_free0 (id);
 				return;
@@ -2954,16 +2948,16 @@ static void vala_parser_skip_identifier (ValaParser* self, GError** error) {
 		}
 		default:
 		{
+			gchar* _tmp11_ = NULL;
 			gchar* _tmp12_ = NULL;
-			gchar* _tmp13_;
-			GError* _tmp14_;
-			GError* _tmp15_;
-			_tmp12_ = vala_parser_get_error (self, "expected identifier");
-			_tmp13_ = _tmp12_;
-			_tmp14_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp13_);
-			_tmp15_ = _tmp14_;
-			_g_free0 (_tmp13_);
-			_inner_error_ = _tmp15_;
+			GError* _tmp13_ = NULL;
+			GError* _tmp14_ = NULL;
+			_tmp11_ = vala_parser_get_error (self, "expected identifier");
+			_tmp12_ = _tmp11_;
+			_tmp13_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp12_);
+			_tmp14_ = _tmp13_;
+			_g_free0 (_tmp12_);
+			_inner_error_ = _tmp14_;
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				return;
@@ -3001,8 +2995,8 @@ static gchar* vala_parser_parse_identifier (ValaParser* self, GError** error) {
 
 static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	ValaTokenType _tmp1_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -3012,11 +3006,11 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 	switch (_tmp1_) {
 		case VALA_TOKEN_TYPE_TRUE:
 		{
-			ValaSourceLocation _tmp2_;
+			ValaSourceLocation _tmp2_ = {0};
 			ValaSourceReference* _tmp3_ = NULL;
-			ValaSourceReference* _tmp4_;
-			ValaBooleanLiteral* _tmp5_;
-			ValaExpression* _tmp6_;
+			ValaSourceReference* _tmp4_ = NULL;
+			ValaBooleanLiteral* _tmp5_ = NULL;
+			ValaExpression* _tmp6_ = NULL;
 			vala_parser_next (self);
 			_tmp2_ = begin;
 			_tmp3_ = vala_parser_get_src (self, &_tmp2_);
@@ -3029,11 +3023,11 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		}
 		case VALA_TOKEN_TYPE_FALSE:
 		{
-			ValaSourceLocation _tmp7_;
+			ValaSourceLocation _tmp7_ = {0};
 			ValaSourceReference* _tmp8_ = NULL;
-			ValaSourceReference* _tmp9_;
-			ValaBooleanLiteral* _tmp10_;
-			ValaExpression* _tmp11_;
+			ValaSourceReference* _tmp9_ = NULL;
+			ValaBooleanLiteral* _tmp10_ = NULL;
+			ValaExpression* _tmp11_ = NULL;
 			vala_parser_next (self);
 			_tmp7_ = begin;
 			_tmp8_ = vala_parser_get_src (self, &_tmp7_);
@@ -3047,12 +3041,12 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		case VALA_TOKEN_TYPE_INTEGER_LITERAL:
 		{
 			gchar* _tmp12_ = NULL;
-			gchar* _tmp13_;
-			ValaSourceLocation _tmp14_;
+			gchar* _tmp13_ = NULL;
+			ValaSourceLocation _tmp14_ = {0};
 			ValaSourceReference* _tmp15_ = NULL;
-			ValaSourceReference* _tmp16_;
-			ValaIntegerLiteral* _tmp17_;
-			ValaExpression* _tmp18_;
+			ValaSourceReference* _tmp16_ = NULL;
+			ValaIntegerLiteral* _tmp17_ = NULL;
+			ValaExpression* _tmp18_ = NULL;
 			vala_parser_next (self);
 			_tmp12_ = vala_parser_get_last_string (self);
 			_tmp13_ = _tmp12_;
@@ -3069,12 +3063,12 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		case VALA_TOKEN_TYPE_REAL_LITERAL:
 		{
 			gchar* _tmp19_ = NULL;
-			gchar* _tmp20_;
-			ValaSourceLocation _tmp21_;
+			gchar* _tmp20_ = NULL;
+			ValaSourceLocation _tmp21_ = {0};
 			ValaSourceReference* _tmp22_ = NULL;
-			ValaSourceReference* _tmp23_;
-			ValaRealLiteral* _tmp24_;
-			ValaExpression* _tmp25_;
+			ValaSourceReference* _tmp23_ = NULL;
+			ValaRealLiteral* _tmp24_ = NULL;
+			ValaExpression* _tmp25_ = NULL;
 			vala_parser_next (self);
 			_tmp19_ = vala_parser_get_last_string (self);
 			_tmp20_ = _tmp19_;
@@ -3090,17 +3084,17 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		}
 		case VALA_TOKEN_TYPE_CHARACTER_LITERAL:
 		{
+			ValaCharacterLiteral* lit = NULL;
 			gchar* _tmp26_ = NULL;
-			gchar* _tmp27_;
-			ValaSourceLocation _tmp28_;
+			gchar* _tmp27_ = NULL;
+			ValaSourceLocation _tmp28_ = {0};
 			ValaSourceReference* _tmp29_ = NULL;
-			ValaSourceReference* _tmp30_;
-			ValaCharacterLiteral* _tmp31_;
-			ValaCharacterLiteral* _tmp32_;
-			ValaCharacterLiteral* lit;
-			ValaCharacterLiteral* _tmp33_;
-			gboolean _tmp34_;
-			gboolean _tmp35_;
+			ValaSourceReference* _tmp30_ = NULL;
+			ValaCharacterLiteral* _tmp31_ = NULL;
+			ValaCharacterLiteral* _tmp32_ = NULL;
+			ValaCharacterLiteral* _tmp33_ = NULL;
+			gboolean _tmp34_ = FALSE;
+			gboolean _tmp35_ = FALSE;
 			vala_parser_next (self);
 			_tmp26_ = vala_parser_get_last_string (self);
 			_tmp27_ = _tmp26_;
@@ -3116,9 +3110,9 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 			_tmp34_ = vala_code_node_get_error ((ValaCodeNode*) _tmp33_);
 			_tmp35_ = _tmp34_;
 			if (_tmp35_) {
-				ValaCharacterLiteral* _tmp36_;
-				ValaSourceReference* _tmp37_;
-				ValaSourceReference* _tmp38_;
+				ValaCharacterLiteral* _tmp36_ = NULL;
+				ValaSourceReference* _tmp37_ = NULL;
+				ValaSourceReference* _tmp38_ = NULL;
 				_tmp36_ = lit;
 				_tmp37_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp36_);
 				_tmp38_ = _tmp37_;
@@ -3129,20 +3123,20 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		}
 		case VALA_TOKEN_TYPE_REGEX_LITERAL:
 		{
+			gchar* match_part = NULL;
 			gchar* _tmp39_ = NULL;
-			gchar* match_part;
-			ValaSourceLocation _tmp40_;
+			ValaSourceReference* src_begin = NULL;
+			ValaSourceLocation _tmp40_ = {0};
 			ValaSourceReference* _tmp41_ = NULL;
-			ValaSourceReference* src_begin;
+			gchar* close_token = NULL;
 			gchar* _tmp42_ = NULL;
-			gchar* close_token;
-			const gchar* _tmp43_;
-			const gchar* _tmp44_;
+			const gchar* _tmp43_ = NULL;
+			const gchar* _tmp44_ = NULL;
 			gchar* _tmp45_ = NULL;
-			gchar* _tmp46_;
-			ValaSourceReference* _tmp47_;
-			ValaRegexLiteral* _tmp48_;
-			ValaExpression* _tmp49_;
+			gchar* _tmp46_ = NULL;
+			ValaSourceReference* _tmp47_ = NULL;
+			ValaRegexLiteral* _tmp48_ = NULL;
+			ValaExpression* _tmp49_ = NULL;
 			vala_parser_next (self);
 			_tmp39_ = vala_parser_get_last_string (self);
 			match_part = _tmp39_;
@@ -3183,12 +3177,12 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		case VALA_TOKEN_TYPE_STRING_LITERAL:
 		{
 			gchar* _tmp50_ = NULL;
-			gchar* _tmp51_;
-			ValaSourceLocation _tmp52_;
+			gchar* _tmp51_ = NULL;
+			ValaSourceLocation _tmp52_ = {0};
 			ValaSourceReference* _tmp53_ = NULL;
-			ValaSourceReference* _tmp54_;
-			ValaStringLiteral* _tmp55_;
-			ValaExpression* _tmp56_;
+			ValaSourceReference* _tmp54_ = NULL;
+			ValaStringLiteral* _tmp55_ = NULL;
+			ValaExpression* _tmp56_ = NULL;
 			vala_parser_next (self);
 			_tmp50_ = vala_parser_get_last_string (self);
 			_tmp51_ = _tmp50_;
@@ -3205,14 +3199,14 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		case VALA_TOKEN_TYPE_TEMPLATE_STRING_LITERAL:
 		{
 			gchar* _tmp57_ = NULL;
-			gchar* _tmp58_;
+			gchar* _tmp58_ = NULL;
 			gchar* _tmp59_ = NULL;
-			gchar* _tmp60_;
-			ValaSourceLocation _tmp61_;
+			gchar* _tmp60_ = NULL;
+			ValaSourceLocation _tmp61_ = {0};
 			ValaSourceReference* _tmp62_ = NULL;
-			ValaSourceReference* _tmp63_;
-			ValaStringLiteral* _tmp64_;
-			ValaExpression* _tmp65_;
+			ValaSourceReference* _tmp63_ = NULL;
+			ValaStringLiteral* _tmp64_ = NULL;
+			ValaExpression* _tmp65_ = NULL;
 			vala_parser_next (self);
 			_tmp57_ = vala_parser_get_last_string (self);
 			_tmp58_ = _tmp57_;
@@ -3231,25 +3225,25 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		}
 		case VALA_TOKEN_TYPE_VERBATIM_STRING_LITERAL:
 		{
+			gchar* raw_string = NULL;
 			gchar* _tmp66_ = NULL;
-			gchar* raw_string;
-			const gchar* _tmp67_;
-			const gchar* _tmp68_;
-			gint _tmp69_;
-			gint _tmp70_;
+			gchar* escaped_string = NULL;
+			const gchar* _tmp67_ = NULL;
+			const gchar* _tmp68_ = NULL;
+			gint _tmp69_ = 0;
+			gint _tmp70_ = 0;
 			gchar* _tmp71_ = NULL;
-			gchar* _tmp72_;
+			gchar* _tmp72_ = NULL;
 			gchar* _tmp73_ = NULL;
-			gchar* _tmp74_;
-			gchar* escaped_string;
-			const gchar* _tmp75_;
+			gchar* _tmp74_ = NULL;
+			const gchar* _tmp75_ = NULL;
 			gchar* _tmp76_ = NULL;
-			gchar* _tmp77_;
-			ValaSourceLocation _tmp78_;
+			gchar* _tmp77_ = NULL;
+			ValaSourceLocation _tmp78_ = {0};
 			ValaSourceReference* _tmp79_ = NULL;
-			ValaSourceReference* _tmp80_;
-			ValaStringLiteral* _tmp81_;
-			ValaExpression* _tmp82_;
+			ValaSourceReference* _tmp80_ = NULL;
+			ValaStringLiteral* _tmp81_ = NULL;
+			ValaExpression* _tmp82_ = NULL;
 			vala_parser_next (self);
 			_tmp66_ = vala_parser_get_last_string (self);
 			raw_string = _tmp66_;
@@ -3280,11 +3274,11 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		}
 		case VALA_TOKEN_TYPE_NULL:
 		{
-			ValaSourceLocation _tmp83_;
+			ValaSourceLocation _tmp83_ = {0};
 			ValaSourceReference* _tmp84_ = NULL;
-			ValaSourceReference* _tmp85_;
-			ValaNullLiteral* _tmp86_;
-			ValaExpression* _tmp87_;
+			ValaSourceReference* _tmp85_ = NULL;
+			ValaNullLiteral* _tmp86_ = NULL;
+			ValaExpression* _tmp87_ = NULL;
 			vala_parser_next (self);
 			_tmp83_ = begin;
 			_tmp84_ = vala_parser_get_src (self, &_tmp83_);
@@ -3298,9 +3292,9 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 		default:
 		{
 			gchar* _tmp88_ = NULL;
-			gchar* _tmp89_;
-			GError* _tmp90_;
-			GError* _tmp91_;
+			gchar* _tmp89_ = NULL;
+			GError* _tmp90_ = NULL;
+			GError* _tmp91_ = NULL;
 			_tmp88_ = vala_parser_get_error (self, "expected literal");
 			_tmp89_ = _tmp88_;
 			_tmp90_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp89_);
@@ -3321,8 +3315,8 @@ static ValaExpression* vala_parser_parse_literal (ValaParser* self, GError** err
 
 
 void vala_parser_parse_file (ValaParser* self, ValaSourceFile* source_file) {
-	ValaSourceFile* _tmp0_;
-	ValaScanner* _tmp1_;
+	ValaSourceFile* _tmp0_ = NULL;
+	ValaScanner* _tmp1_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (source_file != NULL);
@@ -3335,12 +3329,12 @@ void vala_parser_parse_file (ValaParser* self, ValaSourceFile* source_file) {
 	self->priv->size = 0;
 	vala_parser_next (self);
 	{
-		ValaCodeContext* _tmp2_;
-		ValaNamespace* _tmp3_;
-		ValaNamespace* _tmp4_;
-		ValaCodeContext* _tmp5_;
-		ValaNamespace* _tmp6_;
-		ValaNamespace* _tmp7_;
+		ValaCodeContext* _tmp2_ = NULL;
+		ValaNamespace* _tmp3_ = NULL;
+		ValaNamespace* _tmp4_ = NULL;
+		ValaCodeContext* _tmp5_ = NULL;
+		ValaNamespace* _tmp6_ = NULL;
+		ValaNamespace* _tmp7_ = NULL;
 		gboolean _tmp8_ = FALSE;
 		_tmp2_ = self->priv->context;
 		_tmp3_ = vala_code_context_get_root (_tmp2_);
@@ -3368,9 +3362,9 @@ void vala_parser_parse_file (ValaParser* self, ValaSourceFile* source_file) {
 		}
 		_tmp8_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_BRACE);
 		if (_tmp8_) {
-			ValaCodeContext* _tmp9_;
-			ValaReport* _tmp10_;
-			ValaReport* _tmp11_;
+			ValaCodeContext* _tmp9_ = NULL;
+			ValaReport* _tmp10_ = NULL;
+			ValaReport* _tmp11_ = NULL;
 			gint _tmp12_ = 0;
 			_tmp9_ = self->priv->context;
 			_tmp10_ = vala_code_context_get_report (_tmp9_);
@@ -3378,7 +3372,7 @@ void vala_parser_parse_file (ValaParser* self, ValaSourceFile* source_file) {
 			_tmp12_ = vala_report_get_errors (_tmp11_);
 			if (_tmp12_ == 0) {
 				ValaSourceReference* _tmp13_ = NULL;
-				ValaSourceReference* _tmp14_;
+				ValaSourceReference* _tmp14_ = NULL;
 				_tmp13_ = vala_parser_get_last_src (self);
 				_tmp14_ = _tmp13_;
 				vala_report_error (_tmp14_, "unexpected `}'");
@@ -3406,7 +3400,7 @@ void vala_parser_parse_file (ValaParser* self, ValaSourceFile* source_file) {
 
 
 static void vala_parser_parse_file_comments (ValaParser* self) {
-	ValaScanner* _tmp0_;
+	ValaScanner* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = self->priv->scanner;
 	vala_scanner_parse_file_comments (_tmp0_);
@@ -3417,25 +3411,21 @@ static void vala_parser_skip_symbol_name (ValaParser* self, GError** error) {
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	{
-		gboolean _tmp0_;
+		gboolean _tmp0_ = FALSE;
 		_tmp0_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp1_;
-			_tmp1_ = _tmp0_;
-			if (!_tmp1_) {
+			if (!_tmp0_) {
+				gboolean _tmp1_ = FALSE;
 				gboolean _tmp2_ = FALSE;
-				gboolean _tmp3_ = FALSE;
-				gboolean _tmp5_;
-				_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
-				if (_tmp3_) {
-					_tmp2_ = TRUE;
+				_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
+				if (_tmp2_) {
+					_tmp1_ = TRUE;
 				} else {
-					gboolean _tmp4_ = FALSE;
-					_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
-					_tmp2_ = _tmp4_;
+					gboolean _tmp3_ = FALSE;
+					_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
+					_tmp1_ = _tmp3_;
 				}
-				_tmp5_ = _tmp2_;
-				if (!_tmp5_) {
+				if (!_tmp1_) {
 					break;
 				}
 			}
@@ -3458,41 +3448,38 @@ static void vala_parser_skip_symbol_name (ValaParser* self, GError** error) {
 
 static ValaUnresolvedSymbol* vala_parser_parse_symbol_name (ValaParser* self, GError** error) {
 	ValaUnresolvedSymbol* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaUnresolvedSymbol* sym;
+	ValaUnresolvedSymbol* sym = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
 	begin = _tmp0_;
 	sym = NULL;
 	{
-		gboolean _tmp1_;
+		gboolean _tmp1_ = FALSE;
 		_tmp1_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp2_;
-			gchar* _tmp4_ = NULL;
-			gchar* name;
-			gboolean _tmp5_ = FALSE;
-			const gchar* _tmp6_;
-			gboolean _tmp8_;
-			ValaUnresolvedSymbol* _tmp18_;
-			const gchar* _tmp19_;
-			ValaSourceLocation _tmp20_;
+			gchar* name = NULL;
+			gchar* _tmp3_ = NULL;
+			gboolean _tmp4_ = FALSE;
+			const gchar* _tmp5_ = NULL;
+			ValaUnresolvedSymbol* _tmp17_ = NULL;
+			const gchar* _tmp18_ = NULL;
+			ValaSourceLocation _tmp19_ = {0};
+			ValaSourceReference* _tmp20_ = NULL;
 			ValaSourceReference* _tmp21_ = NULL;
-			ValaSourceReference* _tmp22_;
-			ValaUnresolvedSymbol* _tmp23_;
-			_tmp2_ = _tmp1_;
-			if (!_tmp2_) {
-				gboolean _tmp3_ = FALSE;
-				_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
-				if (!_tmp3_) {
+			ValaUnresolvedSymbol* _tmp22_ = NULL;
+			if (!_tmp1_) {
+				gboolean _tmp2_ = FALSE;
+				_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
+				if (!_tmp2_) {
 					break;
 				}
 			}
 			_tmp1_ = FALSE;
-			_tmp4_ = vala_parser_parse_identifier (self, &_inner_error_);
-			name = _tmp4_;
+			_tmp3_ = vala_parser_parse_identifier (self, &_inner_error_);
+			name = _tmp3_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -3505,27 +3492,27 @@ static ValaUnresolvedSymbol* vala_parser_parse_symbol_name (ValaParser* self, GE
 					return NULL;
 				}
 			}
-			_tmp6_ = name;
-			if (g_strcmp0 (_tmp6_, "global") == 0) {
-				gboolean _tmp7_ = FALSE;
-				_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
-				_tmp5_ = _tmp7_;
+			_tmp5_ = name;
+			if (g_strcmp0 (_tmp5_, "global") == 0) {
+				gboolean _tmp6_ = FALSE;
+				_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
+				_tmp4_ = _tmp6_;
 			} else {
-				_tmp5_ = FALSE;
+				_tmp4_ = FALSE;
 			}
-			_tmp8_ = _tmp5_;
-			if (_tmp8_) {
+			if (_tmp4_) {
+				gchar* _tmp7_ = NULL;
+				gchar* _tmp8_ = NULL;
 				gchar* _tmp9_ = NULL;
-				gchar* _tmp10_;
-				ValaUnresolvedSymbol* _tmp11_;
-				const gchar* _tmp12_;
-				ValaSourceLocation _tmp13_;
+				ValaUnresolvedSymbol* _tmp10_ = NULL;
+				const gchar* _tmp11_ = NULL;
+				ValaSourceLocation _tmp12_ = {0};
+				ValaSourceReference* _tmp13_ = NULL;
 				ValaSourceReference* _tmp14_ = NULL;
-				ValaSourceReference* _tmp15_;
-				ValaUnresolvedSymbol* _tmp16_;
-				ValaUnresolvedSymbol* _tmp17_;
-				_tmp9_ = vala_parser_parse_identifier (self, &_inner_error_);
-				_tmp10_ = _tmp9_;
+				ValaUnresolvedSymbol* _tmp15_ = NULL;
+				ValaUnresolvedSymbol* _tmp16_ = NULL;
+				_tmp8_ = vala_parser_parse_identifier (self, &_inner_error_);
+				_tmp7_ = _tmp8_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -3540,31 +3527,34 @@ static ValaUnresolvedSymbol* vala_parser_parse_symbol_name (ValaParser* self, GE
 						return NULL;
 					}
 				}
+				_tmp9_ = _tmp7_;
+				_tmp7_ = NULL;
 				_g_free0 (name);
-				name = _tmp10_;
-				_tmp11_ = sym;
-				_tmp12_ = name;
-				_tmp13_ = begin;
-				_tmp14_ = vala_parser_get_src (self, &_tmp13_);
-				_tmp15_ = _tmp14_;
-				_tmp16_ = vala_unresolved_symbol_new (_tmp11_, _tmp12_, _tmp15_);
+				name = _tmp9_;
+				_tmp10_ = sym;
+				_tmp11_ = name;
+				_tmp12_ = begin;
+				_tmp13_ = vala_parser_get_src (self, &_tmp12_);
+				_tmp14_ = _tmp13_;
+				_tmp15_ = vala_unresolved_symbol_new (_tmp10_, _tmp11_, _tmp14_);
 				_vala_code_node_unref0 (sym);
-				sym = _tmp16_;
-				_vala_source_reference_unref0 (_tmp15_);
-				_tmp17_ = sym;
-				vala_unresolved_symbol_set_qualified (_tmp17_, TRUE);
+				sym = _tmp15_;
+				_vala_source_reference_unref0 (_tmp14_);
+				_tmp16_ = sym;
+				vala_unresolved_symbol_set_qualified (_tmp16_, TRUE);
+				_g_free0 (_tmp7_);
 				_g_free0 (name);
 				continue;
 			}
-			_tmp18_ = sym;
-			_tmp19_ = name;
-			_tmp20_ = begin;
-			_tmp21_ = vala_parser_get_src (self, &_tmp20_);
-			_tmp22_ = _tmp21_;
-			_tmp23_ = vala_unresolved_symbol_new (_tmp18_, _tmp19_, _tmp22_);
+			_tmp17_ = sym;
+			_tmp18_ = name;
+			_tmp19_ = begin;
+			_tmp20_ = vala_parser_get_src (self, &_tmp19_);
+			_tmp21_ = _tmp20_;
+			_tmp22_ = vala_unresolved_symbol_new (_tmp17_, _tmp18_, _tmp21_);
 			_vala_code_node_unref0 (sym);
-			sym = _tmp23_;
-			_vala_source_reference_unref0 (_tmp22_);
+			sym = _tmp22_;
+			_vala_source_reference_unref0 (_tmp21_);
 			_g_free0 (name);
 		}
 	}
@@ -3622,37 +3612,33 @@ static void vala_parser_skip_type (ValaParser* self, GError** error) {
 			break;
 		}
 		{
-			gboolean _tmp3_;
+			gboolean _tmp3_ = FALSE;
 			_tmp3_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp4_;
-				gboolean _tmp6_ = FALSE;
-				ValaTokenType _tmp7_ = 0;
-				gboolean _tmp9_;
-				_tmp4_ = _tmp3_;
-				if (!_tmp4_) {
-					gboolean _tmp5_ = FALSE;
-					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp5_) {
+				gboolean _tmp5_ = FALSE;
+				ValaTokenType _tmp6_ = 0;
+				if (!_tmp3_) {
+					gboolean _tmp4_ = FALSE;
+					_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp4_) {
 						break;
 					}
 				}
 				_tmp3_ = FALSE;
-				_tmp7_ = vala_parser_current (self);
-				if (_tmp7_ != VALA_TOKEN_TYPE_COMMA) {
-					ValaTokenType _tmp8_ = 0;
-					_tmp8_ = vala_parser_current (self);
-					_tmp6_ = _tmp8_ != VALA_TOKEN_TYPE_CLOSE_BRACKET;
+				_tmp6_ = vala_parser_current (self);
+				if (_tmp6_ != VALA_TOKEN_TYPE_COMMA) {
+					ValaTokenType _tmp7_ = 0;
+					_tmp7_ = vala_parser_current (self);
+					_tmp5_ = _tmp7_ != VALA_TOKEN_TYPE_CLOSE_BRACKET;
 				} else {
-					_tmp6_ = FALSE;
+					_tmp5_ = FALSE;
 				}
-				_tmp9_ = _tmp6_;
-				if (_tmp9_) {
-					ValaExpression* _tmp10_ = NULL;
-					ValaExpression* _tmp11_;
-					_tmp10_ = vala_parser_parse_expression (self, &_inner_error_);
-					_tmp11_ = _tmp10_;
-					_vala_code_node_unref0 (_tmp11_);
+				if (_tmp5_) {
+					ValaExpression* _tmp8_ = NULL;
+					ValaExpression* _tmp9_ = NULL;
+					_tmp8_ = vala_parser_parse_expression (self, &_inner_error_);
+					_tmp9_ = _tmp8_;
+					_vala_code_node_unref0 (_tmp9_);
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -3696,27 +3682,25 @@ static gpointer _vala_code_node_ref0 (gpointer self) {
 
 static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by_default, gboolean can_weak_ref, GError** error) {
 	ValaDataType* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	gboolean is_dynamic = FALSE;
 	gboolean _tmp1_ = FALSE;
-	gboolean is_dynamic;
-	gboolean _tmp2_;
-	gboolean value_owned;
-	gboolean _tmp3_;
+	gboolean value_owned = FALSE;
+	gboolean _tmp2_ = FALSE;
+	gboolean _tmp3_ = FALSE;
 	ValaDataType* type = NULL;
+	gboolean _tmp14_ = FALSE;
 	gboolean _tmp15_ = FALSE;
 	gboolean _tmp16_ = FALSE;
-	gboolean _tmp17_;
-	gboolean _tmp20_;
-	gboolean _tmp22_;
-	ValaDataType* _tmp54_;
-	gboolean _tmp82_ = FALSE;
-	gboolean _tmp85_;
-	ValaDataType* _tmp92_;
-	ValaDataType* _tmp93_;
-	gboolean _tmp94_;
-	ValaDataType* _tmp95_;
-	gboolean _tmp96_;
+	ValaDataType* _tmp51_ = NULL;
+	gboolean _tmp77_ = FALSE;
+	gboolean _tmp80_ = FALSE;
+	ValaDataType* _tmp87_ = NULL;
+	ValaDataType* _tmp88_ = NULL;
+	gboolean _tmp89_ = FALSE;
+	ValaDataType* _tmp90_ = NULL;
+	gboolean _tmp91_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -3736,13 +3720,12 @@ static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by
 			_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_WEAK);
 			if (_tmp5_) {
 				gboolean _tmp6_ = FALSE;
-				gboolean _tmp7_;
-				gboolean _tmp11_;
+				gboolean _tmp7_ = FALSE;
 				_tmp7_ = can_weak_ref;
 				if (!_tmp7_) {
-					ValaCodeContext* _tmp8_;
-					gboolean _tmp9_;
-					gboolean _tmp10_;
+					ValaCodeContext* _tmp8_ = NULL;
+					gboolean _tmp9_ = FALSE;
+					gboolean _tmp10_ = FALSE;
 					_tmp8_ = self->priv->context;
 					_tmp9_ = vala_code_context_get_deprecated (_tmp8_);
 					_tmp10_ = _tmp9_;
@@ -3750,146 +3733,143 @@ static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by
 				} else {
 					_tmp6_ = FALSE;
 				}
-				_tmp11_ = _tmp6_;
-				if (_tmp11_) {
+				if (_tmp6_) {
+					ValaSourceReference* _tmp11_ = NULL;
 					ValaSourceReference* _tmp12_ = NULL;
-					ValaSourceReference* _tmp13_;
-					_tmp12_ = vala_parser_get_last_src (self);
-					_tmp13_ = _tmp12_;
-					vala_report_warning (_tmp13_, "deprecated syntax, use `unowned` modifier");
-					_vala_source_reference_unref0 (_tmp13_);
+					_tmp11_ = vala_parser_get_last_src (self);
+					_tmp12_ = _tmp11_;
+					vala_report_warning (_tmp12_, "deprecated syntax, use `unowned` modifier");
+					_vala_source_reference_unref0 (_tmp12_);
 				}
 				value_owned = FALSE;
 			}
 		}
 	} else {
-		gboolean _tmp14_ = FALSE;
-		_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OWNED);
-		value_owned = _tmp14_;
+		gboolean _tmp13_ = FALSE;
+		_tmp13_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OWNED);
+		value_owned = _tmp13_;
 	}
-	_tmp17_ = is_dynamic;
-	if (!_tmp17_) {
-		gboolean _tmp18_;
-		gboolean _tmp19_;
-		_tmp18_ = value_owned;
-		_tmp19_ = owned_by_default;
-		_tmp16_ = _tmp18_ == _tmp19_;
-	} else {
-		_tmp16_ = FALSE;
-	}
-	_tmp20_ = _tmp16_;
-	if (_tmp20_) {
-		gboolean _tmp21_ = FALSE;
-		_tmp21_ = vala_parser_accept (self, VALA_TOKEN_TYPE_VOID);
-		_tmp15_ = _tmp21_;
+	_tmp16_ = is_dynamic;
+	if (!_tmp16_) {
+		gboolean _tmp17_ = FALSE;
+		gboolean _tmp18_ = FALSE;
+		_tmp17_ = value_owned;
+		_tmp18_ = owned_by_default;
+		_tmp15_ = _tmp17_ == _tmp18_;
 	} else {
 		_tmp15_ = FALSE;
 	}
-	_tmp22_ = _tmp15_;
-	if (_tmp22_) {
-		ValaSourceLocation _tmp23_;
-		ValaSourceReference* _tmp24_ = NULL;
-		ValaSourceReference* _tmp25_;
-		ValaVoidType* _tmp26_;
-		_tmp23_ = begin;
-		_tmp24_ = vala_parser_get_src (self, &_tmp23_);
-		_tmp25_ = _tmp24_;
-		_tmp26_ = vala_void_type_new (_tmp25_);
-		_vala_code_node_unref0 (type);
-		type = (ValaDataType*) _tmp26_;
-		_vala_source_reference_unref0 (_tmp25_);
+	if (_tmp15_) {
+		gboolean _tmp19_ = FALSE;
+		_tmp19_ = vala_parser_accept (self, VALA_TOKEN_TYPE_VOID);
+		_tmp14_ = _tmp19_;
 	} else {
-		ValaUnresolvedSymbol* _tmp27_ = NULL;
-		ValaUnresolvedSymbol* sym;
-		ValaList* _tmp28_ = NULL;
-		ValaList* type_arg_list;
-		ValaUnresolvedSymbol* _tmp29_;
-		ValaSourceLocation _tmp30_;
-		ValaSourceReference* _tmp31_ = NULL;
-		ValaSourceReference* _tmp32_;
-		ValaUnresolvedType* _tmp33_;
-		ValaList* _tmp34_;
-		_tmp27_ = vala_parser_parse_symbol_name (self, &_inner_error_);
-		sym = _tmp27_;
-		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == VALA_PARSE_ERROR) {
-				g_propagate_error (error, _inner_error_);
-				_vala_code_node_unref0 (type);
-				return NULL;
-			} else {
-				_vala_code_node_unref0 (type);
-				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-				g_clear_error (&_inner_error_);
-				return NULL;
-			}
-		}
-		_tmp28_ = vala_parser_parse_type_argument_list (self, FALSE, &_inner_error_);
-		type_arg_list = _tmp28_;
-		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == VALA_PARSE_ERROR) {
-				g_propagate_error (error, _inner_error_);
-				_vala_code_node_unref0 (sym);
-				_vala_code_node_unref0 (type);
-				return NULL;
-			} else {
-				_vala_code_node_unref0 (sym);
-				_vala_code_node_unref0 (type);
-				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-				g_clear_error (&_inner_error_);
-				return NULL;
-			}
-		}
-		_tmp29_ = sym;
-		_tmp30_ = begin;
-		_tmp31_ = vala_parser_get_src (self, &_tmp30_);
-		_tmp32_ = _tmp31_;
-		_tmp33_ = vala_unresolved_type_new_from_symbol (_tmp29_, _tmp32_);
+		_tmp14_ = FALSE;
+	}
+	if (_tmp14_) {
+		ValaSourceLocation _tmp20_ = {0};
+		ValaSourceReference* _tmp21_ = NULL;
+		ValaSourceReference* _tmp22_ = NULL;
+		ValaVoidType* _tmp23_ = NULL;
+		_tmp20_ = begin;
+		_tmp21_ = vala_parser_get_src (self, &_tmp20_);
+		_tmp22_ = _tmp21_;
+		_tmp23_ = vala_void_type_new (_tmp22_);
 		_vala_code_node_unref0 (type);
-		type = (ValaDataType*) _tmp33_;
-		_vala_source_reference_unref0 (_tmp32_);
-		_tmp34_ = type_arg_list;
-		if (_tmp34_ != NULL) {
+		type = (ValaDataType*) _tmp23_;
+		_vala_source_reference_unref0 (_tmp22_);
+	} else {
+		ValaUnresolvedSymbol* sym = NULL;
+		ValaUnresolvedSymbol* _tmp24_ = NULL;
+		ValaList* type_arg_list = NULL;
+		ValaList* _tmp25_ = NULL;
+		ValaUnresolvedSymbol* _tmp26_ = NULL;
+		ValaSourceLocation _tmp27_ = {0};
+		ValaSourceReference* _tmp28_ = NULL;
+		ValaSourceReference* _tmp29_ = NULL;
+		ValaUnresolvedType* _tmp30_ = NULL;
+		ValaList* _tmp31_ = NULL;
+		_tmp24_ = vala_parser_parse_symbol_name (self, &_inner_error_);
+		sym = _tmp24_;
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == VALA_PARSE_ERROR) {
+				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (type);
+				return NULL;
+			} else {
+				_vala_code_node_unref0 (type);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return NULL;
+			}
+		}
+		_tmp25_ = vala_parser_parse_type_argument_list (self, FALSE, &_inner_error_);
+		type_arg_list = _tmp25_;
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == VALA_PARSE_ERROR) {
+				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (sym);
+				_vala_code_node_unref0 (type);
+				return NULL;
+			} else {
+				_vala_code_node_unref0 (sym);
+				_vala_code_node_unref0 (type);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return NULL;
+			}
+		}
+		_tmp26_ = sym;
+		_tmp27_ = begin;
+		_tmp28_ = vala_parser_get_src (self, &_tmp27_);
+		_tmp29_ = _tmp28_;
+		_tmp30_ = vala_unresolved_type_new_from_symbol (_tmp26_, _tmp29_);
+		_vala_code_node_unref0 (type);
+		type = (ValaDataType*) _tmp30_;
+		_vala_source_reference_unref0 (_tmp29_);
+		_tmp31_ = type_arg_list;
+		if (_tmp31_ != NULL) {
 			{
-				ValaList* _tmp35_;
-				ValaList* _tmp36_;
-				ValaList* _type_arg_list;
-				ValaList* _tmp37_;
-				gint _tmp38_;
-				gint _tmp39_;
-				gint _type_arg_size;
-				gint _type_arg_index;
-				_tmp35_ = type_arg_list;
-				_tmp36_ = _vala_iterable_ref0 (_tmp35_);
-				_type_arg_list = _tmp36_;
-				_tmp37_ = _type_arg_list;
-				_tmp38_ = vala_collection_get_size ((ValaCollection*) _tmp37_);
-				_tmp39_ = _tmp38_;
-				_type_arg_size = _tmp39_;
+				ValaList* _type_arg_list = NULL;
+				ValaList* _tmp32_ = NULL;
+				ValaList* _tmp33_ = NULL;
+				gint _type_arg_size = 0;
+				ValaList* _tmp34_ = NULL;
+				gint _tmp35_ = 0;
+				gint _tmp36_ = 0;
+				gint _type_arg_index = 0;
+				_tmp32_ = type_arg_list;
+				_tmp33_ = _vala_iterable_ref0 (_tmp32_);
+				_type_arg_list = _tmp33_;
+				_tmp34_ = _type_arg_list;
+				_tmp35_ = vala_collection_get_size ((ValaCollection*) _tmp34_);
+				_tmp36_ = _tmp35_;
+				_type_arg_size = _tmp36_;
 				_type_arg_index = -1;
 				while (TRUE) {
-					gint _tmp40_;
-					gint _tmp41_;
-					gint _tmp42_;
-					ValaList* _tmp43_;
-					gint _tmp44_;
-					gpointer _tmp45_ = NULL;
-					ValaDataType* type_arg;
-					ValaDataType* _tmp46_;
-					ValaDataType* _tmp47_;
-					_tmp40_ = _type_arg_index;
-					_type_arg_index = _tmp40_ + 1;
-					_tmp41_ = _type_arg_index;
-					_tmp42_ = _type_arg_size;
-					if (!(_tmp41_ < _tmp42_)) {
+					gint _tmp37_ = 0;
+					gint _tmp38_ = 0;
+					gint _tmp39_ = 0;
+					ValaDataType* type_arg = NULL;
+					ValaList* _tmp40_ = NULL;
+					gint _tmp41_ = 0;
+					gpointer _tmp42_ = NULL;
+					ValaDataType* _tmp43_ = NULL;
+					ValaDataType* _tmp44_ = NULL;
+					_tmp37_ = _type_arg_index;
+					_type_arg_index = _tmp37_ + 1;
+					_tmp38_ = _type_arg_index;
+					_tmp39_ = _type_arg_size;
+					if (!(_tmp38_ < _tmp39_)) {
 						break;
 					}
-					_tmp43_ = _type_arg_list;
-					_tmp44_ = _type_arg_index;
-					_tmp45_ = vala_list_get (_tmp43_, _tmp44_);
-					type_arg = (ValaDataType*) _tmp45_;
-					_tmp46_ = type;
-					_tmp47_ = type_arg;
-					vala_data_type_add_type_argument (_tmp46_, _tmp47_);
+					_tmp40_ = _type_arg_list;
+					_tmp41_ = _type_arg_index;
+					_tmp42_ = vala_list_get (_tmp40_, _tmp41_);
+					type_arg = (ValaDataType*) _tmp42_;
+					_tmp43_ = type;
+					_tmp44_ = type_arg;
+					vala_data_type_add_type_argument (_tmp43_, _tmp44_);
 					_vala_code_node_unref0 (type_arg);
 				}
 				_vala_iterable_unref0 (_type_arg_list);
@@ -3899,93 +3879,89 @@ static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by
 		_vala_code_node_unref0 (sym);
 	}
 	while (TRUE) {
-		gboolean _tmp48_ = FALSE;
-		ValaDataType* _tmp49_;
-		ValaSourceLocation _tmp50_;
-		ValaSourceReference* _tmp51_ = NULL;
-		ValaSourceReference* _tmp52_;
-		ValaPointerType* _tmp53_;
-		_tmp48_ = vala_parser_accept (self, VALA_TOKEN_TYPE_STAR);
-		if (!_tmp48_) {
+		gboolean _tmp45_ = FALSE;
+		ValaDataType* _tmp46_ = NULL;
+		ValaSourceLocation _tmp47_ = {0};
+		ValaSourceReference* _tmp48_ = NULL;
+		ValaSourceReference* _tmp49_ = NULL;
+		ValaPointerType* _tmp50_ = NULL;
+		_tmp45_ = vala_parser_accept (self, VALA_TOKEN_TYPE_STAR);
+		if (!_tmp45_) {
 			break;
 		}
-		_tmp49_ = type;
-		_tmp50_ = begin;
-		_tmp51_ = vala_parser_get_src (self, &_tmp50_);
-		_tmp52_ = _tmp51_;
-		_tmp53_ = vala_pointer_type_new (_tmp49_, _tmp52_);
+		_tmp46_ = type;
+		_tmp47_ = begin;
+		_tmp48_ = vala_parser_get_src (self, &_tmp47_);
+		_tmp49_ = _tmp48_;
+		_tmp50_ = vala_pointer_type_new (_tmp46_, _tmp49_);
 		_vala_code_node_unref0 (type);
-		type = (ValaDataType*) _tmp53_;
-		_vala_source_reference_unref0 (_tmp52_);
+		type = (ValaDataType*) _tmp50_;
+		_vala_source_reference_unref0 (_tmp49_);
 	}
-	_tmp54_ = type;
-	if (!G_TYPE_CHECK_INSTANCE_TYPE (_tmp54_, VALA_TYPE_POINTER_TYPE)) {
-		ValaDataType* _tmp55_;
-		gboolean _tmp56_ = FALSE;
-		_tmp55_ = type;
-		_tmp56_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
-		vala_data_type_set_nullable (_tmp55_, _tmp56_);
+	_tmp51_ = type;
+	if (!G_TYPE_CHECK_INSTANCE_TYPE (_tmp51_, VALA_TYPE_POINTER_TYPE)) {
+		ValaDataType* _tmp52_ = NULL;
+		gboolean _tmp53_ = FALSE;
+		_tmp52_ = type;
+		_tmp53_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
+		vala_data_type_set_nullable (_tmp52_, _tmp53_);
 	}
 	while (TRUE) {
-		gboolean _tmp57_ = FALSE;
-		gboolean invalid_array;
-		gint array_rank;
-		ValaDataType* _tmp68_;
-		ValaDataType* _tmp69_;
-		gint _tmp70_;
-		ValaSourceLocation _tmp71_;
-		ValaSourceReference* _tmp72_ = NULL;
-		ValaSourceReference* _tmp73_;
-		ValaArrayType* _tmp74_;
-		ValaArrayType* _tmp75_;
-		ValaArrayType* array_type;
-		ValaArrayType* _tmp76_;
-		gboolean _tmp77_ = FALSE;
-		ValaArrayType* _tmp78_;
-		gboolean _tmp79_;
-		ValaArrayType* _tmp80_;
-		ValaDataType* _tmp81_;
-		_tmp57_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACKET);
-		if (!_tmp57_) {
+		gboolean _tmp54_ = FALSE;
+		gboolean invalid_array = FALSE;
+		gint array_rank = 0;
+		ValaDataType* _tmp63_ = NULL;
+		ValaArrayType* array_type = NULL;
+		ValaDataType* _tmp64_ = NULL;
+		gint _tmp65_ = 0;
+		ValaSourceLocation _tmp66_ = {0};
+		ValaSourceReference* _tmp67_ = NULL;
+		ValaSourceReference* _tmp68_ = NULL;
+		ValaArrayType* _tmp69_ = NULL;
+		ValaArrayType* _tmp70_ = NULL;
+		ValaArrayType* _tmp71_ = NULL;
+		gboolean _tmp72_ = FALSE;
+		ValaArrayType* _tmp73_ = NULL;
+		gboolean _tmp74_ = FALSE;
+		ValaArrayType* _tmp75_ = NULL;
+		ValaDataType* _tmp76_ = NULL;
+		_tmp54_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACKET);
+		if (!_tmp54_) {
 			break;
 		}
 		invalid_array = FALSE;
 		array_rank = 0;
 		{
-			gboolean _tmp58_;
-			_tmp58_ = TRUE;
+			gboolean _tmp55_ = FALSE;
+			_tmp55_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp59_;
-				gint _tmp61_;
-				gboolean _tmp62_ = FALSE;
-				ValaTokenType _tmp63_ = 0;
-				gboolean _tmp65_;
-				_tmp59_ = _tmp58_;
-				if (!_tmp59_) {
-					gboolean _tmp60_ = FALSE;
-					_tmp60_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp60_) {
+				gint _tmp57_ = 0;
+				gboolean _tmp58_ = FALSE;
+				ValaTokenType _tmp59_ = 0;
+				if (!_tmp55_) {
+					gboolean _tmp56_ = FALSE;
+					_tmp56_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp56_) {
 						break;
 					}
 				}
-				_tmp58_ = FALSE;
-				_tmp61_ = array_rank;
-				array_rank = _tmp61_ + 1;
-				_tmp63_ = vala_parser_current (self);
-				if (_tmp63_ != VALA_TOKEN_TYPE_COMMA) {
-					ValaTokenType _tmp64_ = 0;
-					_tmp64_ = vala_parser_current (self);
-					_tmp62_ = _tmp64_ != VALA_TOKEN_TYPE_CLOSE_BRACKET;
+				_tmp55_ = FALSE;
+				_tmp57_ = array_rank;
+				array_rank = _tmp57_ + 1;
+				_tmp59_ = vala_parser_current (self);
+				if (_tmp59_ != VALA_TOKEN_TYPE_COMMA) {
+					ValaTokenType _tmp60_ = 0;
+					_tmp60_ = vala_parser_current (self);
+					_tmp58_ = _tmp60_ != VALA_TOKEN_TYPE_CLOSE_BRACKET;
 				} else {
-					_tmp62_ = FALSE;
+					_tmp58_ = FALSE;
 				}
-				_tmp65_ = _tmp62_;
-				if (_tmp65_) {
-					ValaExpression* _tmp66_ = NULL;
-					ValaExpression* _tmp67_;
-					_tmp66_ = vala_parser_parse_expression (self, &_inner_error_);
-					_tmp67_ = _tmp66_;
-					_vala_code_node_unref0 (_tmp67_);
+				if (_tmp58_) {
+					ValaExpression* _tmp61_ = NULL;
+					ValaExpression* _tmp62_ = NULL;
+					_tmp61_ = vala_parser_parse_expression (self, &_inner_error_);
+					_tmp62_ = _tmp61_;
+					_vala_code_node_unref0 (_tmp62_);
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -4015,70 +3991,70 @@ static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by
 				return NULL;
 			}
 		}
-		_tmp68_ = type;
-		vala_data_type_set_value_owned (_tmp68_, TRUE);
-		_tmp69_ = type;
-		_tmp70_ = array_rank;
-		_tmp71_ = begin;
-		_tmp72_ = vala_parser_get_src (self, &_tmp71_);
-		_tmp73_ = _tmp72_;
-		_tmp74_ = vala_array_type_new (_tmp69_, _tmp70_, _tmp73_);
-		_tmp75_ = _tmp74_;
-		_vala_source_reference_unref0 (_tmp73_);
-		array_type = _tmp75_;
-		_tmp76_ = array_type;
-		_tmp77_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
-		vala_data_type_set_nullable ((ValaDataType*) _tmp76_, _tmp77_);
-		_tmp78_ = array_type;
-		_tmp79_ = invalid_array;
-		vala_array_type_set_invalid_syntax (_tmp78_, _tmp79_);
-		_tmp80_ = array_type;
-		_tmp81_ = _vala_code_node_ref0 ((ValaDataType*) _tmp80_);
+		_tmp63_ = type;
+		vala_data_type_set_value_owned (_tmp63_, TRUE);
+		_tmp64_ = type;
+		_tmp65_ = array_rank;
+		_tmp66_ = begin;
+		_tmp67_ = vala_parser_get_src (self, &_tmp66_);
+		_tmp68_ = _tmp67_;
+		_tmp69_ = vala_array_type_new (_tmp64_, _tmp65_, _tmp68_);
+		_tmp70_ = _tmp69_;
+		_vala_source_reference_unref0 (_tmp68_);
+		array_type = _tmp70_;
+		_tmp71_ = array_type;
+		_tmp72_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
+		vala_data_type_set_nullable ((ValaDataType*) _tmp71_, _tmp72_);
+		_tmp73_ = array_type;
+		_tmp74_ = invalid_array;
+		vala_array_type_set_invalid_syntax (_tmp73_, _tmp74_);
+		_tmp75_ = array_type;
+		_tmp76_ = _vala_code_node_ref0 ((ValaDataType*) _tmp75_);
 		_vala_code_node_unref0 (type);
-		type = _tmp81_;
+		type = _tmp76_;
 		_vala_code_node_unref0 (array_type);
 	}
-	_tmp82_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_NEG);
-	if (_tmp82_) {
-		ValaSourceReference* _tmp83_ = NULL;
-		ValaSourceReference* _tmp84_;
-		_tmp83_ = vala_parser_get_last_src (self);
-		_tmp84_ = _tmp83_;
-		vala_report_warning (_tmp84_, "obsolete syntax, types are non-null by default");
-		_vala_source_reference_unref0 (_tmp84_);
+	_tmp77_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_NEG);
+	if (_tmp77_) {
+		ValaSourceReference* _tmp78_ = NULL;
+		ValaSourceReference* _tmp79_ = NULL;
+		_tmp78_ = vala_parser_get_last_src (self);
+		_tmp79_ = _tmp78_;
+		vala_report_warning (_tmp79_, "obsolete syntax, types are non-null by default");
+		_vala_source_reference_unref0 (_tmp79_);
 	}
-	_tmp85_ = owned_by_default;
-	if (!_tmp85_) {
-		gboolean _tmp86_ = FALSE;
-		_tmp86_ = vala_parser_accept (self, VALA_TOKEN_TYPE_HASH);
-		if (_tmp86_) {
-			ValaCodeContext* _tmp87_;
-			gboolean _tmp88_;
-			gboolean _tmp89_;
-			_tmp87_ = self->priv->context;
-			_tmp88_ = vala_code_context_get_deprecated (_tmp87_);
-			_tmp89_ = _tmp88_;
-			if (!_tmp89_) {
-				ValaSourceReference* _tmp90_ = NULL;
-				ValaSourceReference* _tmp91_;
-				_tmp90_ = vala_parser_get_last_src (self);
-				_tmp91_ = _tmp90_;
-				vala_report_warning (_tmp91_, "deprecated syntax, use `owned` modifier");
-				_vala_source_reference_unref0 (_tmp91_);
+	_tmp80_ = owned_by_default;
+	if (!_tmp80_) {
+		gboolean _tmp81_ = FALSE;
+		_tmp81_ = vala_parser_accept (self, VALA_TOKEN_TYPE_HASH);
+		if (_tmp81_) {
+			ValaCodeContext* _tmp82_ = NULL;
+			gboolean _tmp83_ = FALSE;
+			gboolean _tmp84_ = FALSE;
+			_tmp82_ = self->priv->context;
+			_tmp83_ = vala_code_context_get_deprecated (_tmp82_);
+			_tmp84_ = _tmp83_;
+			if (!_tmp84_) {
+				ValaSourceReference* _tmp85_ = NULL;
+				ValaSourceReference* _tmp86_ = NULL;
+				_tmp85_ = vala_parser_get_last_src (self);
+				_tmp86_ = _tmp85_;
+				vala_report_warning (_tmp86_, "deprecated syntax, use `owned` modifier");
+				_vala_source_reference_unref0 (_tmp86_);
 			}
 			value_owned = TRUE;
 		}
 	}
-	_tmp92_ = type;
-	if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp92_, VALA_TYPE_POINTER_TYPE)) {
+	_tmp87_ = type;
+	if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp87_, VALA_TYPE_POINTER_TYPE)) {
 		value_owned = FALSE;
 	}
-	_tmp93_ = type;
-	_tmp94_ = is_dynamic;
-	vala_data_type_set_is_dynamic (_tmp93_, _tmp94_);
-	_tmp95_ = type;
-	_tmp96_ = value_owned;
-	vala_data_type_set_value_owned (_tmp95_, _tmp96_);
+	_tmp88_ = type;
+	_tmp89_ = is_dynamic;
+	vala_data_type_set_is_dynamic (_tmp88_, _tmp89_);
+	_tmp90_ = type;
+	_tmp91_ = value_owned;
+	vala_data_type_set_value_owned (_tmp90_, _tmp91_);
 	result = type;
 	return result;
 }
@@ -4086,13 +4062,12 @@ static ValaDataType* vala_parser_parse_type (ValaParser* self, gboolean owned_by
 
 static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, ValaDataType* type, GError** error) {
 	ValaDataType* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	gboolean _tmp1_ = FALSE;
-	ValaDataType* _tmp2_;
-	gboolean _tmp4_;
-	ValaDataType* _tmp32_;
-	ValaDataType* _tmp33_;
+	ValaDataType* _tmp2_ = NULL;
+	ValaDataType* _tmp32_ = NULL;
+	ValaDataType* _tmp33_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -4105,46 +4080,46 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 	} else {
 		_tmp1_ = FALSE;
 	}
-	_tmp4_ = _tmp1_;
-	if (_tmp4_) {
-		gint array_length;
-		ValaTokenType _tmp5_ = 0;
-		ValaDataType* _tmp17_;
-		ValaSourceLocation _tmp18_;
+	if (_tmp1_) {
+		gint array_length = 0;
+		ValaTokenType _tmp4_ = 0;
+		ValaArrayType* array_type = NULL;
+		ValaDataType* _tmp17_ = NULL;
+		ValaSourceLocation _tmp18_ = {0};
 		ValaSourceReference* _tmp19_ = NULL;
-		ValaSourceReference* _tmp20_;
-		ValaArrayType* _tmp21_;
-		ValaArrayType* _tmp22_;
-		ValaArrayType* array_type;
-		ValaArrayType* _tmp23_;
-		gint _tmp24_;
-		ValaArrayType* _tmp28_;
-		ValaDataType* _tmp29_;
-		gboolean _tmp30_;
-		gboolean _tmp31_;
+		ValaSourceReference* _tmp20_ = NULL;
+		ValaArrayType* _tmp21_ = NULL;
+		ValaArrayType* _tmp22_ = NULL;
+		ValaArrayType* _tmp23_ = NULL;
+		gint _tmp24_ = 0;
+		ValaArrayType* _tmp28_ = NULL;
+		ValaDataType* _tmp29_ = NULL;
+		gboolean _tmp30_ = FALSE;
+		gboolean _tmp31_ = FALSE;
 		array_length = -1;
-		_tmp5_ = vala_parser_current (self);
-		if (_tmp5_ != VALA_TOKEN_TYPE_CLOSE_BRACKET) {
-			ValaTokenType _tmp6_ = 0;
+		_tmp4_ = vala_parser_current (self);
+		if (_tmp4_ != VALA_TOKEN_TYPE_CLOSE_BRACKET) {
+			ValaTokenType _tmp5_ = 0;
+			ValaExpression* _tmp10_ = NULL;
 			ValaExpression* _tmp11_ = NULL;
-			ValaExpression* _tmp12_;
-			ValaIntegerLiteral* length_literal;
-			ValaIntegerLiteral* _tmp13_;
-			const gchar* _tmp14_;
-			const gchar* _tmp15_;
+			ValaIntegerLiteral* length_literal = NULL;
+			ValaExpression* _tmp12_ = NULL;
+			ValaIntegerLiteral* _tmp13_ = NULL;
+			const gchar* _tmp14_ = NULL;
+			const gchar* _tmp15_ = NULL;
 			gint _tmp16_ = 0;
-			_tmp6_ = vala_parser_current (self);
-			if (_tmp6_ != VALA_TOKEN_TYPE_INTEGER_LITERAL) {
+			_tmp5_ = vala_parser_current (self);
+			if (_tmp5_ != VALA_TOKEN_TYPE_INTEGER_LITERAL) {
+				gchar* _tmp6_ = NULL;
 				gchar* _tmp7_ = NULL;
-				gchar* _tmp8_;
-				GError* _tmp9_;
-				GError* _tmp10_;
-				_tmp7_ = vala_parser_get_error (self, "expected `]' or integer literal");
-				_tmp8_ = _tmp7_;
-				_tmp9_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp8_);
-				_tmp10_ = _tmp9_;
-				_g_free0 (_tmp8_);
-				_inner_error_ = _tmp10_;
+				GError* _tmp8_ = NULL;
+				GError* _tmp9_ = NULL;
+				_tmp6_ = vala_parser_get_error (self, "expected `]' or integer literal");
+				_tmp7_ = _tmp6_;
+				_tmp8_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp7_);
+				_tmp9_ = _tmp8_;
+				_g_free0 (_tmp7_);
+				_inner_error_ = _tmp9_;
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
 					return NULL;
@@ -4155,7 +4130,7 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 				}
 			}
 			_tmp11_ = vala_parser_parse_literal (self, &_inner_error_);
-			_tmp12_ = _tmp11_;
+			_tmp10_ = _tmp11_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4166,6 +4141,8 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 					return NULL;
 				}
 			}
+			_tmp12_ = _tmp10_;
+			_tmp10_ = NULL;
 			length_literal = G_TYPE_CHECK_INSTANCE_CAST (_tmp12_, VALA_TYPE_INTEGER_LITERAL, ValaIntegerLiteral);
 			_tmp13_ = length_literal;
 			_tmp14_ = vala_integer_literal_get_value (_tmp13_);
@@ -4173,6 +4150,7 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 			_tmp16_ = atoi (_tmp15_);
 			array_length = _tmp16_;
 			_vala_code_node_unref0 (length_literal);
+			_vala_code_node_unref0 (_tmp10_);
 		}
 		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_BRACKET, &_inner_error_);
 		if (_inner_error_ != NULL) {
@@ -4197,9 +4175,9 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 		vala_array_type_set_inline_allocated (_tmp23_, TRUE);
 		_tmp24_ = array_length;
 		if (_tmp24_ > 0) {
-			ValaArrayType* _tmp25_;
-			ValaArrayType* _tmp26_;
-			gint _tmp27_;
+			ValaArrayType* _tmp25_ = NULL;
+			ValaArrayType* _tmp26_ = NULL;
+			gint _tmp27_ = 0;
 			_tmp25_ = array_type;
 			vala_array_type_set_fixed_length (_tmp25_, TRUE);
 			_tmp26_ = array_type;
@@ -4223,9 +4201,9 @@ static ValaDataType* vala_parser_parse_inline_array_type (ValaParser* self, Vala
 
 static ValaList* vala_parser_parse_argument_list (ValaParser* self, GError** error) {
 	ValaList* result = NULL;
-	GEqualFunc _tmp0_;
-	ValaArrayList* _tmp1_;
-	ValaArrayList* list;
+	ValaArrayList* list = NULL;
+	GEqualFunc _tmp0_ = NULL;
+	ValaArrayList* _tmp1_ = NULL;
 	ValaTokenType _tmp2_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -4235,25 +4213,22 @@ static ValaList* vala_parser_parse_argument_list (ValaParser* self, GError** err
 	_tmp2_ = vala_parser_current (self);
 	if (_tmp2_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp3_;
+			gboolean _tmp3_ = FALSE;
 			_tmp3_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp4_;
+				ValaExpression* _tmp5_ = NULL;
 				ValaExpression* _tmp6_ = NULL;
-				ValaExpression* _tmp7_;
-				ValaArrayList* _tmp8_;
-				ValaExpression* _tmp9_;
-				_tmp4_ = _tmp3_;
-				if (!_tmp4_) {
-					gboolean _tmp5_ = FALSE;
-					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp5_) {
+				ValaArrayList* _tmp7_ = NULL;
+				if (!_tmp3_) {
+					gboolean _tmp4_ = FALSE;
+					_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp4_) {
 						break;
 					}
 				}
 				_tmp3_ = FALSE;
 				_tmp6_ = vala_parser_parse_argument (self, &_inner_error_);
-				_tmp7_ = _tmp6_;
+				_tmp5_ = _tmp6_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4266,10 +4241,9 @@ static ValaList* vala_parser_parse_argument_list (ValaParser* self, GError** err
 						return NULL;
 					}
 				}
-				_tmp8_ = list;
-				_tmp9_ = _tmp7_;
-				vala_collection_add ((ValaCollection*) _tmp8_, _tmp9_);
-				_vala_code_node_unref0 (_tmp9_);
+				_tmp7_ = list;
+				vala_collection_add ((ValaCollection*) _tmp7_, _tmp5_);
+				_vala_code_node_unref0 (_tmp5_);
 			}
 		}
 	}
@@ -4280,8 +4254,8 @@ static ValaList* vala_parser_parse_argument_list (ValaParser* self, GError** err
 
 static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	gboolean _tmp1_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -4289,14 +4263,14 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 	begin = _tmp0_;
 	_tmp1_ = vala_parser_accept (self, VALA_TOKEN_TYPE_REF);
 	if (_tmp1_) {
+		ValaExpression* inner = NULL;
 		ValaExpression* _tmp2_ = NULL;
-		ValaExpression* inner;
-		ValaExpression* _tmp3_;
-		ValaSourceLocation _tmp4_;
+		ValaExpression* _tmp3_ = NULL;
+		ValaSourceLocation _tmp4_ = {0};
 		ValaSourceReference* _tmp5_ = NULL;
-		ValaSourceReference* _tmp6_;
-		ValaUnaryExpression* _tmp7_;
-		ValaExpression* _tmp8_;
+		ValaSourceReference* _tmp6_ = NULL;
+		ValaUnaryExpression* _tmp7_ = NULL;
+		ValaExpression* _tmp8_ = NULL;
 		_tmp2_ = vala_parser_parse_expression (self, &_inner_error_);
 		inner = _tmp2_;
 		if (_inner_error_ != NULL) {
@@ -4323,14 +4297,14 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 		gboolean _tmp9_ = FALSE;
 		_tmp9_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OUT);
 		if (_tmp9_) {
+			ValaExpression* inner = NULL;
 			ValaExpression* _tmp10_ = NULL;
-			ValaExpression* inner;
-			ValaExpression* _tmp11_;
-			ValaSourceLocation _tmp12_;
+			ValaExpression* _tmp11_ = NULL;
+			ValaSourceLocation _tmp12_ = {0};
 			ValaSourceReference* _tmp13_ = NULL;
-			ValaSourceReference* _tmp14_;
-			ValaUnaryExpression* _tmp15_;
-			ValaExpression* _tmp16_;
+			ValaSourceReference* _tmp14_ = NULL;
+			ValaUnaryExpression* _tmp15_ = NULL;
+			ValaExpression* _tmp16_ = NULL;
 			_tmp10_ = vala_parser_parse_expression (self, &_inner_error_);
 			inner = _tmp10_;
 			if (_inner_error_ != NULL) {
@@ -4354,16 +4328,14 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 			_vala_code_node_unref0 (inner);
 			return result;
 		} else {
+			ValaExpression* expr = NULL;
 			ValaExpression* _tmp17_ = NULL;
-			ValaExpression* expr;
-			ValaExpression* _tmp18_;
-			ValaMemberAccess* _tmp19_;
-			ValaMemberAccess* ma;
+			ValaMemberAccess* ma = NULL;
+			ValaExpression* _tmp18_ = NULL;
+			ValaMemberAccess* _tmp19_ = NULL;
 			gboolean _tmp20_ = FALSE;
 			gboolean _tmp21_ = FALSE;
-			ValaMemberAccess* _tmp22_;
-			gboolean _tmp26_;
-			gboolean _tmp28_;
+			ValaMemberAccess* _tmp22_ = NULL;
 			_tmp17_ = vala_parser_parse_expression (self, &_inner_error_);
 			expr = _tmp17_;
 			if (_inner_error_ != NULL) {
@@ -4381,9 +4353,9 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 			ma = _tmp19_;
 			_tmp22_ = ma;
 			if (_tmp22_ != NULL) {
-				ValaMemberAccess* _tmp23_;
-				ValaExpression* _tmp24_;
-				ValaExpression* _tmp25_;
+				ValaMemberAccess* _tmp23_ = NULL;
+				ValaExpression* _tmp24_ = NULL;
+				ValaExpression* _tmp25_ = NULL;
 				_tmp23_ = ma;
 				_tmp24_ = vala_member_access_get_inner (_tmp23_);
 				_tmp25_ = _tmp24_;
@@ -4391,29 +4363,28 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 			} else {
 				_tmp21_ = FALSE;
 			}
-			_tmp26_ = _tmp21_;
-			if (_tmp26_) {
-				gboolean _tmp27_ = FALSE;
-				_tmp27_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COLON);
-				_tmp20_ = _tmp27_;
+			if (_tmp21_) {
+				gboolean _tmp26_ = FALSE;
+				_tmp26_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COLON);
+				_tmp20_ = _tmp26_;
 			} else {
 				_tmp20_ = FALSE;
 			}
-			_tmp28_ = _tmp20_;
-			if (_tmp28_) {
+			if (_tmp20_) {
+				ValaExpression* _tmp27_ = NULL;
+				ValaExpression* _tmp28_ = NULL;
 				ValaExpression* _tmp29_ = NULL;
-				ValaExpression* _tmp30_;
-				ValaMemberAccess* _tmp31_;
-				const gchar* _tmp32_;
-				const gchar* _tmp33_;
-				ValaExpression* _tmp34_;
-				ValaSourceLocation _tmp35_;
+				ValaMemberAccess* _tmp30_ = NULL;
+				const gchar* _tmp31_ = NULL;
+				const gchar* _tmp32_ = NULL;
+				ValaExpression* _tmp33_ = NULL;
+				ValaSourceLocation _tmp34_ = {0};
+				ValaSourceReference* _tmp35_ = NULL;
 				ValaSourceReference* _tmp36_ = NULL;
-				ValaSourceReference* _tmp37_;
-				ValaNamedArgument* _tmp38_;
-				ValaExpression* _tmp39_;
-				_tmp29_ = vala_parser_parse_expression (self, &_inner_error_);
-				_tmp30_ = _tmp29_;
+				ValaNamedArgument* _tmp37_ = NULL;
+				ValaExpression* _tmp38_ = NULL;
+				_tmp28_ = vala_parser_parse_expression (self, &_inner_error_);
+				_tmp27_ = _tmp28_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4428,19 +4399,22 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 						return NULL;
 					}
 				}
+				_tmp29_ = _tmp27_;
+				_tmp27_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp30_;
-				_tmp31_ = ma;
-				_tmp32_ = vala_member_access_get_member_name (_tmp31_);
-				_tmp33_ = _tmp32_;
-				_tmp34_ = expr;
-				_tmp35_ = begin;
-				_tmp36_ = vala_parser_get_src (self, &_tmp35_);
-				_tmp37_ = _tmp36_;
-				_tmp38_ = vala_named_argument_new (_tmp33_, _tmp34_, _tmp37_);
-				_tmp39_ = (ValaExpression*) _tmp38_;
-				_vala_source_reference_unref0 (_tmp37_);
-				result = _tmp39_;
+				expr = _tmp29_;
+				_tmp30_ = ma;
+				_tmp31_ = vala_member_access_get_member_name (_tmp30_);
+				_tmp32_ = _tmp31_;
+				_tmp33_ = expr;
+				_tmp34_ = begin;
+				_tmp35_ = vala_parser_get_src (self, &_tmp34_);
+				_tmp36_ = _tmp35_;
+				_tmp37_ = vala_named_argument_new (_tmp32_, _tmp33_, _tmp36_);
+				_tmp38_ = (ValaExpression*) _tmp37_;
+				_vala_source_reference_unref0 (_tmp36_);
+				result = _tmp38_;
+				_vala_code_node_unref0 (_tmp27_);
 				_vala_code_node_unref0 (ma);
 				_vala_code_node_unref0 (expr);
 				return result;
@@ -4458,11 +4432,11 @@ static ValaExpression* vala_parser_parse_argument (ValaParser* self, GError** er
 
 static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	ValaExpression* expr = NULL;
 	ValaTokenType _tmp1_ = 0;
-	gboolean found;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -4481,9 +4455,10 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 		case VALA_TOKEN_TYPE_NULL:
 		{
 			ValaExpression* _tmp2_ = NULL;
-			ValaExpression* _tmp3_;
-			_tmp2_ = vala_parser_parse_literal (self, &_inner_error_);
-			_tmp3_ = _tmp2_;
+			ValaExpression* _tmp3_ = NULL;
+			ValaExpression* _tmp4_ = NULL;
+			_tmp3_ = vala_parser_parse_literal (self, &_inner_error_);
+			_tmp2_ = _tmp3_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4496,16 +4471,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp4_ = _tmp2_;
+			_tmp2_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp3_;
+			expr = _tmp4_;
+			_vala_code_node_unref0 (_tmp2_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_OPEN_BRACE:
 		{
-			ValaInitializerList* _tmp4_ = NULL;
-			ValaInitializerList* _tmp5_;
-			_tmp4_ = vala_parser_parse_initializer (self, &_inner_error_);
-			_tmp5_ = _tmp4_;
+			ValaInitializerList* _tmp5_ = NULL;
+			ValaInitializerList* _tmp6_ = NULL;
+			ValaInitializerList* _tmp7_ = NULL;
+			_tmp6_ = vala_parser_parse_initializer (self, &_inner_error_);
+			_tmp5_ = _tmp6_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4518,16 +4497,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp7_ = _tmp5_;
+			_tmp5_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = (ValaExpression*) _tmp5_;
+			expr = (ValaExpression*) _tmp7_;
+			_vala_code_node_unref0 (_tmp5_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_OPEN_BRACKET:
 		{
-			ValaExpression* _tmp6_ = NULL;
-			ValaExpression* _tmp7_;
-			_tmp6_ = vala_parser_parse_simple_name (self, &_inner_error_);
-			_tmp7_ = _tmp6_;
+			ValaExpression* _tmp8_ = NULL;
+			ValaExpression* _tmp9_ = NULL;
+			ValaExpression* _tmp10_ = NULL;
+			_tmp9_ = vala_parser_parse_simple_name (self, &_inner_error_);
+			_tmp8_ = _tmp9_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4540,16 +4523,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp10_ = _tmp8_;
+			_tmp8_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp7_;
+			expr = _tmp10_;
+			_vala_code_node_unref0 (_tmp8_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_OPEN_PARENS:
 		{
-			ValaExpression* _tmp8_ = NULL;
-			ValaExpression* _tmp9_;
-			_tmp8_ = vala_parser_parse_tuple (self, &_inner_error_);
-			_tmp9_ = _tmp8_;
+			ValaExpression* _tmp11_ = NULL;
+			ValaExpression* _tmp12_ = NULL;
+			ValaExpression* _tmp13_ = NULL;
+			_tmp12_ = vala_parser_parse_tuple (self, &_inner_error_);
+			_tmp11_ = _tmp12_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4562,16 +4549,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp13_ = _tmp11_;
+			_tmp11_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp9_;
+			expr = _tmp13_;
+			_vala_code_node_unref0 (_tmp11_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_OPEN_TEMPLATE:
 		{
-			ValaExpression* _tmp10_ = NULL;
-			ValaExpression* _tmp11_;
-			_tmp10_ = vala_parser_parse_template (self, &_inner_error_);
-			_tmp11_ = _tmp10_;
+			ValaExpression* _tmp14_ = NULL;
+			ValaExpression* _tmp15_ = NULL;
+			ValaExpression* _tmp16_ = NULL;
+			_tmp15_ = vala_parser_parse_template (self, &_inner_error_);
+			_tmp14_ = _tmp15_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4584,16 +4575,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp16_ = _tmp14_;
+			_tmp14_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp11_;
+			expr = _tmp16_;
+			_vala_code_node_unref0 (_tmp14_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_OPEN_REGEX_LITERAL:
 		{
-			ValaExpression* _tmp12_ = NULL;
-			ValaExpression* _tmp13_;
-			_tmp12_ = vala_parser_parse_regex_literal (self, &_inner_error_);
-			_tmp13_ = _tmp12_;
+			ValaExpression* _tmp17_ = NULL;
+			ValaExpression* _tmp18_ = NULL;
+			ValaExpression* _tmp19_ = NULL;
+			_tmp18_ = vala_parser_parse_regex_literal (self, &_inner_error_);
+			_tmp17_ = _tmp18_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4606,16 +4601,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp19_ = _tmp17_;
+			_tmp17_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp13_;
+			expr = _tmp19_;
+			_vala_code_node_unref0 (_tmp17_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_THIS:
 		{
-			ValaExpression* _tmp14_ = NULL;
-			ValaExpression* _tmp15_;
-			_tmp14_ = vala_parser_parse_this_access (self, &_inner_error_);
-			_tmp15_ = _tmp14_;
+			ValaExpression* _tmp20_ = NULL;
+			ValaExpression* _tmp21_ = NULL;
+			ValaExpression* _tmp22_ = NULL;
+			_tmp21_ = vala_parser_parse_this_access (self, &_inner_error_);
+			_tmp20_ = _tmp21_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4628,16 +4627,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp22_ = _tmp20_;
+			_tmp20_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp15_;
+			expr = _tmp22_;
+			_vala_code_node_unref0 (_tmp20_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_BASE:
 		{
-			ValaExpression* _tmp16_ = NULL;
-			ValaExpression* _tmp17_;
-			_tmp16_ = vala_parser_parse_base_access (self, &_inner_error_);
-			_tmp17_ = _tmp16_;
+			ValaExpression* _tmp23_ = NULL;
+			ValaExpression* _tmp24_ = NULL;
+			ValaExpression* _tmp25_ = NULL;
+			_tmp24_ = vala_parser_parse_base_access (self, &_inner_error_);
+			_tmp23_ = _tmp24_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4650,16 +4653,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp25_ = _tmp23_;
+			_tmp23_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp17_;
+			expr = _tmp25_;
+			_vala_code_node_unref0 (_tmp23_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_NEW:
 		{
-			ValaExpression* _tmp18_ = NULL;
-			ValaExpression* _tmp19_;
-			_tmp18_ = vala_parser_parse_object_or_array_creation_expression (self, &_inner_error_);
-			_tmp19_ = _tmp18_;
+			ValaExpression* _tmp26_ = NULL;
+			ValaExpression* _tmp27_ = NULL;
+			ValaExpression* _tmp28_ = NULL;
+			_tmp27_ = vala_parser_parse_object_or_array_creation_expression (self, &_inner_error_);
+			_tmp26_ = _tmp27_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4672,16 +4679,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp28_ = _tmp26_;
+			_tmp26_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp19_;
+			expr = _tmp28_;
+			_vala_code_node_unref0 (_tmp26_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_YIELD:
 		{
-			ValaExpression* _tmp20_ = NULL;
-			ValaExpression* _tmp21_;
-			_tmp20_ = vala_parser_parse_yield_expression (self, &_inner_error_);
-			_tmp21_ = _tmp20_;
+			ValaExpression* _tmp29_ = NULL;
+			ValaExpression* _tmp30_ = NULL;
+			ValaExpression* _tmp31_ = NULL;
+			_tmp30_ = vala_parser_parse_yield_expression (self, &_inner_error_);
+			_tmp29_ = _tmp30_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4694,16 +4705,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp31_ = _tmp29_;
+			_tmp29_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp21_;
+			expr = _tmp31_;
+			_vala_code_node_unref0 (_tmp29_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_SIZEOF:
 		{
-			ValaExpression* _tmp22_ = NULL;
-			ValaExpression* _tmp23_;
-			_tmp22_ = vala_parser_parse_sizeof_expression (self, &_inner_error_);
-			_tmp23_ = _tmp22_;
+			ValaExpression* _tmp32_ = NULL;
+			ValaExpression* _tmp33_ = NULL;
+			ValaExpression* _tmp34_ = NULL;
+			_tmp33_ = vala_parser_parse_sizeof_expression (self, &_inner_error_);
+			_tmp32_ = _tmp33_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4716,16 +4731,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp34_ = _tmp32_;
+			_tmp32_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp23_;
+			expr = _tmp34_;
+			_vala_code_node_unref0 (_tmp32_);
 			break;
 		}
 		case VALA_TOKEN_TYPE_TYPEOF:
 		{
-			ValaExpression* _tmp24_ = NULL;
-			ValaExpression* _tmp25_;
-			_tmp24_ = vala_parser_parse_typeof_expression (self, &_inner_error_);
-			_tmp25_ = _tmp24_;
+			ValaExpression* _tmp35_ = NULL;
+			ValaExpression* _tmp36_ = NULL;
+			ValaExpression* _tmp37_ = NULL;
+			_tmp36_ = vala_parser_parse_typeof_expression (self, &_inner_error_);
+			_tmp35_ = _tmp36_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4738,16 +4757,20 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp37_ = _tmp35_;
+			_tmp35_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp25_;
+			expr = _tmp37_;
+			_vala_code_node_unref0 (_tmp35_);
 			break;
 		}
 		default:
 		{
-			ValaExpression* _tmp26_ = NULL;
-			ValaExpression* _tmp27_;
-			_tmp26_ = vala_parser_parse_simple_name (self, &_inner_error_);
-			_tmp27_ = _tmp26_;
+			ValaExpression* _tmp38_ = NULL;
+			ValaExpression* _tmp39_ = NULL;
+			ValaExpression* _tmp40_ = NULL;
+			_tmp39_ = vala_parser_parse_simple_name (self, &_inner_error_);
+			_tmp38_ = _tmp39_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -4760,31 +4783,35 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 					return NULL;
 				}
 			}
+			_tmp40_ = _tmp38_;
+			_tmp38_ = NULL;
 			_vala_code_node_unref0 (expr);
-			expr = _tmp27_;
+			expr = _tmp40_;
+			_vala_code_node_unref0 (_tmp38_);
 			break;
 		}
 	}
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp28_;
-		ValaTokenType _tmp29_ = 0;
-		_tmp28_ = found;
-		if (!_tmp28_) {
+		gboolean _tmp41_ = FALSE;
+		ValaTokenType _tmp42_ = 0;
+		_tmp41_ = found;
+		if (!_tmp41_) {
 			break;
 		}
-		_tmp29_ = vala_parser_current (self);
-		switch (_tmp29_) {
+		_tmp42_ = vala_parser_current (self);
+		switch (_tmp42_) {
 			case VALA_TOKEN_TYPE_DOT:
 			{
-				ValaSourceLocation _tmp30_;
-				ValaExpression* _tmp31_;
-				ValaExpression* _tmp32_ = NULL;
-				ValaExpression* _tmp33_;
-				_tmp30_ = begin;
-				_tmp31_ = expr;
-				_tmp32_ = vala_parser_parse_member_access (self, &_tmp30_, _tmp31_, &_inner_error_);
-				_tmp33_ = _tmp32_;
+				ValaExpression* _tmp43_ = NULL;
+				ValaSourceLocation _tmp44_ = {0};
+				ValaExpression* _tmp45_ = NULL;
+				ValaExpression* _tmp46_ = NULL;
+				ValaExpression* _tmp47_ = NULL;
+				_tmp44_ = begin;
+				_tmp45_ = expr;
+				_tmp46_ = vala_parser_parse_member_access (self, &_tmp44_, _tmp45_, &_inner_error_);
+				_tmp43_ = _tmp46_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4797,20 +4824,24 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp47_ = _tmp43_;
+				_tmp43_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp33_;
+				expr = _tmp47_;
+				_vala_code_node_unref0 (_tmp43_);
 				break;
 			}
 			case VALA_TOKEN_TYPE_OP_PTR:
 			{
-				ValaSourceLocation _tmp34_;
-				ValaExpression* _tmp35_;
-				ValaExpression* _tmp36_ = NULL;
-				ValaExpression* _tmp37_;
-				_tmp34_ = begin;
-				_tmp35_ = expr;
-				_tmp36_ = vala_parser_parse_pointer_member_access (self, &_tmp34_, _tmp35_, &_inner_error_);
-				_tmp37_ = _tmp36_;
+				ValaExpression* _tmp48_ = NULL;
+				ValaSourceLocation _tmp49_ = {0};
+				ValaExpression* _tmp50_ = NULL;
+				ValaExpression* _tmp51_ = NULL;
+				ValaExpression* _tmp52_ = NULL;
+				_tmp49_ = begin;
+				_tmp50_ = expr;
+				_tmp51_ = vala_parser_parse_pointer_member_access (self, &_tmp49_, _tmp50_, &_inner_error_);
+				_tmp48_ = _tmp51_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4823,20 +4854,24 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp52_ = _tmp48_;
+				_tmp48_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp37_;
+				expr = _tmp52_;
+				_vala_code_node_unref0 (_tmp48_);
 				break;
 			}
 			case VALA_TOKEN_TYPE_OPEN_PARENS:
 			{
-				ValaSourceLocation _tmp38_;
-				ValaExpression* _tmp39_;
-				ValaExpression* _tmp40_ = NULL;
-				ValaExpression* _tmp41_;
-				_tmp38_ = begin;
-				_tmp39_ = expr;
-				_tmp40_ = vala_parser_parse_method_call (self, &_tmp38_, _tmp39_, &_inner_error_);
-				_tmp41_ = _tmp40_;
+				ValaExpression* _tmp53_ = NULL;
+				ValaSourceLocation _tmp54_ = {0};
+				ValaExpression* _tmp55_ = NULL;
+				ValaExpression* _tmp56_ = NULL;
+				ValaExpression* _tmp57_ = NULL;
+				_tmp54_ = begin;
+				_tmp55_ = expr;
+				_tmp56_ = vala_parser_parse_method_call (self, &_tmp54_, _tmp55_, &_inner_error_);
+				_tmp53_ = _tmp56_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4849,20 +4884,24 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp57_ = _tmp53_;
+				_tmp53_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp41_;
+				expr = _tmp57_;
+				_vala_code_node_unref0 (_tmp53_);
 				break;
 			}
 			case VALA_TOKEN_TYPE_OPEN_BRACKET:
 			{
-				ValaSourceLocation _tmp42_;
-				ValaExpression* _tmp43_;
-				ValaExpression* _tmp44_ = NULL;
-				ValaExpression* _tmp45_;
-				_tmp42_ = begin;
-				_tmp43_ = expr;
-				_tmp44_ = vala_parser_parse_element_access (self, &_tmp42_, _tmp43_, &_inner_error_);
-				_tmp45_ = _tmp44_;
+				ValaExpression* _tmp58_ = NULL;
+				ValaSourceLocation _tmp59_ = {0};
+				ValaExpression* _tmp60_ = NULL;
+				ValaExpression* _tmp61_ = NULL;
+				ValaExpression* _tmp62_ = NULL;
+				_tmp59_ = begin;
+				_tmp60_ = expr;
+				_tmp61_ = vala_parser_parse_element_access (self, &_tmp59_, _tmp60_, &_inner_error_);
+				_tmp58_ = _tmp61_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4875,20 +4914,24 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp62_ = _tmp58_;
+				_tmp58_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp45_;
+				expr = _tmp62_;
+				_vala_code_node_unref0 (_tmp58_);
 				break;
 			}
 			case VALA_TOKEN_TYPE_OP_INC:
 			{
-				ValaSourceLocation _tmp46_;
-				ValaExpression* _tmp47_;
-				ValaExpression* _tmp48_ = NULL;
-				ValaExpression* _tmp49_;
-				_tmp46_ = begin;
-				_tmp47_ = expr;
-				_tmp48_ = vala_parser_parse_post_increment_expression (self, &_tmp46_, _tmp47_, &_inner_error_);
-				_tmp49_ = _tmp48_;
+				ValaExpression* _tmp63_ = NULL;
+				ValaSourceLocation _tmp64_ = {0};
+				ValaExpression* _tmp65_ = NULL;
+				ValaExpression* _tmp66_ = NULL;
+				ValaExpression* _tmp67_ = NULL;
+				_tmp64_ = begin;
+				_tmp65_ = expr;
+				_tmp66_ = vala_parser_parse_post_increment_expression (self, &_tmp64_, _tmp65_, &_inner_error_);
+				_tmp63_ = _tmp66_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4901,20 +4944,24 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp67_ = _tmp63_;
+				_tmp63_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp49_;
+				expr = _tmp67_;
+				_vala_code_node_unref0 (_tmp63_);
 				break;
 			}
 			case VALA_TOKEN_TYPE_OP_DEC:
 			{
-				ValaSourceLocation _tmp50_;
-				ValaExpression* _tmp51_;
-				ValaExpression* _tmp52_ = NULL;
-				ValaExpression* _tmp53_;
-				_tmp50_ = begin;
-				_tmp51_ = expr;
-				_tmp52_ = vala_parser_parse_post_decrement_expression (self, &_tmp50_, _tmp51_, &_inner_error_);
-				_tmp53_ = _tmp52_;
+				ValaExpression* _tmp68_ = NULL;
+				ValaSourceLocation _tmp69_ = {0};
+				ValaExpression* _tmp70_ = NULL;
+				ValaExpression* _tmp71_ = NULL;
+				ValaExpression* _tmp72_ = NULL;
+				_tmp69_ = begin;
+				_tmp70_ = expr;
+				_tmp71_ = vala_parser_parse_post_decrement_expression (self, &_tmp69_, _tmp70_, &_inner_error_);
+				_tmp68_ = _tmp71_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -4927,8 +4974,11 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 						return NULL;
 					}
 				}
+				_tmp72_ = _tmp68_;
+				_tmp68_ = NULL;
 				_vala_code_node_unref0 (expr);
-				expr = _tmp53_;
+				expr = _tmp72_;
+				_vala_code_node_unref0 (_tmp68_);
 				break;
 			}
 			default:
@@ -4945,26 +4995,25 @@ static ValaExpression* vala_parser_parse_primary_expression (ValaParser* self, G
 
 static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	gchar* id = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* id;
-	gboolean qualified;
+	gboolean qualified = FALSE;
 	gboolean _tmp2_ = FALSE;
-	const gchar* _tmp3_;
-	gboolean _tmp5_;
+	const gchar* _tmp3_ = NULL;
+	ValaList* type_arg_list = NULL;
 	ValaList* _tmp8_ = NULL;
-	ValaList* type_arg_list;
-	const gchar* _tmp9_;
-	ValaSourceLocation _tmp10_;
+	ValaMemberAccess* expr = NULL;
+	const gchar* _tmp9_ = NULL;
+	ValaSourceLocation _tmp10_ = {0};
 	ValaSourceReference* _tmp11_ = NULL;
-	ValaSourceReference* _tmp12_;
-	ValaMemberAccess* _tmp13_;
-	ValaMemberAccess* _tmp14_;
-	ValaMemberAccess* expr;
-	ValaMemberAccess* _tmp15_;
-	gboolean _tmp16_;
-	ValaList* _tmp17_;
+	ValaSourceReference* _tmp12_ = NULL;
+	ValaMemberAccess* _tmp13_ = NULL;
+	ValaMemberAccess* _tmp14_ = NULL;
+	ValaMemberAccess* _tmp15_ = NULL;
+	gboolean _tmp16_ = FALSE;
+	ValaList* _tmp17_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -4990,12 +5039,12 @@ static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError**
 	} else {
 		_tmp2_ = FALSE;
 	}
-	_tmp5_ = _tmp2_;
-	if (_tmp5_) {
+	if (_tmp2_) {
+		gchar* _tmp5_ = NULL;
 		gchar* _tmp6_ = NULL;
-		gchar* _tmp7_;
+		gchar* _tmp7_ = NULL;
 		_tmp6_ = vala_parser_parse_identifier (self, &_inner_error_);
-		_tmp7_ = _tmp6_;
+		_tmp5_ = _tmp6_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -5008,9 +5057,12 @@ static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError**
 				return NULL;
 			}
 		}
+		_tmp7_ = _tmp5_;
+		_tmp5_ = NULL;
 		_g_free0 (id);
 		id = _tmp7_;
 		qualified = TRUE;
+		_g_free0 (_tmp5_);
 	}
 	_tmp8_ = vala_parser_parse_type_argument_list (self, TRUE, &_inner_error_);
 	type_arg_list = _tmp8_;
@@ -5040,14 +5092,14 @@ static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError**
 	_tmp17_ = type_arg_list;
 	if (_tmp17_ != NULL) {
 		{
-			ValaList* _tmp18_;
-			ValaList* _tmp19_;
-			ValaList* _type_arg_list;
-			ValaList* _tmp20_;
-			gint _tmp21_;
-			gint _tmp22_;
-			gint _type_arg_size;
-			gint _type_arg_index;
+			ValaList* _type_arg_list = NULL;
+			ValaList* _tmp18_ = NULL;
+			ValaList* _tmp19_ = NULL;
+			gint _type_arg_size = 0;
+			ValaList* _tmp20_ = NULL;
+			gint _tmp21_ = 0;
+			gint _tmp22_ = 0;
+			gint _type_arg_index = 0;
 			_tmp18_ = type_arg_list;
 			_tmp19_ = _vala_iterable_ref0 (_tmp18_);
 			_type_arg_list = _tmp19_;
@@ -5057,15 +5109,15 @@ static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError**
 			_type_arg_size = _tmp22_;
 			_type_arg_index = -1;
 			while (TRUE) {
-				gint _tmp23_;
-				gint _tmp24_;
-				gint _tmp25_;
-				ValaList* _tmp26_;
-				gint _tmp27_;
+				gint _tmp23_ = 0;
+				gint _tmp24_ = 0;
+				gint _tmp25_ = 0;
+				ValaDataType* type_arg = NULL;
+				ValaList* _tmp26_ = NULL;
+				gint _tmp27_ = 0;
 				gpointer _tmp28_ = NULL;
-				ValaDataType* type_arg;
-				ValaMemberAccess* _tmp29_;
-				ValaDataType* _tmp30_;
+				ValaMemberAccess* _tmp29_ = NULL;
+				ValaDataType* _tmp30_ = NULL;
 				_tmp23_ = _type_arg_index;
 				_type_arg_index = _tmp23_ + 1;
 				_tmp24_ = _type_arg_index;
@@ -5094,17 +5146,17 @@ static ValaExpression* vala_parser_parse_simple_name (ValaParser* self, GError**
 
 static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	GEqualFunc _tmp1_;
-	ValaArrayList* _tmp2_;
-	ValaArrayList* expr_list;
+	ValaArrayList* expr_list = NULL;
+	GEqualFunc _tmp1_ = NULL;
+	ValaArrayList* _tmp2_ = NULL;
 	ValaTokenType _tmp3_ = 0;
-	ValaArrayList* _tmp11_;
-	gint _tmp12_;
-	gint _tmp13_;
-	ValaArrayList* _tmp32_;
-	gpointer _tmp33_ = NULL;
+	ValaArrayList* _tmp9_ = NULL;
+	gint _tmp10_ = 0;
+	gint _tmp11_ = 0;
+	ValaArrayList* _tmp30_ = NULL;
+	gpointer _tmp31_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -5126,25 +5178,22 @@ static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error
 	_tmp3_ = vala_parser_current (self);
 	if (_tmp3_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp4_;
+			gboolean _tmp4_ = FALSE;
 			_tmp4_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp5_;
+				ValaExpression* _tmp6_ = NULL;
 				ValaExpression* _tmp7_ = NULL;
-				ValaExpression* _tmp8_;
-				ValaArrayList* _tmp9_;
-				ValaExpression* _tmp10_;
-				_tmp5_ = _tmp4_;
-				if (!_tmp5_) {
-					gboolean _tmp6_ = FALSE;
-					_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp6_) {
+				ValaArrayList* _tmp8_ = NULL;
+				if (!_tmp4_) {
+					gboolean _tmp5_ = FALSE;
+					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp5_) {
 						break;
 					}
 				}
 				_tmp4_ = FALSE;
 				_tmp7_ = vala_parser_parse_expression (self, &_inner_error_);
-				_tmp8_ = _tmp7_;
+				_tmp6_ = _tmp7_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -5157,10 +5206,9 @@ static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error
 						return NULL;
 					}
 				}
-				_tmp9_ = expr_list;
-				_tmp10_ = _tmp8_;
-				vala_collection_add ((ValaCollection*) _tmp9_, _tmp10_);
-				_vala_code_node_unref0 (_tmp10_);
+				_tmp8_ = expr_list;
+				vala_collection_add ((ValaCollection*) _tmp8_, _tmp6_);
+				_vala_code_node_unref0 (_tmp6_);
 			}
 		}
 	}
@@ -5177,64 +5225,64 @@ static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error
 			return NULL;
 		}
 	}
-	_tmp11_ = expr_list;
-	_tmp12_ = vala_collection_get_size ((ValaCollection*) _tmp11_);
-	_tmp13_ = _tmp12_;
-	if (_tmp13_ != 1) {
-		ValaSourceLocation _tmp14_;
-		ValaSourceReference* _tmp15_ = NULL;
-		ValaSourceReference* _tmp16_;
-		ValaTuple* _tmp17_;
-		ValaTuple* _tmp18_;
-		ValaTuple* tuple;
-		_tmp14_ = begin;
-		_tmp15_ = vala_parser_get_src (self, &_tmp14_);
+	_tmp9_ = expr_list;
+	_tmp10_ = vala_collection_get_size ((ValaCollection*) _tmp9_);
+	_tmp11_ = _tmp10_;
+	if (_tmp11_ != 1) {
+		ValaTuple* tuple = NULL;
+		ValaSourceLocation _tmp12_ = {0};
+		ValaSourceReference* _tmp13_ = NULL;
+		ValaSourceReference* _tmp14_ = NULL;
+		ValaTuple* _tmp15_ = NULL;
+		ValaTuple* _tmp16_ = NULL;
+		_tmp12_ = begin;
+		_tmp13_ = vala_parser_get_src (self, &_tmp12_);
+		_tmp14_ = _tmp13_;
+		_tmp15_ = vala_tuple_new (_tmp14_);
 		_tmp16_ = _tmp15_;
-		_tmp17_ = vala_tuple_new (_tmp16_);
-		_tmp18_ = _tmp17_;
-		_vala_source_reference_unref0 (_tmp16_);
-		tuple = _tmp18_;
+		_vala_source_reference_unref0 (_tmp14_);
+		tuple = _tmp16_;
 		{
-			ValaArrayList* _tmp19_;
-			ValaArrayList* _tmp20_;
-			ValaArrayList* _expr_list;
-			ValaArrayList* _tmp21_;
-			gint _tmp22_;
-			gint _tmp23_;
-			gint _expr_size;
-			gint _expr_index;
-			_tmp19_ = expr_list;
-			_tmp20_ = _vala_iterable_ref0 (_tmp19_);
-			_expr_list = _tmp20_;
-			_tmp21_ = _expr_list;
-			_tmp22_ = vala_collection_get_size ((ValaCollection*) _tmp21_);
-			_tmp23_ = _tmp22_;
-			_expr_size = _tmp23_;
+			ValaArrayList* _expr_list = NULL;
+			ValaArrayList* _tmp17_ = NULL;
+			ValaArrayList* _tmp18_ = NULL;
+			gint _expr_size = 0;
+			ValaArrayList* _tmp19_ = NULL;
+			gint _tmp20_ = 0;
+			gint _tmp21_ = 0;
+			gint _expr_index = 0;
+			_tmp17_ = expr_list;
+			_tmp18_ = _vala_iterable_ref0 (_tmp17_);
+			_expr_list = _tmp18_;
+			_tmp19_ = _expr_list;
+			_tmp20_ = vala_collection_get_size ((ValaCollection*) _tmp19_);
+			_tmp21_ = _tmp20_;
+			_expr_size = _tmp21_;
 			_expr_index = -1;
 			while (TRUE) {
-				gint _tmp24_;
-				gint _tmp25_;
-				gint _tmp26_;
-				ValaArrayList* _tmp27_;
-				gint _tmp28_;
-				gpointer _tmp29_ = NULL;
-				ValaExpression* expr;
-				ValaTuple* _tmp30_;
-				ValaExpression* _tmp31_;
-				_tmp24_ = _expr_index;
-				_expr_index = _tmp24_ + 1;
-				_tmp25_ = _expr_index;
-				_tmp26_ = _expr_size;
-				if (!(_tmp25_ < _tmp26_)) {
+				gint _tmp22_ = 0;
+				gint _tmp23_ = 0;
+				gint _tmp24_ = 0;
+				ValaExpression* expr = NULL;
+				ValaArrayList* _tmp25_ = NULL;
+				gint _tmp26_ = 0;
+				gpointer _tmp27_ = NULL;
+				ValaTuple* _tmp28_ = NULL;
+				ValaExpression* _tmp29_ = NULL;
+				_tmp22_ = _expr_index;
+				_expr_index = _tmp22_ + 1;
+				_tmp23_ = _expr_index;
+				_tmp24_ = _expr_size;
+				if (!(_tmp23_ < _tmp24_)) {
 					break;
 				}
-				_tmp27_ = _expr_list;
-				_tmp28_ = _expr_index;
-				_tmp29_ = vala_list_get ((ValaList*) _tmp27_, _tmp28_);
-				expr = (ValaExpression*) _tmp29_;
-				_tmp30_ = tuple;
-				_tmp31_ = expr;
-				vala_tuple_add_expression (_tmp30_, _tmp31_);
+				_tmp25_ = _expr_list;
+				_tmp26_ = _expr_index;
+				_tmp27_ = vala_list_get ((ValaList*) _tmp25_, _tmp26_);
+				expr = (ValaExpression*) _tmp27_;
+				_tmp28_ = tuple;
+				_tmp29_ = expr;
+				vala_tuple_add_expression (_tmp28_, _tmp29_);
 				_vala_code_node_unref0 (expr);
 			}
 			_vala_iterable_unref0 (_expr_list);
@@ -5243,9 +5291,9 @@ static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error
 		_vala_iterable_unref0 (expr_list);
 		return result;
 	}
-	_tmp32_ = expr_list;
-	_tmp33_ = vala_list_get ((ValaList*) _tmp32_, 0);
-	result = (ValaExpression*) _tmp33_;
+	_tmp30_ = expr_list;
+	_tmp31_ = vala_list_get ((ValaList*) _tmp30_, 0);
+	result = (ValaExpression*) _tmp31_;
 	_vala_iterable_unref0 (expr_list);
 	return result;
 }
@@ -5253,14 +5301,14 @@ static ValaExpression* vala_parser_parse_tuple (ValaParser* self, GError** error
 
 static ValaExpression* vala_parser_parse_template (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaTemplate* _tmp1_;
-	ValaTemplate* template;
-	ValaTemplate* _tmp7_;
-	ValaSourceLocation _tmp8_;
+	ValaTemplate* template = NULL;
+	ValaTemplate* _tmp1_ = NULL;
+	ValaTemplate* _tmp6_ = NULL;
+	ValaSourceLocation _tmp7_ = {0};
+	ValaSourceReference* _tmp8_ = NULL;
 	ValaSourceReference* _tmp9_ = NULL;
-	ValaSourceReference* _tmp10_;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -5283,15 +5331,14 @@ static ValaExpression* vala_parser_parse_template (ValaParser* self, GError** er
 	while (TRUE) {
 		ValaTokenType _tmp2_ = 0;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* _tmp4_;
-		ValaTemplate* _tmp5_;
-		ValaExpression* _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaTemplate* _tmp5_ = NULL;
 		_tmp2_ = vala_parser_current (self);
 		if (!(_tmp2_ != VALA_TOKEN_TYPE_CLOSE_TEMPLATE)) {
 			break;
 		}
-		_tmp3_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp4_ = _tmp3_;
+		_tmp4_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp3_ = _tmp4_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -5305,22 +5352,23 @@ static ValaExpression* vala_parser_parse_template (ValaParser* self, GError** er
 			}
 		}
 		_tmp5_ = template;
-		_tmp6_ = _tmp4_;
-		vala_template_add_expression (_tmp5_, _tmp6_);
-		_vala_code_node_unref0 (_tmp6_);
+		vala_template_add_expression (_tmp5_, _tmp3_);
 		vala_parser_expect (self, VALA_TOKEN_TYPE_COMMA, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp3_);
 				_vala_code_node_unref0 (template);
 				return NULL;
 			} else {
+				_vala_code_node_unref0 (_tmp3_);
 				_vala_code_node_unref0 (template);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
 				return NULL;
 			}
 		}
+		_vala_code_node_unref0 (_tmp3_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_TEMPLATE, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -5335,12 +5383,12 @@ static ValaExpression* vala_parser_parse_template (ValaParser* self, GError** er
 			return NULL;
 		}
 	}
-	_tmp7_ = template;
-	_tmp8_ = begin;
-	_tmp9_ = vala_parser_get_src (self, &_tmp8_);
-	_tmp10_ = _tmp9_;
-	vala_code_node_set_source_reference ((ValaCodeNode*) _tmp7_, _tmp10_);
-	_vala_source_reference_unref0 (_tmp10_);
+	_tmp6_ = template;
+	_tmp7_ = begin;
+	_tmp8_ = vala_parser_get_src (self, &_tmp7_);
+	_tmp9_ = _tmp8_;
+	vala_code_node_set_source_reference ((ValaCodeNode*) _tmp6_, _tmp9_);
+	_vala_source_reference_unref0 (_tmp9_);
 	result = (ValaExpression*) template;
 	return result;
 }
@@ -5348,8 +5396,8 @@ static ValaExpression* vala_parser_parse_template (ValaParser* self, GError** er
 
 static ValaExpression* vala_parser_parse_regex_literal (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp0_ = NULL;
-	ValaExpression* expr;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_REGEX_LITERAL, &_inner_error_);
@@ -5382,19 +5430,19 @@ static ValaExpression* vala_parser_parse_regex_literal (ValaParser* self, GError
 
 static ValaExpression* vala_parser_parse_member_access (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
+	gchar* id = NULL;
 	gchar* _tmp0_ = NULL;
-	gchar* id;
+	ValaList* type_arg_list = NULL;
 	ValaList* _tmp1_ = NULL;
-	ValaList* type_arg_list;
-	ValaExpression* _tmp2_;
-	const gchar* _tmp3_;
-	ValaSourceLocation _tmp4_;
+	ValaMemberAccess* expr = NULL;
+	ValaExpression* _tmp2_ = NULL;
+	const gchar* _tmp3_ = NULL;
+	ValaSourceLocation _tmp4_ = {0};
 	ValaSourceReference* _tmp5_ = NULL;
-	ValaSourceReference* _tmp6_;
-	ValaMemberAccess* _tmp7_;
-	ValaMemberAccess* _tmp8_;
-	ValaMemberAccess* expr;
-	ValaList* _tmp9_;
+	ValaSourceReference* _tmp6_ = NULL;
+	ValaMemberAccess* _tmp7_ = NULL;
+	ValaMemberAccess* _tmp8_ = NULL;
+	ValaList* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -5448,14 +5496,14 @@ static ValaExpression* vala_parser_parse_member_access (ValaParser* self, ValaSo
 	_tmp9_ = type_arg_list;
 	if (_tmp9_ != NULL) {
 		{
-			ValaList* _tmp10_;
-			ValaList* _tmp11_;
-			ValaList* _type_arg_list;
-			ValaList* _tmp12_;
-			gint _tmp13_;
-			gint _tmp14_;
-			gint _type_arg_size;
-			gint _type_arg_index;
+			ValaList* _type_arg_list = NULL;
+			ValaList* _tmp10_ = NULL;
+			ValaList* _tmp11_ = NULL;
+			gint _type_arg_size = 0;
+			ValaList* _tmp12_ = NULL;
+			gint _tmp13_ = 0;
+			gint _tmp14_ = 0;
+			gint _type_arg_index = 0;
 			_tmp10_ = type_arg_list;
 			_tmp11_ = _vala_iterable_ref0 (_tmp10_);
 			_type_arg_list = _tmp11_;
@@ -5465,15 +5513,15 @@ static ValaExpression* vala_parser_parse_member_access (ValaParser* self, ValaSo
 			_type_arg_size = _tmp14_;
 			_type_arg_index = -1;
 			while (TRUE) {
-				gint _tmp15_;
-				gint _tmp16_;
-				gint _tmp17_;
-				ValaList* _tmp18_;
-				gint _tmp19_;
+				gint _tmp15_ = 0;
+				gint _tmp16_ = 0;
+				gint _tmp17_ = 0;
+				ValaDataType* type_arg = NULL;
+				ValaList* _tmp18_ = NULL;
+				gint _tmp19_ = 0;
 				gpointer _tmp20_ = NULL;
-				ValaDataType* type_arg;
-				ValaMemberAccess* _tmp21_;
-				ValaDataType* _tmp22_;
+				ValaMemberAccess* _tmp21_ = NULL;
+				ValaDataType* _tmp22_ = NULL;
 				_tmp15_ = _type_arg_index;
 				_type_arg_index = _tmp15_ + 1;
 				_tmp16_ = _type_arg_index;
@@ -5502,19 +5550,19 @@ static ValaExpression* vala_parser_parse_member_access (ValaParser* self, ValaSo
 
 static ValaExpression* vala_parser_parse_pointer_member_access (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
+	gchar* id = NULL;
 	gchar* _tmp0_ = NULL;
-	gchar* id;
+	ValaList* type_arg_list = NULL;
 	ValaList* _tmp1_ = NULL;
-	ValaList* type_arg_list;
-	ValaExpression* _tmp2_;
-	const gchar* _tmp3_;
-	ValaSourceLocation _tmp4_;
+	ValaMemberAccess* expr = NULL;
+	ValaExpression* _tmp2_ = NULL;
+	const gchar* _tmp3_ = NULL;
+	ValaSourceLocation _tmp4_ = {0};
 	ValaSourceReference* _tmp5_ = NULL;
-	ValaSourceReference* _tmp6_;
-	ValaMemberAccess* _tmp7_;
-	ValaMemberAccess* _tmp8_;
-	ValaMemberAccess* expr;
-	ValaList* _tmp9_;
+	ValaSourceReference* _tmp6_ = NULL;
+	ValaMemberAccess* _tmp7_ = NULL;
+	ValaMemberAccess* _tmp8_ = NULL;
+	ValaList* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -5568,14 +5616,14 @@ static ValaExpression* vala_parser_parse_pointer_member_access (ValaParser* self
 	_tmp9_ = type_arg_list;
 	if (_tmp9_ != NULL) {
 		{
-			ValaList* _tmp10_;
-			ValaList* _tmp11_;
-			ValaList* _type_arg_list;
-			ValaList* _tmp12_;
-			gint _tmp13_;
-			gint _tmp14_;
-			gint _type_arg_size;
-			gint _type_arg_index;
+			ValaList* _type_arg_list = NULL;
+			ValaList* _tmp10_ = NULL;
+			ValaList* _tmp11_ = NULL;
+			gint _type_arg_size = 0;
+			ValaList* _tmp12_ = NULL;
+			gint _tmp13_ = 0;
+			gint _tmp14_ = 0;
+			gint _type_arg_index = 0;
 			_tmp10_ = type_arg_list;
 			_tmp11_ = _vala_iterable_ref0 (_tmp10_);
 			_type_arg_list = _tmp11_;
@@ -5585,15 +5633,15 @@ static ValaExpression* vala_parser_parse_pointer_member_access (ValaParser* self
 			_type_arg_size = _tmp14_;
 			_type_arg_index = -1;
 			while (TRUE) {
-				gint _tmp15_;
-				gint _tmp16_;
-				gint _tmp17_;
-				ValaList* _tmp18_;
-				gint _tmp19_;
+				gint _tmp15_ = 0;
+				gint _tmp16_ = 0;
+				gint _tmp17_ = 0;
+				ValaDataType* type_arg = NULL;
+				ValaList* _tmp18_ = NULL;
+				gint _tmp19_ = 0;
 				gpointer _tmp20_ = NULL;
-				ValaDataType* type_arg;
-				ValaMemberAccess* _tmp21_;
-				ValaDataType* _tmp22_;
+				ValaMemberAccess* _tmp21_ = NULL;
+				ValaDataType* _tmp22_ = NULL;
 				_tmp15_ = _type_arg_index;
 				_type_arg_index = _tmp15_ + 1;
 				_tmp16_ = _type_arg_index;
@@ -5622,15 +5670,14 @@ static ValaExpression* vala_parser_parse_pointer_member_access (ValaParser* self
 
 static ValaExpression* vala_parser_parse_method_call (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
+	ValaList* arg_list = NULL;
 	ValaList* _tmp0_ = NULL;
-	ValaList* arg_list;
+	ValaList* init_list = NULL;
 	ValaList* _tmp1_ = NULL;
-	ValaList* init_list;
 	gboolean _tmp2_ = FALSE;
-	ValaList* _tmp3_;
-	gint _tmp4_;
-	gint _tmp5_;
-	gboolean _tmp7_;
+	ValaList* _tmp3_ = NULL;
+	gint _tmp4_ = 0;
+	gint _tmp5_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -5689,127 +5736,126 @@ static ValaExpression* vala_parser_parse_method_call (ValaParser* self, ValaSour
 	_tmp4_ = vala_collection_get_size ((ValaCollection*) _tmp3_);
 	_tmp5_ = _tmp4_;
 	if (_tmp5_ > 0) {
-		ValaExpression* _tmp6_;
+		ValaExpression* _tmp6_ = NULL;
 		_tmp6_ = inner;
 		_tmp2_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp6_, VALA_TYPE_MEMBER_ACCESS);
 	} else {
 		_tmp2_ = FALSE;
 	}
-	_tmp7_ = _tmp2_;
-	if (_tmp7_) {
-		ValaExpression* _tmp8_;
-		ValaMemberAccess* _tmp9_;
-		ValaMemberAccess* member;
-		ValaMemberAccess* _tmp10_;
-		ValaMemberAccess* _tmp11_;
-		ValaSourceLocation _tmp12_;
+	if (_tmp2_) {
+		ValaMemberAccess* member = NULL;
+		ValaExpression* _tmp7_ = NULL;
+		ValaMemberAccess* _tmp8_ = NULL;
+		ValaMemberAccess* _tmp9_ = NULL;
+		ValaObjectCreationExpression* expr = NULL;
+		ValaMemberAccess* _tmp10_ = NULL;
+		ValaSourceLocation _tmp11_ = {0};
+		ValaSourceReference* _tmp12_ = NULL;
 		ValaSourceReference* _tmp13_ = NULL;
-		ValaSourceReference* _tmp14_;
-		ValaObjectCreationExpression* _tmp15_;
-		ValaObjectCreationExpression* _tmp16_;
-		ValaObjectCreationExpression* expr;
-		ValaObjectCreationExpression* _tmp17_;
-		_tmp8_ = inner;
-		_tmp9_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp8_, VALA_TYPE_MEMBER_ACCESS, ValaMemberAccess));
-		member = _tmp9_;
+		ValaObjectCreationExpression* _tmp14_ = NULL;
+		ValaObjectCreationExpression* _tmp15_ = NULL;
+		ValaObjectCreationExpression* _tmp16_ = NULL;
+		_tmp7_ = inner;
+		_tmp8_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp7_, VALA_TYPE_MEMBER_ACCESS, ValaMemberAccess));
+		member = _tmp8_;
+		_tmp9_ = member;
+		vala_member_access_set_creation_member (_tmp9_, TRUE);
 		_tmp10_ = member;
-		vala_member_access_set_creation_member (_tmp10_, TRUE);
-		_tmp11_ = member;
-		_tmp12_ = *begin;
-		_tmp13_ = vala_parser_get_src (self, &_tmp12_);
-		_tmp14_ = _tmp13_;
-		_tmp15_ = vala_object_creation_expression_new (_tmp11_, _tmp14_);
-		_tmp16_ = _tmp15_;
-		_vala_source_reference_unref0 (_tmp14_);
-		expr = _tmp16_;
-		_tmp17_ = expr;
-		vala_object_creation_expression_set_struct_creation (_tmp17_, TRUE);
+		_tmp11_ = *begin;
+		_tmp12_ = vala_parser_get_src (self, &_tmp11_);
+		_tmp13_ = _tmp12_;
+		_tmp14_ = vala_object_creation_expression_new (_tmp10_, _tmp13_);
+		_tmp15_ = _tmp14_;
+		_vala_source_reference_unref0 (_tmp13_);
+		expr = _tmp15_;
+		_tmp16_ = expr;
+		vala_object_creation_expression_set_struct_creation (_tmp16_, TRUE);
 		{
-			ValaList* _tmp18_;
-			ValaList* _tmp19_;
-			ValaList* _arg_list;
-			ValaList* _tmp20_;
-			gint _tmp21_;
-			gint _tmp22_;
-			gint _arg_size;
-			gint _arg_index;
-			_tmp18_ = arg_list;
-			_tmp19_ = _vala_iterable_ref0 (_tmp18_);
-			_arg_list = _tmp19_;
-			_tmp20_ = _arg_list;
-			_tmp21_ = vala_collection_get_size ((ValaCollection*) _tmp20_);
-			_tmp22_ = _tmp21_;
-			_arg_size = _tmp22_;
+			ValaList* _arg_list = NULL;
+			ValaList* _tmp17_ = NULL;
+			ValaList* _tmp18_ = NULL;
+			gint _arg_size = 0;
+			ValaList* _tmp19_ = NULL;
+			gint _tmp20_ = 0;
+			gint _tmp21_ = 0;
+			gint _arg_index = 0;
+			_tmp17_ = arg_list;
+			_tmp18_ = _vala_iterable_ref0 (_tmp17_);
+			_arg_list = _tmp18_;
+			_tmp19_ = _arg_list;
+			_tmp20_ = vala_collection_get_size ((ValaCollection*) _tmp19_);
+			_tmp21_ = _tmp20_;
+			_arg_size = _tmp21_;
 			_arg_index = -1;
 			while (TRUE) {
-				gint _tmp23_;
-				gint _tmp24_;
-				gint _tmp25_;
-				ValaList* _tmp26_;
-				gint _tmp27_;
-				gpointer _tmp28_ = NULL;
-				ValaExpression* arg;
-				ValaObjectCreationExpression* _tmp29_;
-				ValaExpression* _tmp30_;
+				gint _tmp22_ = 0;
+				gint _tmp23_ = 0;
+				gint _tmp24_ = 0;
+				ValaExpression* arg = NULL;
+				ValaList* _tmp25_ = NULL;
+				gint _tmp26_ = 0;
+				gpointer _tmp27_ = NULL;
+				ValaObjectCreationExpression* _tmp28_ = NULL;
+				ValaExpression* _tmp29_ = NULL;
+				_tmp22_ = _arg_index;
+				_arg_index = _tmp22_ + 1;
 				_tmp23_ = _arg_index;
-				_arg_index = _tmp23_ + 1;
-				_tmp24_ = _arg_index;
-				_tmp25_ = _arg_size;
-				if (!(_tmp24_ < _tmp25_)) {
+				_tmp24_ = _arg_size;
+				if (!(_tmp23_ < _tmp24_)) {
 					break;
 				}
-				_tmp26_ = _arg_list;
-				_tmp27_ = _arg_index;
-				_tmp28_ = vala_list_get (_tmp26_, _tmp27_);
-				arg = (ValaExpression*) _tmp28_;
-				_tmp29_ = expr;
-				_tmp30_ = arg;
-				vala_object_creation_expression_add_argument (_tmp29_, _tmp30_);
+				_tmp25_ = _arg_list;
+				_tmp26_ = _arg_index;
+				_tmp27_ = vala_list_get (_tmp25_, _tmp26_);
+				arg = (ValaExpression*) _tmp27_;
+				_tmp28_ = expr;
+				_tmp29_ = arg;
+				vala_object_creation_expression_add_argument (_tmp28_, _tmp29_);
 				_vala_code_node_unref0 (arg);
 			}
 			_vala_iterable_unref0 (_arg_list);
 		}
 		{
-			ValaList* _tmp31_;
-			ValaList* _tmp32_;
-			ValaList* _initializer_list;
-			ValaList* _tmp33_;
-			gint _tmp34_;
-			gint _tmp35_;
-			gint _initializer_size;
-			gint _initializer_index;
-			_tmp31_ = init_list;
-			_tmp32_ = _vala_iterable_ref0 (_tmp31_);
-			_initializer_list = _tmp32_;
-			_tmp33_ = _initializer_list;
-			_tmp34_ = vala_collection_get_size ((ValaCollection*) _tmp33_);
-			_tmp35_ = _tmp34_;
-			_initializer_size = _tmp35_;
+			ValaList* _initializer_list = NULL;
+			ValaList* _tmp30_ = NULL;
+			ValaList* _tmp31_ = NULL;
+			gint _initializer_size = 0;
+			ValaList* _tmp32_ = NULL;
+			gint _tmp33_ = 0;
+			gint _tmp34_ = 0;
+			gint _initializer_index = 0;
+			_tmp30_ = init_list;
+			_tmp31_ = _vala_iterable_ref0 (_tmp30_);
+			_initializer_list = _tmp31_;
+			_tmp32_ = _initializer_list;
+			_tmp33_ = vala_collection_get_size ((ValaCollection*) _tmp32_);
+			_tmp34_ = _tmp33_;
+			_initializer_size = _tmp34_;
 			_initializer_index = -1;
 			while (TRUE) {
-				gint _tmp36_;
-				gint _tmp37_;
-				gint _tmp38_;
-				ValaList* _tmp39_;
-				gint _tmp40_;
-				gpointer _tmp41_ = NULL;
-				ValaMemberInitializer* initializer;
-				ValaObjectCreationExpression* _tmp42_;
-				ValaMemberInitializer* _tmp43_;
+				gint _tmp35_ = 0;
+				gint _tmp36_ = 0;
+				gint _tmp37_ = 0;
+				ValaMemberInitializer* initializer = NULL;
+				ValaList* _tmp38_ = NULL;
+				gint _tmp39_ = 0;
+				gpointer _tmp40_ = NULL;
+				ValaObjectCreationExpression* _tmp41_ = NULL;
+				ValaMemberInitializer* _tmp42_ = NULL;
+				_tmp35_ = _initializer_index;
+				_initializer_index = _tmp35_ + 1;
 				_tmp36_ = _initializer_index;
-				_initializer_index = _tmp36_ + 1;
-				_tmp37_ = _initializer_index;
-				_tmp38_ = _initializer_size;
-				if (!(_tmp37_ < _tmp38_)) {
+				_tmp37_ = _initializer_size;
+				if (!(_tmp36_ < _tmp37_)) {
 					break;
 				}
-				_tmp39_ = _initializer_list;
-				_tmp40_ = _initializer_index;
-				_tmp41_ = vala_list_get (_tmp39_, _tmp40_);
-				initializer = (ValaMemberInitializer*) _tmp41_;
-				_tmp42_ = expr;
-				_tmp43_ = initializer;
-				vala_object_creation_expression_add_member_initializer (_tmp42_, _tmp43_);
+				_tmp38_ = _initializer_list;
+				_tmp39_ = _initializer_index;
+				_tmp40_ = vala_list_get (_tmp38_, _tmp39_);
+				initializer = (ValaMemberInitializer*) _tmp40_;
+				_tmp41_ = expr;
+				_tmp42_ = initializer;
+				vala_object_creation_expression_add_member_initializer (_tmp41_, _tmp42_);
 				_vala_code_node_unref0 (initializer);
 			}
 			_vala_iterable_unref0 (_initializer_list);
@@ -5820,62 +5866,62 @@ static ValaExpression* vala_parser_parse_method_call (ValaParser* self, ValaSour
 		_vala_iterable_unref0 (arg_list);
 		return result;
 	} else {
-		ValaExpression* _tmp44_;
-		ValaSourceLocation _tmp45_;
+		ValaMethodCall* expr = NULL;
+		ValaExpression* _tmp43_ = NULL;
+		ValaSourceLocation _tmp44_ = {0};
+		ValaSourceReference* _tmp45_ = NULL;
 		ValaSourceReference* _tmp46_ = NULL;
-		ValaSourceReference* _tmp47_;
-		ValaMethodCall* _tmp48_;
-		ValaMethodCall* _tmp49_;
-		ValaMethodCall* expr;
-		_tmp44_ = inner;
-		_tmp45_ = *begin;
-		_tmp46_ = vala_parser_get_src (self, &_tmp45_);
-		_tmp47_ = _tmp46_;
-		_tmp48_ = vala_method_call_new (_tmp44_, _tmp47_);
-		_tmp49_ = _tmp48_;
-		_vala_source_reference_unref0 (_tmp47_);
-		expr = _tmp49_;
+		ValaMethodCall* _tmp47_ = NULL;
+		ValaMethodCall* _tmp48_ = NULL;
+		_tmp43_ = inner;
+		_tmp44_ = *begin;
+		_tmp45_ = vala_parser_get_src (self, &_tmp44_);
+		_tmp46_ = _tmp45_;
+		_tmp47_ = vala_method_call_new (_tmp43_, _tmp46_);
+		_tmp48_ = _tmp47_;
+		_vala_source_reference_unref0 (_tmp46_);
+		expr = _tmp48_;
 		{
-			ValaList* _tmp50_;
-			ValaList* _tmp51_;
-			ValaList* _arg_list;
-			ValaList* _tmp52_;
-			gint _tmp53_;
-			gint _tmp54_;
-			gint _arg_size;
-			gint _arg_index;
-			_tmp50_ = arg_list;
-			_tmp51_ = _vala_iterable_ref0 (_tmp50_);
-			_arg_list = _tmp51_;
-			_tmp52_ = _arg_list;
-			_tmp53_ = vala_collection_get_size ((ValaCollection*) _tmp52_);
-			_tmp54_ = _tmp53_;
-			_arg_size = _tmp54_;
+			ValaList* _arg_list = NULL;
+			ValaList* _tmp49_ = NULL;
+			ValaList* _tmp50_ = NULL;
+			gint _arg_size = 0;
+			ValaList* _tmp51_ = NULL;
+			gint _tmp52_ = 0;
+			gint _tmp53_ = 0;
+			gint _arg_index = 0;
+			_tmp49_ = arg_list;
+			_tmp50_ = _vala_iterable_ref0 (_tmp49_);
+			_arg_list = _tmp50_;
+			_tmp51_ = _arg_list;
+			_tmp52_ = vala_collection_get_size ((ValaCollection*) _tmp51_);
+			_tmp53_ = _tmp52_;
+			_arg_size = _tmp53_;
 			_arg_index = -1;
 			while (TRUE) {
-				gint _tmp55_;
-				gint _tmp56_;
-				gint _tmp57_;
-				ValaList* _tmp58_;
-				gint _tmp59_;
-				gpointer _tmp60_ = NULL;
-				ValaExpression* arg;
-				ValaMethodCall* _tmp61_;
-				ValaExpression* _tmp62_;
+				gint _tmp54_ = 0;
+				gint _tmp55_ = 0;
+				gint _tmp56_ = 0;
+				ValaExpression* arg = NULL;
+				ValaList* _tmp57_ = NULL;
+				gint _tmp58_ = 0;
+				gpointer _tmp59_ = NULL;
+				ValaMethodCall* _tmp60_ = NULL;
+				ValaExpression* _tmp61_ = NULL;
+				_tmp54_ = _arg_index;
+				_arg_index = _tmp54_ + 1;
 				_tmp55_ = _arg_index;
-				_arg_index = _tmp55_ + 1;
-				_tmp56_ = _arg_index;
-				_tmp57_ = _arg_size;
-				if (!(_tmp56_ < _tmp57_)) {
+				_tmp56_ = _arg_size;
+				if (!(_tmp55_ < _tmp56_)) {
 					break;
 				}
-				_tmp58_ = _arg_list;
-				_tmp59_ = _arg_index;
-				_tmp60_ = vala_list_get (_tmp58_, _tmp59_);
-				arg = (ValaExpression*) _tmp60_;
-				_tmp61_ = expr;
-				_tmp62_ = arg;
-				vala_method_call_add_argument (_tmp61_, _tmp62_);
+				_tmp57_ = _arg_list;
+				_tmp58_ = _arg_index;
+				_tmp59_ = vala_list_get (_tmp57_, _tmp58_);
+				arg = (ValaExpression*) _tmp59_;
+				_tmp60_ = expr;
+				_tmp61_ = arg;
+				vala_method_call_add_argument (_tmp60_, _tmp61_);
 				_vala_code_node_unref0 (arg);
 			}
 			_vala_iterable_unref0 (_arg_list);
@@ -5892,15 +5938,14 @@ static ValaExpression* vala_parser_parse_method_call (ValaParser* self, ValaSour
 
 static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
+	ValaList* index_list = NULL;
 	ValaList* _tmp0_ = NULL;
-	ValaList* index_list;
-	ValaExpression* stop;
+	ValaExpression* stop = NULL;
 	gboolean _tmp1_ = FALSE;
-	ValaList* _tmp2_;
-	gint _tmp3_;
-	gint _tmp4_;
-	gboolean _tmp6_;
-	ValaExpression* _tmp9_;
+	ValaList* _tmp2_ = NULL;
+	gint _tmp3_ = 0;
+	gint _tmp4_ = 0;
+	ValaExpression* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -5939,12 +5984,12 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 	} else {
 		_tmp1_ = FALSE;
 	}
-	_tmp6_ = _tmp1_;
-	if (_tmp6_) {
+	if (_tmp1_) {
+		ValaExpression* _tmp6_ = NULL;
 		ValaExpression* _tmp7_ = NULL;
-		ValaExpression* _tmp8_;
+		ValaExpression* _tmp8_ = NULL;
 		_tmp7_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp8_ = _tmp7_;
+		_tmp6_ = _tmp7_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -5959,8 +6004,11 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 				return NULL;
 			}
 		}
+		_tmp8_ = _tmp6_;
+		_tmp6_ = NULL;
 		_vala_code_node_unref0 (stop);
 		stop = _tmp8_;
+		_vala_code_node_unref0 (_tmp6_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_BRACKET, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -5979,13 +6027,13 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 	}
 	_tmp9_ = stop;
 	if (_tmp9_ == NULL) {
-		ValaExpression* _tmp10_;
-		ValaSourceLocation _tmp11_;
+		ValaElementAccess* expr = NULL;
+		ValaExpression* _tmp10_ = NULL;
+		ValaSourceLocation _tmp11_ = {0};
 		ValaSourceReference* _tmp12_ = NULL;
-		ValaSourceReference* _tmp13_;
-		ValaElementAccess* _tmp14_;
-		ValaElementAccess* _tmp15_;
-		ValaElementAccess* expr;
+		ValaSourceReference* _tmp13_ = NULL;
+		ValaElementAccess* _tmp14_ = NULL;
+		ValaElementAccess* _tmp15_ = NULL;
 		_tmp10_ = inner;
 		_tmp11_ = *begin;
 		_tmp12_ = vala_parser_get_src (self, &_tmp11_);
@@ -5995,14 +6043,14 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 		_vala_source_reference_unref0 (_tmp13_);
 		expr = _tmp15_;
 		{
-			ValaList* _tmp16_;
-			ValaList* _tmp17_;
-			ValaList* _index_list;
-			ValaList* _tmp18_;
-			gint _tmp19_;
-			gint _tmp20_;
-			gint _index_size;
-			gint _index_index;
+			ValaList* _index_list = NULL;
+			ValaList* _tmp16_ = NULL;
+			ValaList* _tmp17_ = NULL;
+			gint _index_size = 0;
+			ValaList* _tmp18_ = NULL;
+			gint _tmp19_ = 0;
+			gint _tmp20_ = 0;
+			gint _index_index = 0;
 			_tmp16_ = index_list;
 			_tmp17_ = _vala_iterable_ref0 (_tmp16_);
 			_index_list = _tmp17_;
@@ -6012,15 +6060,15 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 			_index_size = _tmp20_;
 			_index_index = -1;
 			while (TRUE) {
-				gint _tmp21_;
-				gint _tmp22_;
-				gint _tmp23_;
-				ValaList* _tmp24_;
-				gint _tmp25_;
+				gint _tmp21_ = 0;
+				gint _tmp22_ = 0;
+				gint _tmp23_ = 0;
+				ValaExpression* index = NULL;
+				ValaList* _tmp24_ = NULL;
+				gint _tmp25_ = 0;
 				gpointer _tmp26_ = NULL;
-				ValaExpression* index;
-				ValaElementAccess* _tmp27_;
-				ValaExpression* _tmp28_;
+				ValaElementAccess* _tmp27_ = NULL;
+				ValaExpression* _tmp28_ = NULL;
 				_tmp21_ = _index_index;
 				_index_index = _tmp21_ + 1;
 				_tmp22_ = _index_index;
@@ -6044,16 +6092,16 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 		_vala_iterable_unref0 (index_list);
 		return result;
 	} else {
-		ValaExpression* _tmp29_;
-		ValaList* _tmp30_;
+		ValaExpression* _tmp29_ = NULL;
+		ValaList* _tmp30_ = NULL;
 		gpointer _tmp31_ = NULL;
-		ValaExpression* _tmp32_;
-		ValaExpression* _tmp33_;
-		ValaSourceLocation _tmp34_;
+		ValaExpression* _tmp32_ = NULL;
+		ValaExpression* _tmp33_ = NULL;
+		ValaSourceLocation _tmp34_ = {0};
 		ValaSourceReference* _tmp35_ = NULL;
-		ValaSourceReference* _tmp36_;
-		ValaSliceExpression* _tmp37_;
-		ValaExpression* _tmp38_;
+		ValaSourceReference* _tmp36_ = NULL;
+		ValaSliceExpression* _tmp37_ = NULL;
+		ValaExpression* _tmp38_ = NULL;
 		_tmp29_ = inner;
 		_tmp30_ = index_list;
 		_tmp31_ = vala_list_get (_tmp30_, 0);
@@ -6078,34 +6126,31 @@ static ValaExpression* vala_parser_parse_element_access (ValaParser* self, ValaS
 
 static ValaList* vala_parser_parse_expression_list (ValaParser* self, GError** error) {
 	ValaList* result = NULL;
-	GEqualFunc _tmp0_;
-	ValaArrayList* _tmp1_;
-	ValaArrayList* list;
+	ValaArrayList* list = NULL;
+	GEqualFunc _tmp0_ = NULL;
+	ValaArrayList* _tmp1_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = g_direct_equal;
 	_tmp1_ = vala_array_list_new (VALA_TYPE_EXPRESSION, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp0_);
 	list = _tmp1_;
 	{
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
 		_tmp2_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp3_;
+			ValaExpression* _tmp4_ = NULL;
 			ValaExpression* _tmp5_ = NULL;
-			ValaExpression* _tmp6_;
-			ValaArrayList* _tmp7_;
-			ValaExpression* _tmp8_;
-			_tmp3_ = _tmp2_;
-			if (!_tmp3_) {
-				gboolean _tmp4_ = FALSE;
-				_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-				if (!_tmp4_) {
+			ValaArrayList* _tmp6_ = NULL;
+			if (!_tmp2_) {
+				gboolean _tmp3_ = FALSE;
+				_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+				if (!_tmp3_) {
 					break;
 				}
 			}
 			_tmp2_ = FALSE;
 			_tmp5_ = vala_parser_parse_expression (self, &_inner_error_);
-			_tmp6_ = _tmp5_;
+			_tmp4_ = _tmp5_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -6118,10 +6163,9 @@ static ValaList* vala_parser_parse_expression_list (ValaParser* self, GError** e
 					return NULL;
 				}
 			}
-			_tmp7_ = list;
-			_tmp8_ = _tmp6_;
-			vala_collection_add ((ValaCollection*) _tmp7_, _tmp8_);
-			_vala_code_node_unref0 (_tmp8_);
+			_tmp6_ = list;
+			vala_collection_add ((ValaCollection*) _tmp6_, _tmp4_);
+			_vala_code_node_unref0 (_tmp4_);
 		}
 	}
 	result = (ValaList*) list;
@@ -6131,13 +6175,13 @@ static ValaList* vala_parser_parse_expression_list (ValaParser* self, GError** e
 
 static ValaExpression* vala_parser_parse_this_access (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaMemberAccess* _tmp4_;
-	ValaExpression* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaMemberAccess* _tmp4_ = NULL;
+	ValaExpression* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -6166,13 +6210,13 @@ static ValaExpression* vala_parser_parse_this_access (ValaParser* self, GError**
 
 static ValaExpression* vala_parser_parse_base_access (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaBaseAccess* _tmp4_;
-	ValaExpression* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaBaseAccess* _tmp4_ = NULL;
+	ValaExpression* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -6201,12 +6245,12 @@ static ValaExpression* vala_parser_parse_base_access (ValaParser* self, GError**
 
 static ValaExpression* vala_parser_parse_post_increment_expression (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
-	ValaExpression* _tmp0_;
-	ValaSourceLocation _tmp1_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaPostfixExpression* _tmp4_;
-	ValaExpression* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaPostfixExpression* _tmp4_ = NULL;
+	ValaExpression* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -6236,12 +6280,12 @@ static ValaExpression* vala_parser_parse_post_increment_expression (ValaParser* 
 
 static ValaExpression* vala_parser_parse_post_decrement_expression (ValaParser* self, ValaSourceLocation* begin, ValaExpression* inner, GError** error) {
 	ValaExpression* result = NULL;
-	ValaExpression* _tmp0_;
-	ValaSourceLocation _tmp1_;
+	ValaExpression* _tmp0_ = NULL;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaPostfixExpression* _tmp4_;
-	ValaExpression* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaPostfixExpression* _tmp4_ = NULL;
+	ValaExpression* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -6271,10 +6315,10 @@ static ValaExpression* vala_parser_parse_post_decrement_expression (ValaParser* 
 
 static ValaExpression* vala_parser_parse_object_or_array_creation_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaMemberAccess* member = NULL;
 	ValaMemberAccess* _tmp1_ = NULL;
-	ValaMemberAccess* member;
 	gboolean _tmp2_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -6305,10 +6349,10 @@ static ValaExpression* vala_parser_parse_object_or_array_creation_expression (Va
 	}
 	_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_PARENS);
 	if (_tmp2_) {
-		ValaSourceLocation _tmp3_;
-		ValaMemberAccess* _tmp4_;
+		ValaExpression* expr = NULL;
+		ValaSourceLocation _tmp3_ = {0};
+		ValaMemberAccess* _tmp4_ = NULL;
 		ValaExpression* _tmp5_ = NULL;
-		ValaExpression* expr;
 		_tmp3_ = begin;
 		_tmp4_ = member;
 		_tmp5_ = vala_parser_parse_object_creation_expression (self, &_tmp3_, _tmp4_, &_inner_error_);
@@ -6329,8 +6373,8 @@ static ValaExpression* vala_parser_parse_object_or_array_creation_expression (Va
 		_vala_code_node_unref0 (member);
 		return result;
 	} else {
-		gboolean is_pointer_type;
-		gboolean _tmp7_;
+		gboolean is_pointer_type = FALSE;
+		gboolean _tmp7_ = FALSE;
 		gboolean _tmp8_ = FALSE;
 		is_pointer_type = FALSE;
 		while (TRUE) {
@@ -6347,9 +6391,9 @@ static ValaExpression* vala_parser_parse_object_or_array_creation_expression (Va
 		}
 		_tmp8_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACKET);
 		if (_tmp8_) {
-			ValaSourceLocation _tmp9_;
+			ValaSourceLocation _tmp9_ = {0};
+			ValaExpression* expr = NULL;
 			ValaExpression* _tmp10_ = NULL;
-			ValaExpression* expr;
 			_tmp9_ = begin;
 			vala_parser_rollback (self, &_tmp9_);
 			_tmp10_ = vala_parser_parse_array_creation_expression (self, &_inner_error_);
@@ -6371,9 +6415,9 @@ static ValaExpression* vala_parser_parse_object_or_array_creation_expression (Va
 			return result;
 		} else {
 			gchar* _tmp11_ = NULL;
-			gchar* _tmp12_;
-			GError* _tmp13_;
-			GError* _tmp14_;
+			gchar* _tmp12_ = NULL;
+			GError* _tmp13_ = NULL;
+			GError* _tmp14_ = NULL;
 			_tmp11_ = vala_parser_get_error (self, "expected ( or [");
 			_tmp12_ = _tmp11_;
 			_tmp13_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp12_);
@@ -6398,18 +6442,18 @@ static ValaExpression* vala_parser_parse_object_or_array_creation_expression (Va
 
 static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser* self, ValaSourceLocation* begin, ValaMemberAccess* member, GError** error) {
 	ValaExpression* result = NULL;
-	ValaMemberAccess* _tmp0_;
+	ValaMemberAccess* _tmp0_ = NULL;
+	ValaList* arg_list = NULL;
 	ValaList* _tmp1_ = NULL;
-	ValaList* arg_list;
+	ValaList* init_list = NULL;
 	ValaList* _tmp2_ = NULL;
-	ValaList* init_list;
-	ValaMemberAccess* _tmp3_;
-	ValaSourceLocation _tmp4_;
+	ValaObjectCreationExpression* expr = NULL;
+	ValaMemberAccess* _tmp3_ = NULL;
+	ValaSourceLocation _tmp4_ = {0};
 	ValaSourceReference* _tmp5_ = NULL;
-	ValaSourceReference* _tmp6_;
-	ValaObjectCreationExpression* _tmp7_;
-	ValaObjectCreationExpression* _tmp8_;
-	ValaObjectCreationExpression* expr;
+	ValaSourceReference* _tmp6_ = NULL;
+	ValaObjectCreationExpression* _tmp7_ = NULL;
+	ValaObjectCreationExpression* _tmp8_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (begin != NULL, NULL);
@@ -6464,14 +6508,14 @@ static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser*
 	_vala_source_reference_unref0 (_tmp6_);
 	expr = _tmp8_;
 	{
-		ValaList* _tmp9_;
-		ValaList* _tmp10_;
-		ValaList* _arg_list;
-		ValaList* _tmp11_;
-		gint _tmp12_;
-		gint _tmp13_;
-		gint _arg_size;
-		gint _arg_index;
+		ValaList* _arg_list = NULL;
+		ValaList* _tmp9_ = NULL;
+		ValaList* _tmp10_ = NULL;
+		gint _arg_size = 0;
+		ValaList* _tmp11_ = NULL;
+		gint _tmp12_ = 0;
+		gint _tmp13_ = 0;
+		gint _arg_index = 0;
 		_tmp9_ = arg_list;
 		_tmp10_ = _vala_iterable_ref0 (_tmp9_);
 		_arg_list = _tmp10_;
@@ -6481,15 +6525,15 @@ static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser*
 		_arg_size = _tmp13_;
 		_arg_index = -1;
 		while (TRUE) {
-			gint _tmp14_;
-			gint _tmp15_;
-			gint _tmp16_;
-			ValaList* _tmp17_;
-			gint _tmp18_;
+			gint _tmp14_ = 0;
+			gint _tmp15_ = 0;
+			gint _tmp16_ = 0;
+			ValaExpression* arg = NULL;
+			ValaList* _tmp17_ = NULL;
+			gint _tmp18_ = 0;
 			gpointer _tmp19_ = NULL;
-			ValaExpression* arg;
-			ValaObjectCreationExpression* _tmp20_;
-			ValaExpression* _tmp21_;
+			ValaObjectCreationExpression* _tmp20_ = NULL;
+			ValaExpression* _tmp21_ = NULL;
 			_tmp14_ = _arg_index;
 			_arg_index = _tmp14_ + 1;
 			_tmp15_ = _arg_index;
@@ -6509,14 +6553,14 @@ static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser*
 		_vala_iterable_unref0 (_arg_list);
 	}
 	{
-		ValaList* _tmp22_;
-		ValaList* _tmp23_;
-		ValaList* _initializer_list;
-		ValaList* _tmp24_;
-		gint _tmp25_;
-		gint _tmp26_;
-		gint _initializer_size;
-		gint _initializer_index;
+		ValaList* _initializer_list = NULL;
+		ValaList* _tmp22_ = NULL;
+		ValaList* _tmp23_ = NULL;
+		gint _initializer_size = 0;
+		ValaList* _tmp24_ = NULL;
+		gint _tmp25_ = 0;
+		gint _tmp26_ = 0;
+		gint _initializer_index = 0;
 		_tmp22_ = init_list;
 		_tmp23_ = _vala_iterable_ref0 (_tmp22_);
 		_initializer_list = _tmp23_;
@@ -6526,15 +6570,15 @@ static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser*
 		_initializer_size = _tmp26_;
 		_initializer_index = -1;
 		while (TRUE) {
-			gint _tmp27_;
-			gint _tmp28_;
-			gint _tmp29_;
-			ValaList* _tmp30_;
-			gint _tmp31_;
+			gint _tmp27_ = 0;
+			gint _tmp28_ = 0;
+			gint _tmp29_ = 0;
+			ValaMemberInitializer* initializer = NULL;
+			ValaList* _tmp30_ = NULL;
+			gint _tmp31_ = 0;
 			gpointer _tmp32_ = NULL;
-			ValaMemberInitializer* initializer;
-			ValaObjectCreationExpression* _tmp33_;
-			ValaMemberInitializer* _tmp34_;
+			ValaObjectCreationExpression* _tmp33_ = NULL;
+			ValaMemberInitializer* _tmp34_ = NULL;
 			_tmp27_ = _initializer_index;
 			_initializer_index = _tmp27_ + 1;
 			_tmp28_ = _initializer_index;
@@ -6562,32 +6606,32 @@ static ValaExpression* vala_parser_parse_object_creation_expression (ValaParser*
 
 static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaMemberAccess* member = NULL;
 	ValaMemberAccess* _tmp1_ = NULL;
-	ValaMemberAccess* member;
-	ValaMemberAccess* _tmp2_;
+	ValaDataType* element_type = NULL;
+	ValaMemberAccess* _tmp2_ = NULL;
 	ValaUnresolvedType* _tmp3_ = NULL;
-	ValaDataType* element_type;
-	gboolean is_pointer_type;
-	gboolean _tmp10_;
-	gboolean size_specified;
-	ValaList* size_specifier_list;
-	gboolean first;
-	ValaInitializerList* initializer;
-	ValaTokenType _tmp43_ = 0;
-	ValaDataType* _tmp46_;
-	ValaList* _tmp47_;
-	gint _tmp48_;
-	gint _tmp49_;
-	ValaInitializerList* _tmp50_;
-	ValaSourceLocation _tmp51_;
+	gboolean is_pointer_type = FALSE;
+	gboolean _tmp10_ = FALSE;
+	gboolean size_specified = FALSE;
+	ValaList* size_specifier_list = NULL;
+	gboolean first = FALSE;
+	ValaInitializerList* initializer = NULL;
+	ValaTokenType _tmp41_ = 0;
+	ValaArrayCreationExpression* expr = NULL;
+	ValaDataType* _tmp45_ = NULL;
+	ValaList* _tmp46_ = NULL;
+	gint _tmp47_ = 0;
+	gint _tmp48_ = 0;
+	ValaInitializerList* _tmp49_ = NULL;
+	ValaSourceLocation _tmp50_ = {0};
+	ValaSourceReference* _tmp51_ = NULL;
 	ValaSourceReference* _tmp52_ = NULL;
-	ValaSourceReference* _tmp53_;
-	ValaArrayCreationExpression* _tmp54_;
-	ValaArrayCreationExpression* _tmp55_;
-	ValaArrayCreationExpression* expr;
-	gboolean _tmp56_;
+	ValaArrayCreationExpression* _tmp53_ = NULL;
+	ValaArrayCreationExpression* _tmp54_ = NULL;
+	gboolean _tmp55_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -6621,11 +6665,11 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 	is_pointer_type = FALSE;
 	while (TRUE) {
 		gboolean _tmp4_ = FALSE;
-		ValaDataType* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaDataType* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaPointerType* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaPointerType* _tmp9_ = NULL;
 		_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_STAR);
 		if (!_tmp4_) {
 			break;
@@ -6645,7 +6689,7 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 		gboolean _tmp11_ = FALSE;
 		_tmp11_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
 		if (_tmp11_) {
-			ValaDataType* _tmp12_;
+			ValaDataType* _tmp12_ = NULL;
 			_tmp12_ = element_type;
 			vala_data_type_set_nullable (_tmp12_, TRUE);
 		}
@@ -6669,46 +6713,44 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 	size_specifier_list = NULL;
 	first = TRUE;
 	{
-		gboolean _tmp13_;
+		gboolean _tmp13_ = FALSE;
 		_tmp13_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp14_;
-			gboolean _tmp16_;
-			GEqualFunc _tmp30_;
-			ValaArrayList* _tmp31_;
-			_tmp14_ = _tmp13_;
-			if (!_tmp14_) {
-				gboolean _tmp15_ = FALSE;
-				_tmp15_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACKET);
-				if (!_tmp15_) {
+			gboolean _tmp15_ = FALSE;
+			GEqualFunc _tmp29_ = NULL;
+			ValaArrayList* _tmp30_ = NULL;
+			if (!_tmp13_) {
+				gboolean _tmp14_ = FALSE;
+				_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACKET);
+				if (!_tmp14_) {
 					break;
 				}
 			}
 			_tmp13_ = FALSE;
-			_tmp16_ = first;
-			if (!_tmp16_) {
-				gboolean _tmp17_;
-				ValaDataType* _tmp22_;
-				ValaList* _tmp23_;
-				gint _tmp24_;
-				gint _tmp25_;
-				ValaDataType* _tmp26_;
-				ValaSourceReference* _tmp27_;
-				ValaSourceReference* _tmp28_;
-				ValaArrayType* _tmp29_;
-				_tmp17_ = size_specified;
-				if (_tmp17_) {
+			_tmp15_ = first;
+			if (!_tmp15_) {
+				gboolean _tmp16_ = FALSE;
+				ValaDataType* _tmp21_ = NULL;
+				ValaList* _tmp22_ = NULL;
+				gint _tmp23_ = 0;
+				gint _tmp24_ = 0;
+				ValaDataType* _tmp25_ = NULL;
+				ValaSourceReference* _tmp26_ = NULL;
+				ValaSourceReference* _tmp27_ = NULL;
+				ValaArrayType* _tmp28_ = NULL;
+				_tmp16_ = size_specified;
+				if (_tmp16_) {
+					gchar* _tmp17_ = NULL;
 					gchar* _tmp18_ = NULL;
-					gchar* _tmp19_;
-					GError* _tmp20_;
-					GError* _tmp21_;
-					_tmp18_ = vala_parser_get_error (self, "size of inner arrays must not be specified in array creation expressio" \
+					GError* _tmp19_ = NULL;
+					GError* _tmp20_ = NULL;
+					_tmp17_ = vala_parser_get_error (self, "size of inner arrays must not be specified in array creation expressio" \
 "n");
-					_tmp19_ = _tmp18_;
-					_tmp20_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp19_);
-					_tmp21_ = _tmp20_;
-					_g_free0 (_tmp19_);
-					_inner_error_ = _tmp21_;
+					_tmp18_ = _tmp17_;
+					_tmp19_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp18_);
+					_tmp20_ = _tmp19_;
+					_g_free0 (_tmp18_);
+					_inner_error_ = _tmp20_;
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
 						_vala_iterable_unref0 (size_specifier_list);
@@ -6724,58 +6766,55 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 						return NULL;
 					}
 				}
-				_tmp22_ = element_type;
-				_tmp23_ = size_specifier_list;
-				_tmp24_ = vala_collection_get_size ((ValaCollection*) _tmp23_);
-				_tmp25_ = _tmp24_;
-				_tmp26_ = element_type;
-				_tmp27_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp26_);
-				_tmp28_ = _tmp27_;
-				_tmp29_ = vala_array_type_new (_tmp22_, _tmp25_, _tmp28_);
+				_tmp21_ = element_type;
+				_tmp22_ = size_specifier_list;
+				_tmp23_ = vala_collection_get_size ((ValaCollection*) _tmp22_);
+				_tmp24_ = _tmp23_;
+				_tmp25_ = element_type;
+				_tmp26_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp25_);
+				_tmp27_ = _tmp26_;
+				_tmp28_ = vala_array_type_new (_tmp21_, _tmp24_, _tmp27_);
 				_vala_code_node_unref0 (element_type);
-				element_type = (ValaDataType*) _tmp29_;
+				element_type = (ValaDataType*) _tmp28_;
 			} else {
 				first = FALSE;
 			}
-			_tmp30_ = g_direct_equal;
-			_tmp31_ = vala_array_list_new (VALA_TYPE_EXPRESSION, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp30_);
+			_tmp29_ = g_direct_equal;
+			_tmp30_ = vala_array_list_new (VALA_TYPE_EXPRESSION, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp29_);
 			_vala_iterable_unref0 (size_specifier_list);
-			size_specifier_list = (ValaList*) _tmp31_;
+			size_specifier_list = (ValaList*) _tmp30_;
 			{
-				gboolean _tmp32_;
-				_tmp32_ = TRUE;
+				gboolean _tmp31_ = FALSE;
+				_tmp31_ = TRUE;
 				while (TRUE) {
-					gboolean _tmp33_;
-					ValaExpression* size;
-					gboolean _tmp35_ = FALSE;
-					ValaTokenType _tmp36_ = 0;
-					gboolean _tmp38_;
-					ValaList* _tmp41_;
-					ValaExpression* _tmp42_;
-					_tmp33_ = _tmp32_;
-					if (!_tmp33_) {
-						gboolean _tmp34_ = FALSE;
-						_tmp34_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-						if (!_tmp34_) {
+					ValaExpression* size = NULL;
+					gboolean _tmp33_ = FALSE;
+					ValaTokenType _tmp34_ = 0;
+					ValaList* _tmp39_ = NULL;
+					ValaExpression* _tmp40_ = NULL;
+					if (!_tmp31_) {
+						gboolean _tmp32_ = FALSE;
+						_tmp32_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+						if (!_tmp32_) {
 							break;
 						}
 					}
-					_tmp32_ = FALSE;
+					_tmp31_ = FALSE;
 					size = NULL;
-					_tmp36_ = vala_parser_current (self);
-					if (_tmp36_ != VALA_TOKEN_TYPE_CLOSE_BRACKET) {
-						ValaTokenType _tmp37_ = 0;
-						_tmp37_ = vala_parser_current (self);
-						_tmp35_ = _tmp37_ != VALA_TOKEN_TYPE_COMMA;
+					_tmp34_ = vala_parser_current (self);
+					if (_tmp34_ != VALA_TOKEN_TYPE_CLOSE_BRACKET) {
+						ValaTokenType _tmp35_ = 0;
+						_tmp35_ = vala_parser_current (self);
+						_tmp33_ = _tmp35_ != VALA_TOKEN_TYPE_COMMA;
 					} else {
-						_tmp35_ = FALSE;
+						_tmp33_ = FALSE;
 					}
-					_tmp38_ = _tmp35_;
-					if (_tmp38_) {
-						ValaExpression* _tmp39_ = NULL;
-						ValaExpression* _tmp40_;
-						_tmp39_ = vala_parser_parse_expression (self, &_inner_error_);
-						_tmp40_ = _tmp39_;
+					if (_tmp33_) {
+						ValaExpression* _tmp36_ = NULL;
+						ValaExpression* _tmp37_ = NULL;
+						ValaExpression* _tmp38_ = NULL;
+						_tmp37_ = vala_parser_parse_expression (self, &_inner_error_);
+						_tmp36_ = _tmp37_;
 						if (_inner_error_ != NULL) {
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
 								g_propagate_error (error, _inner_error_);
@@ -6794,13 +6833,16 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 								return NULL;
 							}
 						}
+						_tmp38_ = _tmp36_;
+						_tmp36_ = NULL;
 						_vala_code_node_unref0 (size);
-						size = _tmp40_;
+						size = _tmp38_;
 						size_specified = TRUE;
+						_vala_code_node_unref0 (_tmp36_);
 					}
-					_tmp41_ = size_specifier_list;
-					_tmp42_ = size;
-					vala_collection_add ((ValaCollection*) _tmp41_, _tmp42_);
+					_tmp39_ = size_specifier_list;
+					_tmp40_ = size;
+					vala_collection_add ((ValaCollection*) _tmp39_, _tmp40_);
 					_vala_code_node_unref0 (size);
 				}
 			}
@@ -6824,12 +6866,13 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 		}
 	}
 	initializer = NULL;
-	_tmp43_ = vala_parser_current (self);
-	if (_tmp43_ == VALA_TOKEN_TYPE_OPEN_BRACE) {
+	_tmp41_ = vala_parser_current (self);
+	if (_tmp41_ == VALA_TOKEN_TYPE_OPEN_BRACE) {
+		ValaInitializerList* _tmp42_ = NULL;
+		ValaInitializerList* _tmp43_ = NULL;
 		ValaInitializerList* _tmp44_ = NULL;
-		ValaInitializerList* _tmp45_;
-		_tmp44_ = vala_parser_parse_initializer (self, &_inner_error_);
-		_tmp45_ = _tmp44_;
+		_tmp43_ = vala_parser_parse_initializer (self, &_inner_error_);
+		_tmp42_ = _tmp43_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -6848,64 +6891,67 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 				return NULL;
 			}
 		}
+		_tmp44_ = _tmp42_;
+		_tmp42_ = NULL;
 		_vala_code_node_unref0 (initializer);
-		initializer = _tmp45_;
+		initializer = _tmp44_;
+		_vala_code_node_unref0 (_tmp42_);
 	}
-	_tmp46_ = element_type;
-	_tmp47_ = size_specifier_list;
-	_tmp48_ = vala_collection_get_size ((ValaCollection*) _tmp47_);
-	_tmp49_ = _tmp48_;
-	_tmp50_ = initializer;
-	_tmp51_ = begin;
-	_tmp52_ = vala_parser_get_src (self, &_tmp51_);
-	_tmp53_ = _tmp52_;
-	_tmp54_ = vala_array_creation_expression_new (_tmp46_, _tmp49_, _tmp50_, _tmp53_);
-	_tmp55_ = _tmp54_;
-	_vala_source_reference_unref0 (_tmp53_);
-	expr = _tmp55_;
-	_tmp56_ = size_specified;
-	if (_tmp56_) {
+	_tmp45_ = element_type;
+	_tmp46_ = size_specifier_list;
+	_tmp47_ = vala_collection_get_size ((ValaCollection*) _tmp46_);
+	_tmp48_ = _tmp47_;
+	_tmp49_ = initializer;
+	_tmp50_ = begin;
+	_tmp51_ = vala_parser_get_src (self, &_tmp50_);
+	_tmp52_ = _tmp51_;
+	_tmp53_ = vala_array_creation_expression_new (_tmp45_, _tmp48_, _tmp49_, _tmp52_);
+	_tmp54_ = _tmp53_;
+	_vala_source_reference_unref0 (_tmp52_);
+	expr = _tmp54_;
+	_tmp55_ = size_specified;
+	if (_tmp55_) {
 		{
-			ValaList* _tmp57_;
-			ValaList* _tmp58_;
-			ValaList* _size_list;
-			ValaList* _tmp59_;
-			gint _tmp60_;
-			gint _tmp61_;
-			gint _size_size;
-			gint _size_index;
-			_tmp57_ = size_specifier_list;
-			_tmp58_ = _vala_iterable_ref0 (_tmp57_);
-			_size_list = _tmp58_;
-			_tmp59_ = _size_list;
-			_tmp60_ = vala_collection_get_size ((ValaCollection*) _tmp59_);
-			_tmp61_ = _tmp60_;
-			_size_size = _tmp61_;
+			ValaList* _size_list = NULL;
+			ValaList* _tmp56_ = NULL;
+			ValaList* _tmp57_ = NULL;
+			gint _size_size = 0;
+			ValaList* _tmp58_ = NULL;
+			gint _tmp59_ = 0;
+			gint _tmp60_ = 0;
+			gint _size_index = 0;
+			_tmp56_ = size_specifier_list;
+			_tmp57_ = _vala_iterable_ref0 (_tmp56_);
+			_size_list = _tmp57_;
+			_tmp58_ = _size_list;
+			_tmp59_ = vala_collection_get_size ((ValaCollection*) _tmp58_);
+			_tmp60_ = _tmp59_;
+			_size_size = _tmp60_;
 			_size_index = -1;
 			while (TRUE) {
-				gint _tmp62_;
-				gint _tmp63_;
-				gint _tmp64_;
-				ValaList* _tmp65_;
-				gint _tmp66_;
-				gpointer _tmp67_ = NULL;
-				ValaExpression* size;
-				ValaArrayCreationExpression* _tmp68_;
-				ValaExpression* _tmp69_;
+				gint _tmp61_ = 0;
+				gint _tmp62_ = 0;
+				gint _tmp63_ = 0;
+				ValaExpression* size = NULL;
+				ValaList* _tmp64_ = NULL;
+				gint _tmp65_ = 0;
+				gpointer _tmp66_ = NULL;
+				ValaArrayCreationExpression* _tmp67_ = NULL;
+				ValaExpression* _tmp68_ = NULL;
+				_tmp61_ = _size_index;
+				_size_index = _tmp61_ + 1;
 				_tmp62_ = _size_index;
-				_size_index = _tmp62_ + 1;
-				_tmp63_ = _size_index;
-				_tmp64_ = _size_size;
-				if (!(_tmp63_ < _tmp64_)) {
+				_tmp63_ = _size_size;
+				if (!(_tmp62_ < _tmp63_)) {
 					break;
 				}
-				_tmp65_ = _size_list;
-				_tmp66_ = _size_index;
-				_tmp67_ = vala_list_get (_tmp65_, _tmp66_);
-				size = (ValaExpression*) _tmp67_;
-				_tmp68_ = expr;
-				_tmp69_ = size;
-				vala_array_creation_expression_append_size (_tmp68_, _tmp69_);
+				_tmp64_ = _size_list;
+				_tmp65_ = _size_index;
+				_tmp66_ = vala_list_get (_tmp64_, _tmp65_);
+				size = (ValaExpression*) _tmp66_;
+				_tmp67_ = expr;
+				_tmp68_ = size;
+				vala_array_creation_expression_append_size (_tmp67_, _tmp68_);
 				_vala_code_node_unref0 (size);
 			}
 			_vala_iterable_unref0 (_size_list);
@@ -6922,9 +6968,9 @@ static ValaExpression* vala_parser_parse_array_creation_expression (ValaParser* 
 
 static ValaList* vala_parser_parse_object_initializer (ValaParser* self, GError** error) {
 	ValaList* result = NULL;
-	GEqualFunc _tmp0_;
-	ValaArrayList* _tmp1_;
-	ValaArrayList* list;
+	ValaArrayList* list = NULL;
+	GEqualFunc _tmp0_ = NULL;
+	ValaArrayList* _tmp1_ = NULL;
 	gboolean _tmp2_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -6934,25 +6980,22 @@ static ValaList* vala_parser_parse_object_initializer (ValaParser* self, GError*
 	_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_BRACE);
 	if (_tmp2_) {
 		{
-			gboolean _tmp3_;
+			gboolean _tmp3_ = FALSE;
 			_tmp3_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp4_;
+				ValaMemberInitializer* _tmp5_ = NULL;
 				ValaMemberInitializer* _tmp6_ = NULL;
-				ValaMemberInitializer* _tmp7_;
-				ValaArrayList* _tmp8_;
-				ValaMemberInitializer* _tmp9_;
-				_tmp4_ = _tmp3_;
-				if (!_tmp4_) {
-					gboolean _tmp5_ = FALSE;
-					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp5_) {
+				ValaArrayList* _tmp7_ = NULL;
+				if (!_tmp3_) {
+					gboolean _tmp4_ = FALSE;
+					_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp4_) {
 						break;
 					}
 				}
 				_tmp3_ = FALSE;
 				_tmp6_ = vala_parser_parse_member_initializer (self, &_inner_error_);
-				_tmp7_ = _tmp6_;
+				_tmp5_ = _tmp6_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -6965,10 +7008,9 @@ static ValaList* vala_parser_parse_object_initializer (ValaParser* self, GError*
 						return NULL;
 					}
 				}
-				_tmp8_ = list;
-				_tmp9_ = _tmp7_;
-				vala_collection_add ((ValaCollection*) _tmp8_, _tmp9_);
-				_vala_code_node_unref0 (_tmp9_);
+				_tmp7_ = list;
+				vala_collection_add ((ValaCollection*) _tmp7_, _tmp5_);
+				_vala_code_node_unref0 (_tmp5_);
 			}
 		}
 		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_BRACE, &_inner_error_);
@@ -6992,19 +7034,19 @@ static ValaList* vala_parser_parse_object_initializer (ValaParser* self, GError*
 
 static ValaMemberInitializer* vala_parser_parse_member_initializer (ValaParser* self, GError** error) {
 	ValaMemberInitializer* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	gchar* id = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* id;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp2_ = NULL;
-	ValaExpression* expr;
-	const gchar* _tmp3_;
-	ValaExpression* _tmp4_;
-	ValaSourceLocation _tmp5_;
+	const gchar* _tmp3_ = NULL;
+	ValaExpression* _tmp4_ = NULL;
+	ValaSourceLocation _tmp5_ = {0};
 	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaMemberInitializer* _tmp8_;
-	ValaMemberInitializer* _tmp9_;
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaMemberInitializer* _tmp8_ = NULL;
+	ValaMemberInitializer* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7065,18 +7107,17 @@ static ValaMemberInitializer* vala_parser_parse_member_initializer (ValaParser* 
 
 static ValaExpression* vala_parser_parse_yield_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp0_ = NULL;
-	ValaExpression* expr;
-	ValaExpression* _tmp1_;
-	ValaMethodCall* _tmp2_;
-	ValaMethodCall* call;
-	ValaExpression* _tmp3_;
-	ValaObjectCreationExpression* _tmp4_;
-	ValaObjectCreationExpression* object_creation;
+	ValaMethodCall* call = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaMethodCall* _tmp2_ = NULL;
+	ValaObjectCreationExpression* object_creation = NULL;
+	ValaExpression* _tmp3_ = NULL;
+	ValaObjectCreationExpression* _tmp4_ = NULL;
 	gboolean _tmp5_ = FALSE;
-	ValaMethodCall* _tmp6_;
-	gboolean _tmp8_;
-	ValaMethodCall* _tmp13_;
+	ValaMethodCall* _tmp6_ = NULL;
+	ValaMethodCall* _tmp12_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_expect (self, VALA_TOKEN_TYPE_YIELD, &_inner_error_);
@@ -7110,24 +7151,23 @@ static ValaExpression* vala_parser_parse_yield_expression (ValaParser* self, GEr
 	object_creation = _tmp4_;
 	_tmp6_ = call;
 	if (_tmp6_ == NULL) {
-		ValaObjectCreationExpression* _tmp7_;
+		ValaObjectCreationExpression* _tmp7_ = NULL;
 		_tmp7_ = object_creation;
 		_tmp5_ = _tmp7_ == NULL;
 	} else {
 		_tmp5_ = FALSE;
 	}
-	_tmp8_ = _tmp5_;
-	if (_tmp8_) {
-		ValaExpression* _tmp9_;
-		ValaSourceReference* _tmp10_;
-		ValaSourceReference* _tmp11_;
-		GError* _tmp12_;
-		_tmp9_ = expr;
-		_tmp10_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp9_);
-		_tmp11_ = _tmp10_;
-		vala_report_error (_tmp11_, "syntax error, expected method call");
-		_tmp12_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, "expected method call");
-		_inner_error_ = _tmp12_;
+	if (_tmp5_) {
+		ValaExpression* _tmp8_ = NULL;
+		ValaSourceReference* _tmp9_ = NULL;
+		ValaSourceReference* _tmp10_ = NULL;
+		GError* _tmp11_ = NULL;
+		_tmp8_ = expr;
+		_tmp9_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp8_);
+		_tmp10_ = _tmp9_;
+		vala_report_error (_tmp10_, "syntax error, expected method call");
+		_tmp11_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, "expected method call");
+		_inner_error_ = _tmp11_;
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
 			_vala_code_node_unref0 (object_creation);
@@ -7143,18 +7183,18 @@ static ValaExpression* vala_parser_parse_yield_expression (ValaParser* self, GEr
 			return NULL;
 		}
 	}
-	_tmp13_ = call;
-	if (_tmp13_ != NULL) {
-		ValaMethodCall* _tmp14_;
-		_tmp14_ = call;
-		vala_method_call_set_is_yield_expression (_tmp14_, TRUE);
+	_tmp12_ = call;
+	if (_tmp12_ != NULL) {
+		ValaMethodCall* _tmp13_ = NULL;
+		_tmp13_ = call;
+		vala_method_call_set_is_yield_expression (_tmp13_, TRUE);
 	} else {
-		ValaObjectCreationExpression* _tmp15_;
-		_tmp15_ = object_creation;
-		if (_tmp15_ != NULL) {
-			ValaObjectCreationExpression* _tmp16_;
-			_tmp16_ = object_creation;
-			vala_object_creation_expression_set_is_yield_expression (_tmp16_, TRUE);
+		ValaObjectCreationExpression* _tmp14_ = NULL;
+		_tmp14_ = object_creation;
+		if (_tmp14_ != NULL) {
+			ValaObjectCreationExpression* _tmp15_ = NULL;
+			_tmp15_ = object_creation;
+			vala_object_creation_expression_set_is_yield_expression (_tmp15_, TRUE);
 		}
 	}
 	result = expr;
@@ -7166,16 +7206,16 @@ static ValaExpression* vala_parser_parse_yield_expression (ValaParser* self, GEr
 
 static ValaExpression* vala_parser_parse_sizeof_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp1_ = NULL;
-	ValaDataType* type;
-	ValaDataType* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaDataType* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaSizeofExpression* _tmp6_;
-	ValaExpression* _tmp7_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaSizeofExpression* _tmp6_ = NULL;
+	ValaExpression* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7242,16 +7282,16 @@ static ValaExpression* vala_parser_parse_sizeof_expression (ValaParser* self, GE
 
 static ValaExpression* vala_parser_parse_typeof_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp1_ = NULL;
-	ValaDataType* type;
-	ValaDataType* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaDataType* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaTypeofExpression* _tmp6_;
-	ValaExpression* _tmp7_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaTypeofExpression* _tmp6_ = NULL;
+	ValaExpression* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7318,7 +7358,7 @@ static ValaExpression* vala_parser_parse_typeof_expression (ValaParser* self, GE
 
 static ValaUnaryOperator vala_parser_get_unary_operator (ValaParser* self, ValaTokenType token_type) {
 	ValaUnaryOperator result = 0;
-	ValaTokenType _tmp0_;
+	ValaTokenType _tmp0_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = token_type;
 	switch (_tmp0_) {
@@ -7363,15 +7403,15 @@ static ValaUnaryOperator vala_parser_get_unary_operator (ValaParser* self, ValaT
 
 static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaUnaryOperator operator = 0;
 	ValaTokenType _tmp1_ = 0;
 	ValaUnaryOperator _tmp2_ = 0;
-	ValaUnaryOperator operator;
-	ValaUnaryOperator _tmp3_;
+	ValaUnaryOperator _tmp3_ = 0;
 	ValaTokenType _tmp12_ = 0;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp68_ = NULL;
-	ValaExpression* expr;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7381,15 +7421,15 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 	operator = _tmp2_;
 	_tmp3_ = operator;
 	if (_tmp3_ != VALA_UNARY_OPERATOR_NONE) {
+		ValaExpression* op = NULL;
 		ValaExpression* _tmp4_ = NULL;
-		ValaExpression* op;
-		ValaUnaryOperator _tmp5_;
-		ValaExpression* _tmp6_;
-		ValaSourceLocation _tmp7_;
+		ValaUnaryOperator _tmp5_ = 0;
+		ValaExpression* _tmp6_ = NULL;
+		ValaSourceLocation _tmp7_ = {0};
 		ValaSourceReference* _tmp8_ = NULL;
-		ValaSourceReference* _tmp9_;
-		ValaUnaryExpression* _tmp10_;
-		ValaExpression* _tmp11_;
+		ValaSourceReference* _tmp9_ = NULL;
+		ValaUnaryExpression* _tmp10_ = NULL;
+		ValaExpression* _tmp11_ = NULL;
 		vala_parser_next (self);
 		_tmp4_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 		op = _tmp4_;
@@ -7419,23 +7459,23 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 	switch (_tmp12_) {
 		case VALA_TOKEN_TYPE_HASH:
 		{
-			ValaCodeContext* _tmp13_;
-			gboolean _tmp14_;
-			gboolean _tmp15_;
+			ValaCodeContext* _tmp13_ = NULL;
+			gboolean _tmp14_ = FALSE;
+			gboolean _tmp15_ = FALSE;
+			ValaExpression* op = NULL;
 			ValaExpression* _tmp18_ = NULL;
-			ValaExpression* op;
-			ValaExpression* _tmp19_;
-			ValaSourceLocation _tmp20_;
+			ValaExpression* _tmp19_ = NULL;
+			ValaSourceLocation _tmp20_ = {0};
 			ValaSourceReference* _tmp21_ = NULL;
-			ValaSourceReference* _tmp22_;
-			ValaReferenceTransferExpression* _tmp23_;
-			ValaExpression* _tmp24_;
+			ValaSourceReference* _tmp22_ = NULL;
+			ValaReferenceTransferExpression* _tmp23_ = NULL;
+			ValaExpression* _tmp24_ = NULL;
 			_tmp13_ = self->priv->context;
 			_tmp14_ = vala_code_context_get_deprecated (_tmp13_);
 			_tmp15_ = _tmp14_;
 			if (!_tmp15_) {
 				ValaSourceReference* _tmp16_ = NULL;
-				ValaSourceReference* _tmp17_;
+				ValaSourceReference* _tmp17_ = NULL;
 				_tmp16_ = vala_parser_get_last_src (self);
 				_tmp17_ = _tmp16_;
 				vala_report_warning (_tmp17_, "deprecated syntax, use `(owned)` cast");
@@ -7468,7 +7508,7 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 		case VALA_TOKEN_TYPE_OPEN_PARENS:
 		{
 			ValaTokenType _tmp25_ = 0;
-			ValaSourceLocation _tmp53_;
+			ValaSourceLocation _tmp53_ = {0};
 			vala_parser_next (self);
 			_tmp25_ = vala_parser_current (self);
 			switch (_tmp25_) {
@@ -7478,14 +7518,14 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 					vala_parser_next (self);
 					_tmp26_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_PARENS);
 					if (_tmp26_) {
+						ValaExpression* op = NULL;
 						ValaExpression* _tmp27_ = NULL;
-						ValaExpression* op;
-						ValaExpression* _tmp28_;
-						ValaSourceLocation _tmp29_;
+						ValaExpression* _tmp28_ = NULL;
+						ValaSourceLocation _tmp29_ = {0};
 						ValaSourceReference* _tmp30_ = NULL;
-						ValaSourceReference* _tmp31_;
-						ValaReferenceTransferExpression* _tmp32_;
-						ValaExpression* _tmp33_;
+						ValaSourceReference* _tmp31_ = NULL;
+						ValaReferenceTransferExpression* _tmp32_ = NULL;
+						ValaExpression* _tmp33_ = NULL;
 						_tmp27_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 						op = _tmp27_;
 						if (_inner_error_ != NULL) {
@@ -7515,8 +7555,8 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 				case VALA_TOKEN_TYPE_DYNAMIC:
 				case VALA_TOKEN_TYPE_IDENTIFIER:
 				{
+					ValaDataType* type = NULL;
 					ValaDataType* _tmp34_ = NULL;
-					ValaDataType* type;
 					gboolean _tmp35_ = FALSE;
 					_tmp34_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
 					type = _tmp34_;
@@ -7557,15 +7597,15 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 							case VALA_TOKEN_TYPE_IDENTIFIER:
 							case VALA_TOKEN_TYPE_PARAMS:
 							{
+								ValaExpression* inner = NULL;
 								ValaExpression* _tmp37_ = NULL;
-								ValaExpression* inner;
-								ValaExpression* _tmp38_;
-								ValaDataType* _tmp39_;
-								ValaSourceLocation _tmp40_;
+								ValaExpression* _tmp38_ = NULL;
+								ValaDataType* _tmp39_ = NULL;
+								ValaSourceLocation _tmp40_ = {0};
 								ValaSourceReference* _tmp41_ = NULL;
-								ValaSourceReference* _tmp42_;
-								ValaCastExpression* _tmp43_;
-								ValaExpression* _tmp44_;
+								ValaSourceReference* _tmp42_ = NULL;
+								ValaCastExpression* _tmp43_ = NULL;
+								ValaExpression* _tmp44_ = NULL;
 								_tmp37_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 								inner = _tmp37_;
 								if (_inner_error_ != NULL) {
@@ -7608,14 +7648,14 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 					vala_parser_next (self);
 					_tmp45_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_PARENS);
 					if (_tmp45_) {
+						ValaExpression* inner = NULL;
 						ValaExpression* _tmp46_ = NULL;
-						ValaExpression* inner;
-						ValaExpression* _tmp47_;
-						ValaSourceLocation _tmp48_;
+						ValaExpression* _tmp47_ = NULL;
+						ValaSourceLocation _tmp48_ = {0};
 						ValaSourceReference* _tmp49_ = NULL;
-						ValaSourceReference* _tmp50_;
-						ValaCastExpression* _tmp51_;
-						ValaExpression* _tmp52_;
+						ValaSourceReference* _tmp50_ = NULL;
+						ValaCastExpression* _tmp51_ = NULL;
+						ValaExpression* _tmp52_ = NULL;
 						_tmp46_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 						inner = _tmp46_;
 						if (_inner_error_ != NULL) {
@@ -7652,14 +7692,14 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 		}
 		case VALA_TOKEN_TYPE_STAR:
 		{
+			ValaExpression* op = NULL;
 			ValaExpression* _tmp54_ = NULL;
-			ValaExpression* op;
-			ValaExpression* _tmp55_;
-			ValaSourceLocation _tmp56_;
+			ValaExpression* _tmp55_ = NULL;
+			ValaSourceLocation _tmp56_ = {0};
 			ValaSourceReference* _tmp57_ = NULL;
-			ValaSourceReference* _tmp58_;
-			ValaPointerIndirection* _tmp59_;
-			ValaExpression* _tmp60_;
+			ValaSourceReference* _tmp58_ = NULL;
+			ValaPointerIndirection* _tmp59_ = NULL;
+			ValaExpression* _tmp60_ = NULL;
 			vala_parser_next (self);
 			_tmp54_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 			op = _tmp54_;
@@ -7686,14 +7726,14 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 		}
 		case VALA_TOKEN_TYPE_BITWISE_AND:
 		{
+			ValaExpression* op = NULL;
 			ValaExpression* _tmp61_ = NULL;
-			ValaExpression* op;
-			ValaExpression* _tmp62_;
-			ValaSourceLocation _tmp63_;
+			ValaExpression* _tmp62_ = NULL;
+			ValaSourceLocation _tmp63_ = {0};
 			ValaSourceReference* _tmp64_ = NULL;
-			ValaSourceReference* _tmp65_;
-			ValaAddressofExpression* _tmp66_;
-			ValaExpression* _tmp67_;
+			ValaSourceReference* _tmp65_ = NULL;
+			ValaAddressofExpression* _tmp66_ = NULL;
+			ValaExpression* _tmp67_ = NULL;
 			vala_parser_next (self);
 			_tmp61_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 			op = _tmp61_;
@@ -7742,7 +7782,7 @@ static ValaExpression* vala_parser_parse_unary_expression (ValaParser* self, GEr
 
 static ValaBinaryOperator vala_parser_get_binary_operator (ValaParser* self, ValaTokenType token_type) {
 	ValaBinaryOperator result = 0;
-	ValaTokenType _tmp0_;
+	ValaTokenType _tmp0_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = token_type;
 	switch (_tmp0_) {
@@ -7812,11 +7852,11 @@ static ValaBinaryOperator vala_parser_get_binary_operator (ValaParser* self, Val
 
 static ValaExpression* vala_parser_parse_multiplicative_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
-	gboolean found;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7835,11 +7875,11 @@ static ValaExpression* vala_parser_parse_multiplicative_expression (ValaParser* 
 	}
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
+		ValaBinaryOperator operator = 0;
 		ValaTokenType _tmp3_ = 0;
 		ValaBinaryOperator _tmp4_ = 0;
-		ValaBinaryOperator operator;
-		ValaBinaryOperator _tmp5_;
+		ValaBinaryOperator _tmp5_ = 0;
 		_tmp2_ = found;
 		if (!_tmp2_) {
 			break;
@@ -7853,15 +7893,15 @@ static ValaExpression* vala_parser_parse_multiplicative_expression (ValaParser* 
 			case VALA_BINARY_OPERATOR_DIV:
 			case VALA_BINARY_OPERATOR_MOD:
 			{
+				ValaExpression* right = NULL;
 				ValaExpression* _tmp6_ = NULL;
-				ValaExpression* right;
-				ValaBinaryOperator _tmp7_;
-				ValaExpression* _tmp8_;
-				ValaExpression* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaBinaryOperator _tmp7_ = 0;
+				ValaExpression* _tmp8_ = NULL;
+				ValaExpression* _tmp9_ = NULL;
+				ValaSourceLocation _tmp10_ = {0};
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaBinaryExpression* _tmp13_;
+				ValaSourceReference* _tmp12_ = NULL;
+				ValaBinaryExpression* _tmp13_ = NULL;
 				vala_parser_next (self);
 				_tmp6_ = vala_parser_parse_unary_expression (self, &_inner_error_);
 				right = _tmp6_;
@@ -7904,11 +7944,11 @@ static ValaExpression* vala_parser_parse_multiplicative_expression (ValaParser* 
 
 static ValaExpression* vala_parser_parse_additive_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
-	gboolean found;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -7927,11 +7967,11 @@ static ValaExpression* vala_parser_parse_additive_expression (ValaParser* self, 
 	}
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
+		ValaBinaryOperator operator = 0;
 		ValaTokenType _tmp3_ = 0;
 		ValaBinaryOperator _tmp4_ = 0;
-		ValaBinaryOperator operator;
-		ValaBinaryOperator _tmp5_;
+		ValaBinaryOperator _tmp5_ = 0;
 		_tmp2_ = found;
 		if (!_tmp2_) {
 			break;
@@ -7944,15 +7984,15 @@ static ValaExpression* vala_parser_parse_additive_expression (ValaParser* self, 
 			case VALA_BINARY_OPERATOR_PLUS:
 			case VALA_BINARY_OPERATOR_MINUS:
 			{
+				ValaExpression* right = NULL;
 				ValaExpression* _tmp6_ = NULL;
-				ValaExpression* right;
-				ValaBinaryOperator _tmp7_;
-				ValaExpression* _tmp8_;
-				ValaExpression* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaBinaryOperator _tmp7_ = 0;
+				ValaExpression* _tmp8_ = NULL;
+				ValaExpression* _tmp9_ = NULL;
+				ValaSourceLocation _tmp10_ = {0};
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaBinaryExpression* _tmp13_;
+				ValaSourceReference* _tmp12_ = NULL;
+				ValaBinaryExpression* _tmp13_ = NULL;
 				vala_parser_next (self);
 				_tmp6_ = vala_parser_parse_multiplicative_expression (self, &_inner_error_);
 				right = _tmp6_;
@@ -7995,11 +8035,11 @@ static ValaExpression* vala_parser_parse_additive_expression (ValaParser* self, 
 
 static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
-	gboolean found;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8018,7 +8058,7 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 	}
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
 		ValaTokenType _tmp3_ = 0;
 		_tmp2_ = found;
 		if (!_tmp2_) {
@@ -8028,14 +8068,14 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 		switch (_tmp3_) {
 			case VALA_TOKEN_TYPE_OP_SHIFT_LEFT:
 			{
+				ValaExpression* right = NULL;
 				ValaExpression* _tmp4_ = NULL;
-				ValaExpression* right;
-				ValaExpression* _tmp5_;
-				ValaExpression* _tmp6_;
-				ValaSourceLocation _tmp7_;
+				ValaExpression* _tmp5_ = NULL;
+				ValaExpression* _tmp6_ = NULL;
+				ValaSourceLocation _tmp7_ = {0};
 				ValaSourceReference* _tmp8_ = NULL;
-				ValaSourceReference* _tmp9_;
-				ValaBinaryExpression* _tmp10_;
+				ValaSourceReference* _tmp9_ = NULL;
+				ValaBinaryExpression* _tmp10_ = NULL;
 				vala_parser_next (self);
 				_tmp4_ = vala_parser_parse_additive_expression (self, &_inner_error_);
 				right = _tmp4_;
@@ -8065,16 +8105,15 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 			}
 			case VALA_TOKEN_TYPE_OP_GT:
 			{
-				ValaParserTokenInfo* _tmp11_;
-				gint _tmp11__length1;
-				gint _tmp12_;
-				ValaParserTokenInfo _tmp13_;
-				ValaSourceLocation _tmp14_;
-				gchar* _tmp15_;
-				gchar* first_gt_pos;
+				gchar* first_gt_pos = NULL;
+				ValaParserTokenInfo* _tmp11_ = NULL;
+				gint _tmp11__length1 = 0;
+				gint _tmp12_ = 0;
+				ValaParserTokenInfo _tmp13_ = {0};
+				ValaSourceLocation _tmp14_ = {0};
+				gchar* _tmp15_ = NULL;
 				gboolean _tmp16_ = FALSE;
 				ValaTokenType _tmp17_ = 0;
-				gboolean _tmp24_;
 				_tmp11_ = self->priv->tokens;
 				_tmp11__length1 = self->priv->tokens_length1;
 				_tmp12_ = self->priv->index;
@@ -8085,13 +8124,13 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 				vala_parser_next (self);
 				_tmp17_ = vala_parser_current (self);
 				if (_tmp17_ == VALA_TOKEN_TYPE_OP_GT) {
-					ValaParserTokenInfo* _tmp18_;
-					gint _tmp18__length1;
-					gint _tmp19_;
-					ValaParserTokenInfo _tmp20_;
-					ValaSourceLocation _tmp21_;
-					gchar* _tmp22_;
-					gchar* _tmp23_;
+					ValaParserTokenInfo* _tmp18_ = NULL;
+					gint _tmp18__length1 = 0;
+					gint _tmp19_ = 0;
+					ValaParserTokenInfo _tmp20_ = {0};
+					ValaSourceLocation _tmp21_ = {0};
+					gchar* _tmp22_ = NULL;
+					gchar* _tmp23_ = NULL;
 					_tmp18_ = self->priv->tokens;
 					_tmp18__length1 = self->priv->tokens_length1;
 					_tmp19_ = self->priv->index;
@@ -8103,19 +8142,18 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 				} else {
 					_tmp16_ = FALSE;
 				}
-				_tmp24_ = _tmp16_;
-				if (_tmp24_) {
+				if (_tmp16_) {
+					ValaExpression* right = NULL;
+					ValaExpression* _tmp24_ = NULL;
 					ValaExpression* _tmp25_ = NULL;
-					ValaExpression* right;
-					ValaExpression* _tmp26_;
-					ValaExpression* _tmp27_;
-					ValaSourceLocation _tmp28_;
+					ValaExpression* _tmp26_ = NULL;
+					ValaSourceLocation _tmp27_ = {0};
+					ValaSourceReference* _tmp28_ = NULL;
 					ValaSourceReference* _tmp29_ = NULL;
-					ValaSourceReference* _tmp30_;
-					ValaBinaryExpression* _tmp31_;
+					ValaBinaryExpression* _tmp30_ = NULL;
 					vala_parser_next (self);
-					_tmp25_ = vala_parser_parse_additive_expression (self, &_inner_error_);
-					right = _tmp25_;
+					_tmp24_ = vala_parser_parse_additive_expression (self, &_inner_error_);
+					right = _tmp24_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -8128,15 +8166,15 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 							return NULL;
 						}
 					}
-					_tmp26_ = left;
-					_tmp27_ = right;
-					_tmp28_ = begin;
-					_tmp29_ = vala_parser_get_src (self, &_tmp28_);
-					_tmp30_ = _tmp29_;
-					_tmp31_ = vala_binary_expression_new (VALA_BINARY_OPERATOR_SHIFT_RIGHT, _tmp26_, _tmp27_, _tmp30_);
+					_tmp25_ = left;
+					_tmp26_ = right;
+					_tmp27_ = begin;
+					_tmp28_ = vala_parser_get_src (self, &_tmp27_);
+					_tmp29_ = _tmp28_;
+					_tmp30_ = vala_binary_expression_new (VALA_BINARY_OPERATOR_SHIFT_RIGHT, _tmp25_, _tmp26_, _tmp29_);
 					_vala_code_node_unref0 (left);
-					left = (ValaExpression*) _tmp31_;
-					_vala_source_reference_unref0 (_tmp30_);
+					left = (ValaExpression*) _tmp30_;
+					_vala_source_reference_unref0 (_tmp29_);
 					_vala_code_node_unref0 (right);
 				} else {
 					vala_parser_prev (self);
@@ -8158,12 +8196,12 @@ static ValaExpression* vala_parser_parse_shift_expression (ValaParser* self, GEr
 
 static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
-	gboolean first;
-	gboolean found;
+	gboolean first = FALSE;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8183,11 +8221,11 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 	first = TRUE;
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
+		ValaBinaryOperator operator = 0;
 		ValaTokenType _tmp3_ = 0;
 		ValaBinaryOperator _tmp4_ = 0;
-		ValaBinaryOperator operator;
-		ValaBinaryOperator _tmp5_;
+		ValaBinaryOperator _tmp5_ = 0;
 		_tmp2_ = found;
 		if (!_tmp2_) {
 			break;
@@ -8201,16 +8239,16 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 			case VALA_BINARY_OPERATOR_LESS_THAN_OR_EQUAL:
 			case VALA_BINARY_OPERATOR_GREATER_THAN_OR_EQUAL:
 			{
+				ValaExpression* right = NULL;
 				ValaExpression* _tmp6_ = NULL;
-				ValaExpression* right;
-				ValaBinaryOperator _tmp7_;
-				ValaExpression* _tmp8_;
-				ValaExpression* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaBinaryOperator _tmp7_ = 0;
+				ValaExpression* _tmp8_ = NULL;
+				ValaExpression* _tmp9_ = NULL;
+				ValaSourceLocation _tmp10_ = {0};
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaBinaryExpression* _tmp13_;
-				gboolean _tmp14_;
+				ValaSourceReference* _tmp12_ = NULL;
+				ValaBinaryExpression* _tmp13_ = NULL;
+				gboolean _tmp14_ = FALSE;
 				vala_parser_next (self);
 				_tmp6_ = vala_parser_parse_shift_expression (self, &_inner_error_);
 				right = _tmp6_;
@@ -8238,13 +8276,13 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 				_vala_source_reference_unref0 (_tmp12_);
 				_tmp14_ = first;
 				if (!_tmp14_) {
-					ValaExpression* _tmp15_;
-					ValaBinaryExpression* _tmp16_;
-					ValaBinaryExpression* be;
-					ValaBinaryExpression* _tmp17_;
-					ValaCodeContext* _tmp18_;
-					gboolean _tmp19_;
-					gboolean _tmp20_;
+					ValaBinaryExpression* be = NULL;
+					ValaExpression* _tmp15_ = NULL;
+					ValaBinaryExpression* _tmp16_ = NULL;
+					ValaBinaryExpression* _tmp17_ = NULL;
+					ValaCodeContext* _tmp18_ = NULL;
+					gboolean _tmp19_ = FALSE;
+					gboolean _tmp20_ = FALSE;
 					_tmp15_ = left;
 					_tmp16_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp15_, VALA_TYPE_BINARY_EXPRESSION, ValaBinaryExpression));
 					be = _tmp16_;
@@ -8254,9 +8292,9 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 					_tmp19_ = vala_code_context_get_experimental (_tmp18_);
 					_tmp20_ = _tmp19_;
 					if (!_tmp20_) {
-						ValaExpression* _tmp21_;
-						ValaSourceReference* _tmp22_;
-						ValaSourceReference* _tmp23_;
+						ValaExpression* _tmp21_ = NULL;
+						ValaSourceReference* _tmp22_ = NULL;
+						ValaSourceReference* _tmp23_ = NULL;
 						_tmp21_ = left;
 						_tmp22_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp21_);
 						_tmp23_ = _tmp22_;
@@ -8272,7 +8310,6 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 			{
 				gboolean _tmp24_ = FALSE;
 				ValaTokenType _tmp25_ = 0;
-				gboolean _tmp27_;
 				vala_parser_next (self);
 				_tmp25_ = vala_parser_current (self);
 				if (_tmp25_ != VALA_TOKEN_TYPE_OP_GT) {
@@ -8282,20 +8319,19 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 				} else {
 					_tmp24_ = FALSE;
 				}
-				_tmp27_ = _tmp24_;
-				if (_tmp27_) {
-					ValaExpression* _tmp28_ = NULL;
-					ValaExpression* right;
-					ValaBinaryOperator _tmp29_;
-					ValaExpression* _tmp30_;
-					ValaExpression* _tmp31_;
-					ValaSourceLocation _tmp32_;
+				if (_tmp24_) {
+					ValaExpression* right = NULL;
+					ValaExpression* _tmp27_ = NULL;
+					ValaBinaryOperator _tmp28_ = 0;
+					ValaExpression* _tmp29_ = NULL;
+					ValaExpression* _tmp30_ = NULL;
+					ValaSourceLocation _tmp31_ = {0};
+					ValaSourceReference* _tmp32_ = NULL;
 					ValaSourceReference* _tmp33_ = NULL;
-					ValaSourceReference* _tmp34_;
-					ValaBinaryExpression* _tmp35_;
-					gboolean _tmp36_;
-					_tmp28_ = vala_parser_parse_shift_expression (self, &_inner_error_);
-					right = _tmp28_;
+					ValaBinaryExpression* _tmp34_ = NULL;
+					gboolean _tmp35_ = FALSE;
+					_tmp27_ = vala_parser_parse_shift_expression (self, &_inner_error_);
+					right = _tmp27_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -8308,41 +8344,41 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 							return NULL;
 						}
 					}
-					_tmp29_ = operator;
-					_tmp30_ = left;
-					_tmp31_ = right;
-					_tmp32_ = begin;
-					_tmp33_ = vala_parser_get_src (self, &_tmp32_);
-					_tmp34_ = _tmp33_;
-					_tmp35_ = vala_binary_expression_new (_tmp29_, _tmp30_, _tmp31_, _tmp34_);
+					_tmp28_ = operator;
+					_tmp29_ = left;
+					_tmp30_ = right;
+					_tmp31_ = begin;
+					_tmp32_ = vala_parser_get_src (self, &_tmp31_);
+					_tmp33_ = _tmp32_;
+					_tmp34_ = vala_binary_expression_new (_tmp28_, _tmp29_, _tmp30_, _tmp33_);
 					_vala_code_node_unref0 (left);
-					left = (ValaExpression*) _tmp35_;
-					_vala_source_reference_unref0 (_tmp34_);
-					_tmp36_ = first;
-					if (!_tmp36_) {
-						ValaExpression* _tmp37_;
-						ValaBinaryExpression* _tmp38_;
-						ValaBinaryExpression* be;
-						ValaBinaryExpression* _tmp39_;
-						ValaCodeContext* _tmp40_;
-						gboolean _tmp41_;
-						gboolean _tmp42_;
-						_tmp37_ = left;
-						_tmp38_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp37_, VALA_TYPE_BINARY_EXPRESSION, ValaBinaryExpression));
-						be = _tmp38_;
-						_tmp39_ = be;
-						_tmp39_->chained = TRUE;
-						_tmp40_ = self->priv->context;
-						_tmp41_ = vala_code_context_get_experimental (_tmp40_);
-						_tmp42_ = _tmp41_;
-						if (!_tmp42_) {
-							ValaExpression* _tmp43_;
-							ValaSourceReference* _tmp44_;
-							ValaSourceReference* _tmp45_;
-							_tmp43_ = left;
-							_tmp44_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp43_);
-							_tmp45_ = _tmp44_;
-							vala_report_warning (_tmp45_, "chained relational expressions are experimental");
+					left = (ValaExpression*) _tmp34_;
+					_vala_source_reference_unref0 (_tmp33_);
+					_tmp35_ = first;
+					if (!_tmp35_) {
+						ValaBinaryExpression* be = NULL;
+						ValaExpression* _tmp36_ = NULL;
+						ValaBinaryExpression* _tmp37_ = NULL;
+						ValaBinaryExpression* _tmp38_ = NULL;
+						ValaCodeContext* _tmp39_ = NULL;
+						gboolean _tmp40_ = FALSE;
+						gboolean _tmp41_ = FALSE;
+						_tmp36_ = left;
+						_tmp37_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp36_, VALA_TYPE_BINARY_EXPRESSION, ValaBinaryExpression));
+						be = _tmp37_;
+						_tmp38_ = be;
+						_tmp38_->chained = TRUE;
+						_tmp39_ = self->priv->context;
+						_tmp40_ = vala_code_context_get_experimental (_tmp39_);
+						_tmp41_ = _tmp40_;
+						if (!_tmp41_) {
+							ValaExpression* _tmp42_ = NULL;
+							ValaSourceReference* _tmp43_ = NULL;
+							ValaSourceReference* _tmp44_ = NULL;
+							_tmp42_ = left;
+							_tmp43_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp42_);
+							_tmp44_ = _tmp43_;
+							vala_report_warning (_tmp44_, "chained relational expressions are experimental");
 						}
 						_vala_code_node_unref0 (be);
 					}
@@ -8356,22 +8392,22 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 			}
 			default:
 			{
-				ValaTokenType _tmp46_ = 0;
-				_tmp46_ = vala_parser_current (self);
-				switch (_tmp46_) {
+				ValaTokenType _tmp45_ = 0;
+				_tmp45_ = vala_parser_current (self);
+				switch (_tmp45_) {
 					case VALA_TOKEN_TYPE_IS:
 					{
-						ValaDataType* _tmp47_ = NULL;
-						ValaDataType* type;
-						ValaExpression* _tmp48_;
-						ValaDataType* _tmp49_;
-						ValaSourceLocation _tmp50_;
+						ValaDataType* type = NULL;
+						ValaDataType* _tmp46_ = NULL;
+						ValaExpression* _tmp47_ = NULL;
+						ValaDataType* _tmp48_ = NULL;
+						ValaSourceLocation _tmp49_ = {0};
+						ValaSourceReference* _tmp50_ = NULL;
 						ValaSourceReference* _tmp51_ = NULL;
-						ValaSourceReference* _tmp52_;
-						ValaTypeCheck* _tmp53_;
+						ValaTypeCheck* _tmp52_ = NULL;
 						vala_parser_next (self);
-						_tmp47_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-						type = _tmp47_;
+						_tmp46_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+						type = _tmp46_;
 						if (_inner_error_ != NULL) {
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
 								g_propagate_error (error, _inner_error_);
@@ -8384,31 +8420,31 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 								return NULL;
 							}
 						}
-						_tmp48_ = left;
-						_tmp49_ = type;
-						_tmp50_ = begin;
-						_tmp51_ = vala_parser_get_src (self, &_tmp50_);
-						_tmp52_ = _tmp51_;
-						_tmp53_ = vala_typecheck_new (_tmp48_, _tmp49_, _tmp52_);
+						_tmp47_ = left;
+						_tmp48_ = type;
+						_tmp49_ = begin;
+						_tmp50_ = vala_parser_get_src (self, &_tmp49_);
+						_tmp51_ = _tmp50_;
+						_tmp52_ = vala_typecheck_new (_tmp47_, _tmp48_, _tmp51_);
 						_vala_code_node_unref0 (left);
-						left = (ValaExpression*) _tmp53_;
-						_vala_source_reference_unref0 (_tmp52_);
+						left = (ValaExpression*) _tmp52_;
+						_vala_source_reference_unref0 (_tmp51_);
 						_vala_code_node_unref0 (type);
 						break;
 					}
 					case VALA_TOKEN_TYPE_AS:
 					{
-						ValaDataType* _tmp54_ = NULL;
-						ValaDataType* type;
-						ValaExpression* _tmp55_;
-						ValaDataType* _tmp56_;
-						ValaSourceLocation _tmp57_;
+						ValaDataType* type = NULL;
+						ValaDataType* _tmp53_ = NULL;
+						ValaExpression* _tmp54_ = NULL;
+						ValaDataType* _tmp55_ = NULL;
+						ValaSourceLocation _tmp56_ = {0};
+						ValaSourceReference* _tmp57_ = NULL;
 						ValaSourceReference* _tmp58_ = NULL;
-						ValaSourceReference* _tmp59_;
-						ValaCastExpression* _tmp60_;
+						ValaCastExpression* _tmp59_ = NULL;
 						vala_parser_next (self);
-						_tmp54_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-						type = _tmp54_;
+						_tmp53_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+						type = _tmp53_;
 						if (_inner_error_ != NULL) {
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
 								g_propagate_error (error, _inner_error_);
@@ -8421,15 +8457,15 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 								return NULL;
 							}
 						}
-						_tmp55_ = left;
-						_tmp56_ = type;
-						_tmp57_ = begin;
-						_tmp58_ = vala_parser_get_src (self, &_tmp57_);
-						_tmp59_ = _tmp58_;
-						_tmp60_ = vala_cast_expression_new (_tmp55_, _tmp56_, _tmp59_, TRUE);
+						_tmp54_ = left;
+						_tmp55_ = type;
+						_tmp56_ = begin;
+						_tmp57_ = vala_parser_get_src (self, &_tmp56_);
+						_tmp58_ = _tmp57_;
+						_tmp59_ = vala_cast_expression_new (_tmp54_, _tmp55_, _tmp58_, TRUE);
 						_vala_code_node_unref0 (left);
-						left = (ValaExpression*) _tmp60_;
-						_vala_source_reference_unref0 (_tmp59_);
+						left = (ValaExpression*) _tmp59_;
+						_vala_source_reference_unref0 (_tmp58_);
 						_vala_code_node_unref0 (type);
 						break;
 					}
@@ -8450,11 +8486,11 @@ static ValaExpression* vala_parser_parse_relational_expression (ValaParser* self
 
 static ValaExpression* vala_parser_parse_equality_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
-	gboolean found;
+	gboolean found = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8473,11 +8509,11 @@ static ValaExpression* vala_parser_parse_equality_expression (ValaParser* self, 
 	}
 	found = TRUE;
 	while (TRUE) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
+		ValaBinaryOperator operator = 0;
 		ValaTokenType _tmp3_ = 0;
 		ValaBinaryOperator _tmp4_ = 0;
-		ValaBinaryOperator operator;
-		ValaBinaryOperator _tmp5_;
+		ValaBinaryOperator _tmp5_ = 0;
 		_tmp2_ = found;
 		if (!_tmp2_) {
 			break;
@@ -8490,15 +8526,15 @@ static ValaExpression* vala_parser_parse_equality_expression (ValaParser* self, 
 			case VALA_BINARY_OPERATOR_EQUALITY:
 			case VALA_BINARY_OPERATOR_INEQUALITY:
 			{
+				ValaExpression* right = NULL;
 				ValaExpression* _tmp6_ = NULL;
-				ValaExpression* right;
-				ValaBinaryOperator _tmp7_;
-				ValaExpression* _tmp8_;
-				ValaExpression* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaBinaryOperator _tmp7_ = 0;
+				ValaExpression* _tmp8_ = NULL;
+				ValaExpression* _tmp9_ = NULL;
+				ValaSourceLocation _tmp10_ = {0};
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaBinaryExpression* _tmp13_;
+				ValaSourceReference* _tmp12_ = NULL;
+				ValaBinaryExpression* _tmp13_ = NULL;
 				vala_parser_next (self);
 				_tmp6_ = vala_parser_parse_relational_expression (self, &_inner_error_);
 				right = _tmp6_;
@@ -8541,10 +8577,10 @@ static ValaExpression* vala_parser_parse_equality_expression (ValaParser* self, 
 
 static ValaExpression* vala_parser_parse_and_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8563,14 +8599,14 @@ static ValaExpression* vala_parser_parse_and_expression (ValaParser* self, GErro
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_BITWISE_AND);
 		if (!_tmp2_) {
 			break;
@@ -8607,10 +8643,10 @@ static ValaExpression* vala_parser_parse_and_expression (ValaParser* self, GErro
 
 static ValaExpression* vala_parser_parse_exclusive_or_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8629,14 +8665,14 @@ static ValaExpression* vala_parser_parse_exclusive_or_expression (ValaParser* se
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CARRET);
 		if (!_tmp2_) {
 			break;
@@ -8673,10 +8709,10 @@ static ValaExpression* vala_parser_parse_exclusive_or_expression (ValaParser* se
 
 static ValaExpression* vala_parser_parse_inclusive_or_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8695,14 +8731,14 @@ static ValaExpression* vala_parser_parse_inclusive_or_expression (ValaParser* se
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_BITWISE_OR);
 		if (!_tmp2_) {
 			break;
@@ -8739,10 +8775,10 @@ static ValaExpression* vala_parser_parse_inclusive_or_expression (ValaParser* se
 
 static ValaExpression* vala_parser_parse_in_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8761,14 +8797,14 @@ static ValaExpression* vala_parser_parse_in_expression (ValaParser* self, GError
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IN);
 		if (!_tmp2_) {
 			break;
@@ -8805,10 +8841,10 @@ static ValaExpression* vala_parser_parse_in_expression (ValaParser* self, GError
 
 static ValaExpression* vala_parser_parse_conditional_and_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8827,14 +8863,14 @@ static ValaExpression* vala_parser_parse_conditional_and_expression (ValaParser*
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_AND);
 		if (!_tmp2_) {
 			break;
@@ -8871,10 +8907,10 @@ static ValaExpression* vala_parser_parse_conditional_and_expression (ValaParser*
 
 static ValaExpression* vala_parser_parse_conditional_or_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -8893,14 +8929,14 @@ static ValaExpression* vala_parser_parse_conditional_or_expression (ValaParser* 
 	}
 	while (TRUE) {
 		gboolean _tmp2_ = FALSE;
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_OR);
 		if (!_tmp2_) {
 			break;
@@ -8937,10 +8973,10 @@ static ValaExpression* vala_parser_parse_conditional_or_expression (ValaParser* 
 
 static ValaExpression* vala_parser_parse_coalescing_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* left = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* left;
 	gboolean _tmp2_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -8960,15 +8996,15 @@ static ValaExpression* vala_parser_parse_coalescing_expression (ValaParser* self
 	}
 	_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_COALESCING);
 	if (_tmp2_) {
+		ValaExpression* right = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* right;
-		ValaExpression* _tmp4_;
-		ValaExpression* _tmp5_;
-		ValaSourceLocation _tmp6_;
+		ValaExpression* _tmp4_ = NULL;
+		ValaExpression* _tmp5_ = NULL;
+		ValaSourceLocation _tmp6_ = {0};
 		ValaSourceReference* _tmp7_ = NULL;
-		ValaSourceReference* _tmp8_;
-		ValaBinaryExpression* _tmp9_;
-		ValaExpression* _tmp10_;
+		ValaSourceReference* _tmp8_ = NULL;
+		ValaBinaryExpression* _tmp9_ = NULL;
+		ValaExpression* _tmp10_ = NULL;
 		_tmp3_ = vala_parser_parse_coalescing_expression (self, &_inner_error_);
 		right = _tmp3_;
 		if (_inner_error_ != NULL) {
@@ -9005,10 +9041,10 @@ static ValaExpression* vala_parser_parse_coalescing_expression (ValaParser* self
 
 static ValaExpression* vala_parser_parse_conditional_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* condition = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* condition;
 	gboolean _tmp2_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -9028,18 +9064,18 @@ static ValaExpression* vala_parser_parse_conditional_expression (ValaParser* sel
 	}
 	_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_INTERR);
 	if (_tmp2_) {
+		ValaExpression* true_expr = NULL;
 		ValaExpression* _tmp3_ = NULL;
-		ValaExpression* true_expr;
+		ValaExpression* false_expr = NULL;
 		ValaExpression* _tmp4_ = NULL;
-		ValaExpression* false_expr;
-		ValaExpression* _tmp5_;
-		ValaExpression* _tmp6_;
-		ValaExpression* _tmp7_;
-		ValaSourceLocation _tmp8_;
+		ValaExpression* _tmp5_ = NULL;
+		ValaExpression* _tmp6_ = NULL;
+		ValaExpression* _tmp7_ = NULL;
+		ValaSourceLocation _tmp8_ = {0};
 		ValaSourceReference* _tmp9_ = NULL;
-		ValaSourceReference* _tmp10_;
-		ValaConditionalExpression* _tmp11_;
-		ValaExpression* _tmp12_;
+		ValaSourceReference* _tmp10_ = NULL;
+		ValaConditionalExpression* _tmp11_ = NULL;
+		ValaExpression* _tmp12_ = NULL;
 		_tmp3_ = vala_parser_parse_expression (self, &_inner_error_);
 		true_expr = _tmp3_;
 		if (_inner_error_ != NULL) {
@@ -9109,20 +9145,20 @@ static ValaExpression* vala_parser_parse_conditional_expression (ValaParser* sel
 
 static ValaParameter* vala_parser_parse_lambda_parameter (ValaParser* self, GError** error) {
 	ValaParameter* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaParameterDirection direction;
+	ValaParameterDirection direction = 0;
 	gboolean _tmp1_ = FALSE;
+	gchar* id = NULL;
 	gchar* _tmp3_ = NULL;
-	gchar* id;
-	ValaSourceLocation _tmp4_;
+	ValaParameter* param = NULL;
+	ValaSourceLocation _tmp4_ = {0};
 	ValaSourceReference* _tmp5_ = NULL;
-	ValaSourceReference* _tmp6_;
-	ValaParameter* _tmp7_;
-	ValaParameter* _tmp8_;
-	ValaParameter* param;
-	ValaParameter* _tmp9_;
-	ValaParameterDirection _tmp10_;
+	ValaSourceReference* _tmp6_ = NULL;
+	ValaParameter* _tmp7_ = NULL;
+	ValaParameter* _tmp8_ = NULL;
+	ValaParameter* _tmp9_ = NULL;
+	ValaParameterDirection _tmp10_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -9168,14 +9204,14 @@ static ValaParameter* vala_parser_parse_lambda_parameter (ValaParser* self, GErr
 
 static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	GEqualFunc _tmp1_;
-	ValaArrayList* _tmp2_;
-	ValaList* params;
+	ValaList* params = NULL;
+	GEqualFunc _tmp1_ = NULL;
+	ValaArrayList* _tmp2_ = NULL;
 	gboolean _tmp3_ = FALSE;
 	ValaLambdaExpression* lambda = NULL;
-	ValaTokenType _tmp16_ = 0;
+	ValaTokenType _tmp13_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -9189,25 +9225,22 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 		_tmp4_ = vala_parser_current (self);
 		if (_tmp4_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 			{
-				gboolean _tmp5_;
+				gboolean _tmp5_ = FALSE;
 				_tmp5_ = TRUE;
 				while (TRUE) {
-					gboolean _tmp6_;
+					ValaParameter* _tmp7_ = NULL;
 					ValaParameter* _tmp8_ = NULL;
-					ValaParameter* _tmp9_;
-					ValaList* _tmp10_;
-					ValaParameter* _tmp11_;
-					_tmp6_ = _tmp5_;
-					if (!_tmp6_) {
-						gboolean _tmp7_ = FALSE;
-						_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-						if (!_tmp7_) {
+					ValaList* _tmp9_ = NULL;
+					if (!_tmp5_) {
+						gboolean _tmp6_ = FALSE;
+						_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+						if (!_tmp6_) {
 							break;
 						}
 					}
 					_tmp5_ = FALSE;
 					_tmp8_ = vala_parser_parse_lambda_parameter (self, &_inner_error_);
-					_tmp9_ = _tmp8_;
+					_tmp7_ = _tmp8_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -9220,10 +9253,9 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 							return NULL;
 						}
 					}
-					_tmp10_ = params;
-					_tmp11_ = _tmp9_;
-					vala_collection_add ((ValaCollection*) _tmp10_, _tmp11_);
-					_vala_code_node_unref0 (_tmp11_);
+					_tmp9_ = params;
+					vala_collection_add ((ValaCollection*) _tmp9_, _tmp7_);
+					_vala_code_node_unref0 (_tmp7_);
 				}
 			}
 		}
@@ -9241,12 +9273,11 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 			}
 		}
 	} else {
-		ValaParameter* _tmp12_ = NULL;
-		ValaParameter* _tmp13_;
-		ValaList* _tmp14_;
-		ValaParameter* _tmp15_;
-		_tmp12_ = vala_parser_parse_lambda_parameter (self, &_inner_error_);
-		_tmp13_ = _tmp12_;
+		ValaParameter* _tmp10_ = NULL;
+		ValaParameter* _tmp11_ = NULL;
+		ValaList* _tmp12_ = NULL;
+		_tmp11_ = vala_parser_parse_lambda_parameter (self, &_inner_error_);
+		_tmp10_ = _tmp11_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -9259,10 +9290,9 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 				return NULL;
 			}
 		}
-		_tmp14_ = params;
-		_tmp15_ = _tmp13_;
-		vala_collection_add ((ValaCollection*) _tmp14_, _tmp15_);
-		_vala_code_node_unref0 (_tmp15_);
+		_tmp12_ = params;
+		vala_collection_add ((ValaCollection*) _tmp12_, _tmp10_);
+		_vala_code_node_unref0 (_tmp10_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_LAMBDA, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -9277,17 +9307,17 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 			return NULL;
 		}
 	}
-	_tmp16_ = vala_parser_current (self);
-	if (_tmp16_ == VALA_TOKEN_TYPE_OPEN_BRACE) {
-		ValaBlock* _tmp17_ = NULL;
-		ValaBlock* block;
-		ValaBlock* _tmp18_;
-		ValaSourceLocation _tmp19_;
-		ValaSourceReference* _tmp20_ = NULL;
-		ValaSourceReference* _tmp21_;
-		ValaLambdaExpression* _tmp22_;
-		_tmp17_ = vala_parser_parse_block (self, &_inner_error_);
-		block = _tmp17_;
+	_tmp13_ = vala_parser_current (self);
+	if (_tmp13_ == VALA_TOKEN_TYPE_OPEN_BRACE) {
+		ValaBlock* block = NULL;
+		ValaBlock* _tmp14_ = NULL;
+		ValaBlock* _tmp15_ = NULL;
+		ValaSourceLocation _tmp16_ = {0};
+		ValaSourceReference* _tmp17_ = NULL;
+		ValaSourceReference* _tmp18_ = NULL;
+		ValaLambdaExpression* _tmp19_ = NULL;
+		_tmp14_ = vala_parser_parse_block (self, &_inner_error_);
+		block = _tmp14_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -9302,25 +9332,25 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 				return NULL;
 			}
 		}
-		_tmp18_ = block;
-		_tmp19_ = begin;
-		_tmp20_ = vala_parser_get_src (self, &_tmp19_);
-		_tmp21_ = _tmp20_;
-		_tmp22_ = vala_lambda_expression_new_with_statement_body (_tmp18_, _tmp21_);
+		_tmp15_ = block;
+		_tmp16_ = begin;
+		_tmp17_ = vala_parser_get_src (self, &_tmp16_);
+		_tmp18_ = _tmp17_;
+		_tmp19_ = vala_lambda_expression_new_with_statement_body (_tmp15_, _tmp18_);
 		_vala_code_node_unref0 (lambda);
-		lambda = _tmp22_;
-		_vala_source_reference_unref0 (_tmp21_);
+		lambda = _tmp19_;
+		_vala_source_reference_unref0 (_tmp18_);
 		_vala_code_node_unref0 (block);
 	} else {
-		ValaExpression* _tmp23_ = NULL;
-		ValaExpression* expr;
-		ValaExpression* _tmp24_;
-		ValaSourceLocation _tmp25_;
-		ValaSourceReference* _tmp26_ = NULL;
-		ValaSourceReference* _tmp27_;
-		ValaLambdaExpression* _tmp28_;
-		_tmp23_ = vala_parser_parse_expression (self, &_inner_error_);
-		expr = _tmp23_;
+		ValaExpression* expr = NULL;
+		ValaExpression* _tmp20_ = NULL;
+		ValaExpression* _tmp21_ = NULL;
+		ValaSourceLocation _tmp22_ = {0};
+		ValaSourceReference* _tmp23_ = NULL;
+		ValaSourceReference* _tmp24_ = NULL;
+		ValaLambdaExpression* _tmp25_ = NULL;
+		_tmp20_ = vala_parser_parse_expression (self, &_inner_error_);
+		expr = _tmp20_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -9335,57 +9365,57 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 				return NULL;
 			}
 		}
-		_tmp24_ = expr;
-		_tmp25_ = begin;
-		_tmp26_ = vala_parser_get_src (self, &_tmp25_);
-		_tmp27_ = _tmp26_;
-		_tmp28_ = vala_lambda_expression_new (_tmp24_, _tmp27_);
+		_tmp21_ = expr;
+		_tmp22_ = begin;
+		_tmp23_ = vala_parser_get_src (self, &_tmp22_);
+		_tmp24_ = _tmp23_;
+		_tmp25_ = vala_lambda_expression_new (_tmp21_, _tmp24_);
 		_vala_code_node_unref0 (lambda);
-		lambda = _tmp28_;
-		_vala_source_reference_unref0 (_tmp27_);
+		lambda = _tmp25_;
+		_vala_source_reference_unref0 (_tmp24_);
 		_vala_code_node_unref0 (expr);
 	}
 	{
-		ValaList* _tmp29_;
-		ValaList* _tmp30_;
-		ValaList* _param_list;
-		ValaList* _tmp31_;
-		gint _tmp32_;
-		gint _tmp33_;
-		gint _param_size;
-		gint _param_index;
-		_tmp29_ = params;
-		_tmp30_ = _vala_iterable_ref0 (_tmp29_);
-		_param_list = _tmp30_;
-		_tmp31_ = _param_list;
-		_tmp32_ = vala_collection_get_size ((ValaCollection*) _tmp31_);
-		_tmp33_ = _tmp32_;
-		_param_size = _tmp33_;
+		ValaList* _param_list = NULL;
+		ValaList* _tmp26_ = NULL;
+		ValaList* _tmp27_ = NULL;
+		gint _param_size = 0;
+		ValaList* _tmp28_ = NULL;
+		gint _tmp29_ = 0;
+		gint _tmp30_ = 0;
+		gint _param_index = 0;
+		_tmp26_ = params;
+		_tmp27_ = _vala_iterable_ref0 (_tmp26_);
+		_param_list = _tmp27_;
+		_tmp28_ = _param_list;
+		_tmp29_ = vala_collection_get_size ((ValaCollection*) _tmp28_);
+		_tmp30_ = _tmp29_;
+		_param_size = _tmp30_;
 		_param_index = -1;
 		while (TRUE) {
-			gint _tmp34_;
-			gint _tmp35_;
-			gint _tmp36_;
-			ValaList* _tmp37_;
-			gint _tmp38_;
-			gpointer _tmp39_ = NULL;
-			ValaParameter* param;
-			ValaLambdaExpression* _tmp40_;
-			ValaParameter* _tmp41_;
-			_tmp34_ = _param_index;
-			_param_index = _tmp34_ + 1;
-			_tmp35_ = _param_index;
-			_tmp36_ = _param_size;
-			if (!(_tmp35_ < _tmp36_)) {
+			gint _tmp31_ = 0;
+			gint _tmp32_ = 0;
+			gint _tmp33_ = 0;
+			ValaParameter* param = NULL;
+			ValaList* _tmp34_ = NULL;
+			gint _tmp35_ = 0;
+			gpointer _tmp36_ = NULL;
+			ValaLambdaExpression* _tmp37_ = NULL;
+			ValaParameter* _tmp38_ = NULL;
+			_tmp31_ = _param_index;
+			_param_index = _tmp31_ + 1;
+			_tmp32_ = _param_index;
+			_tmp33_ = _param_size;
+			if (!(_tmp32_ < _tmp33_)) {
 				break;
 			}
-			_tmp37_ = _param_list;
-			_tmp38_ = _param_index;
-			_tmp39_ = vala_list_get (_tmp37_, _tmp38_);
-			param = (ValaParameter*) _tmp39_;
-			_tmp40_ = lambda;
-			_tmp41_ = param;
-			vala_lambda_expression_add_parameter (_tmp40_, _tmp41_);
+			_tmp34_ = _param_list;
+			_tmp35_ = _param_index;
+			_tmp36_ = vala_list_get (_tmp34_, _tmp35_);
+			param = (ValaParameter*) _tmp36_;
+			_tmp37_ = lambda;
+			_tmp38_ = param;
+			vala_lambda_expression_add_parameter (_tmp37_, _tmp38_);
 			_vala_code_node_unref0 (param);
 		}
 		_vala_iterable_unref0 (_param_list);
@@ -9398,7 +9428,7 @@ static ValaExpression* vala_parser_parse_lambda_expression (ValaParser* self, GE
 
 static ValaAssignmentOperator vala_parser_get_assignment_operator (ValaParser* self, ValaTokenType token_type) {
 	ValaAssignmentOperator result = 0;
-	ValaTokenType _tmp0_;
+	ValaTokenType _tmp0_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = token_type;
 	switch (_tmp0_) {
@@ -9464,18 +9494,19 @@ static ValaAssignmentOperator vala_parser_get_assignment_operator (ValaParser* s
 static ValaExpression* vala_parser_parse_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
 	gboolean _tmp0_ = FALSE;
-	ValaSourceLocation _tmp3_ = {0};
-	ValaSourceLocation begin;
-	ValaExpression* _tmp4_ = NULL;
-	ValaExpression* expr;
+	ValaSourceLocation begin = {0};
+	ValaSourceLocation _tmp4_ = {0};
+	ValaExpression* expr = NULL;
+	ValaExpression* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_is_lambda_expression (self);
 	if (_tmp0_) {
 		ValaExpression* _tmp1_ = NULL;
-		ValaExpression* _tmp2_;
-		_tmp1_ = vala_parser_parse_lambda_expression (self, &_inner_error_);
-		_tmp2_ = _tmp1_;
+		ValaExpression* _tmp2_ = NULL;
+		ValaExpression* _tmp3_ = NULL;
+		_tmp2_ = vala_parser_parse_lambda_expression (self, &_inner_error_);
+		_tmp1_ = _tmp2_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -9486,13 +9517,16 @@ static ValaExpression* vala_parser_parse_expression (ValaParser* self, GError** 
 				return NULL;
 			}
 		}
-		result = _tmp2_;
+		_tmp3_ = _tmp1_;
+		_tmp1_ = NULL;
+		result = _tmp3_;
+		_vala_code_node_unref0 (_tmp1_);
 		return result;
 	}
-	vala_parser_get_location (self, &_tmp3_);
-	begin = _tmp3_;
-	_tmp4_ = vala_parser_parse_conditional_expression (self, &_inner_error_);
-	expr = _tmp4_;
+	vala_parser_get_location (self, &_tmp4_);
+	begin = _tmp4_;
+	_tmp5_ = vala_parser_parse_conditional_expression (self, &_inner_error_);
+	expr = _tmp5_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -9504,27 +9538,27 @@ static ValaExpression* vala_parser_parse_expression (ValaParser* self, GError** 
 		}
 	}
 	while (TRUE) {
-		ValaTokenType _tmp5_ = 0;
-		ValaAssignmentOperator _tmp6_ = 0;
-		ValaAssignmentOperator operator;
-		ValaAssignmentOperator _tmp7_;
-		_tmp5_ = vala_parser_current (self);
-		_tmp6_ = vala_parser_get_assignment_operator (self, _tmp5_);
-		operator = _tmp6_;
-		_tmp7_ = operator;
-		if (_tmp7_ != VALA_ASSIGNMENT_OPERATOR_NONE) {
-			ValaExpression* _tmp8_ = NULL;
-			ValaExpression* rhs;
-			ValaExpression* _tmp9_;
-			ValaExpression* _tmp10_;
-			ValaAssignmentOperator _tmp11_;
-			ValaSourceLocation _tmp12_;
-			ValaSourceReference* _tmp13_ = NULL;
-			ValaSourceReference* _tmp14_;
-			ValaAssignment* _tmp15_;
+		ValaAssignmentOperator operator = 0;
+		ValaTokenType _tmp6_ = 0;
+		ValaAssignmentOperator _tmp7_ = 0;
+		ValaAssignmentOperator _tmp8_ = 0;
+		_tmp6_ = vala_parser_current (self);
+		_tmp7_ = vala_parser_get_assignment_operator (self, _tmp6_);
+		operator = _tmp7_;
+		_tmp8_ = operator;
+		if (_tmp8_ != VALA_ASSIGNMENT_OPERATOR_NONE) {
+			ValaExpression* rhs = NULL;
+			ValaExpression* _tmp9_ = NULL;
+			ValaExpression* _tmp10_ = NULL;
+			ValaExpression* _tmp11_ = NULL;
+			ValaAssignmentOperator _tmp12_ = 0;
+			ValaSourceLocation _tmp13_ = {0};
+			ValaSourceReference* _tmp14_ = NULL;
+			ValaSourceReference* _tmp15_ = NULL;
+			ValaAssignment* _tmp16_ = NULL;
 			vala_parser_next (self);
-			_tmp8_ = vala_parser_parse_expression (self, &_inner_error_);
-			rhs = _tmp8_;
+			_tmp9_ = vala_parser_parse_expression (self, &_inner_error_);
+			rhs = _tmp9_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -9537,69 +9571,67 @@ static ValaExpression* vala_parser_parse_expression (ValaParser* self, GError** 
 					return NULL;
 				}
 			}
-			_tmp9_ = expr;
-			_tmp10_ = rhs;
-			_tmp11_ = operator;
-			_tmp12_ = begin;
-			_tmp13_ = vala_parser_get_src (self, &_tmp12_);
-			_tmp14_ = _tmp13_;
-			_tmp15_ = vala_assignment_new (_tmp9_, _tmp10_, _tmp11_, _tmp14_);
+			_tmp10_ = expr;
+			_tmp11_ = rhs;
+			_tmp12_ = operator;
+			_tmp13_ = begin;
+			_tmp14_ = vala_parser_get_src (self, &_tmp13_);
+			_tmp15_ = _tmp14_;
+			_tmp16_ = vala_assignment_new (_tmp10_, _tmp11_, _tmp12_, _tmp15_);
 			_vala_code_node_unref0 (expr);
-			expr = (ValaExpression*) _tmp15_;
-			_vala_source_reference_unref0 (_tmp14_);
+			expr = (ValaExpression*) _tmp16_;
+			_vala_source_reference_unref0 (_tmp15_);
 			_vala_code_node_unref0 (rhs);
 		} else {
-			ValaTokenType _tmp16_ = 0;
-			_tmp16_ = vala_parser_current (self);
-			if (_tmp16_ == VALA_TOKEN_TYPE_OP_GT) {
-				ValaParserTokenInfo* _tmp17_;
-				gint _tmp17__length1;
-				gint _tmp18_;
-				ValaParserTokenInfo _tmp19_;
-				ValaSourceLocation _tmp20_;
-				gchar* _tmp21_;
-				gchar* first_gt_pos;
-				gboolean _tmp22_ = FALSE;
-				ValaTokenType _tmp23_ = 0;
-				gboolean _tmp30_;
-				_tmp17_ = self->priv->tokens;
-				_tmp17__length1 = self->priv->tokens_length1;
-				_tmp18_ = self->priv->index;
-				_tmp19_ = _tmp17_[_tmp18_];
-				_tmp20_ = _tmp19_.begin;
-				_tmp21_ = _tmp20_.pos;
-				first_gt_pos = _tmp21_;
+			ValaTokenType _tmp17_ = 0;
+			_tmp17_ = vala_parser_current (self);
+			if (_tmp17_ == VALA_TOKEN_TYPE_OP_GT) {
+				gchar* first_gt_pos = NULL;
+				ValaParserTokenInfo* _tmp18_ = NULL;
+				gint _tmp18__length1 = 0;
+				gint _tmp19_ = 0;
+				ValaParserTokenInfo _tmp20_ = {0};
+				ValaSourceLocation _tmp21_ = {0};
+				gchar* _tmp22_ = NULL;
+				gboolean _tmp23_ = FALSE;
+				ValaTokenType _tmp24_ = 0;
+				_tmp18_ = self->priv->tokens;
+				_tmp18__length1 = self->priv->tokens_length1;
+				_tmp19_ = self->priv->index;
+				_tmp20_ = _tmp18_[_tmp19_];
+				_tmp21_ = _tmp20_.begin;
+				_tmp22_ = _tmp21_.pos;
+				first_gt_pos = _tmp22_;
 				vala_parser_next (self);
-				_tmp23_ = vala_parser_current (self);
-				if (_tmp23_ == VALA_TOKEN_TYPE_OP_GE) {
-					ValaParserTokenInfo* _tmp24_;
-					gint _tmp24__length1;
-					gint _tmp25_;
-					ValaParserTokenInfo _tmp26_;
-					ValaSourceLocation _tmp27_;
-					gchar* _tmp28_;
-					gchar* _tmp29_;
-					_tmp24_ = self->priv->tokens;
-					_tmp24__length1 = self->priv->tokens_length1;
-					_tmp25_ = self->priv->index;
-					_tmp26_ = _tmp24_[_tmp25_];
-					_tmp27_ = _tmp26_.begin;
-					_tmp28_ = _tmp27_.pos;
-					_tmp29_ = first_gt_pos;
-					_tmp22_ = _tmp28_ == (_tmp29_ + 1);
+				_tmp24_ = vala_parser_current (self);
+				if (_tmp24_ == VALA_TOKEN_TYPE_OP_GE) {
+					ValaParserTokenInfo* _tmp25_ = NULL;
+					gint _tmp25__length1 = 0;
+					gint _tmp26_ = 0;
+					ValaParserTokenInfo _tmp27_ = {0};
+					ValaSourceLocation _tmp28_ = {0};
+					gchar* _tmp29_ = NULL;
+					gchar* _tmp30_ = NULL;
+					_tmp25_ = self->priv->tokens;
+					_tmp25__length1 = self->priv->tokens_length1;
+					_tmp26_ = self->priv->index;
+					_tmp27_ = _tmp25_[_tmp26_];
+					_tmp28_ = _tmp27_.begin;
+					_tmp29_ = _tmp28_.pos;
+					_tmp30_ = first_gt_pos;
+					_tmp23_ = _tmp29_ == (_tmp30_ + 1);
 				} else {
-					_tmp22_ = FALSE;
+					_tmp23_ = FALSE;
 				}
-				_tmp30_ = _tmp22_;
-				if (_tmp30_) {
+				if (_tmp23_) {
+					ValaExpression* rhs = NULL;
 					ValaExpression* _tmp31_ = NULL;
-					ValaExpression* rhs;
-					ValaExpression* _tmp32_;
-					ValaExpression* _tmp33_;
-					ValaSourceLocation _tmp34_;
+					ValaExpression* _tmp32_ = NULL;
+					ValaExpression* _tmp33_ = NULL;
+					ValaSourceLocation _tmp34_ = {0};
 					ValaSourceReference* _tmp35_ = NULL;
-					ValaSourceReference* _tmp36_;
-					ValaAssignment* _tmp37_;
+					ValaSourceReference* _tmp36_ = NULL;
+					ValaAssignment* _tmp37_ = NULL;
 					vala_parser_next (self);
 					_tmp31_ = vala_parser_parse_expression (self, &_inner_error_);
 					rhs = _tmp31_;
@@ -9648,9 +9680,6 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 		gboolean _tmp1_ = FALSE;
 		gboolean _tmp2_ = FALSE;
 		ValaTokenType _tmp3_ = 0;
-		gboolean _tmp5_;
-		gboolean _tmp7_;
-		gboolean _tmp9_;
 		_tmp3_ = vala_parser_current (self);
 		if (_tmp3_ != VALA_TOKEN_TYPE_CLOSE_BRACE) {
 			ValaTokenType _tmp4_ = 0;
@@ -9659,47 +9688,45 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 		} else {
 			_tmp2_ = FALSE;
 		}
-		_tmp5_ = _tmp2_;
-		if (_tmp5_) {
-			ValaTokenType _tmp6_ = 0;
-			_tmp6_ = vala_parser_current (self);
-			_tmp1_ = _tmp6_ != VALA_TOKEN_TYPE_DEFAULT;
+		if (_tmp2_) {
+			ValaTokenType _tmp5_ = 0;
+			_tmp5_ = vala_parser_current (self);
+			_tmp1_ = _tmp5_ != VALA_TOKEN_TYPE_DEFAULT;
 		} else {
 			_tmp1_ = FALSE;
 		}
-		_tmp7_ = _tmp1_;
-		if (_tmp7_) {
-			ValaTokenType _tmp8_ = 0;
-			_tmp8_ = vala_parser_current (self);
-			_tmp0_ = _tmp8_ != VALA_TOKEN_TYPE_EOF;
+		if (_tmp1_) {
+			ValaTokenType _tmp6_ = 0;
+			_tmp6_ = vala_parser_current (self);
+			_tmp0_ = _tmp6_ != VALA_TOKEN_TYPE_EOF;
 		} else {
 			_tmp0_ = FALSE;
 		}
-		_tmp9_ = _tmp0_;
-		if (!_tmp9_) {
+		if (!_tmp0_) {
 			break;
 		}
 		{
-			ValaStatement* stmt;
-			gboolean is_decl;
-			ValaScanner* _tmp10_;
-			ValaComment* _tmp11_ = NULL;
-			ValaTokenType _tmp12_ = 0;
-			gboolean _tmp54_;
+			ValaStatement* stmt = NULL;
+			gboolean is_decl = FALSE;
+			ValaScanner* _tmp7_ = NULL;
+			ValaComment* _tmp8_ = NULL;
+			ValaTokenType _tmp9_ = 0;
+			gboolean _tmp69_ = FALSE;
 			stmt = NULL;
 			is_decl = FALSE;
-			_tmp10_ = self->priv->scanner;
-			_tmp11_ = vala_scanner_pop_comment (_tmp10_);
+			_tmp7_ = self->priv->scanner;
+			_tmp8_ = vala_scanner_pop_comment (_tmp7_);
 			_vala_comment_unref0 (self->priv->comment);
-			self->priv->comment = _tmp11_;
-			_tmp12_ = vala_parser_current (self);
-			switch (_tmp12_) {
+			self->priv->comment = _tmp8_;
+			_tmp9_ = vala_parser_current (self);
+			switch (_tmp9_) {
 				case VALA_TOKEN_TYPE_OPEN_BRACE:
 				{
-					ValaBlock* _tmp13_ = NULL;
-					ValaBlock* _tmp14_;
-					_tmp13_ = vala_parser_parse_block (self, &_inner_error_);
-					_tmp14_ = _tmp13_;
+					ValaBlock* _tmp10_ = NULL;
+					ValaBlock* _tmp11_ = NULL;
+					ValaBlock* _tmp12_ = NULL;
+					_tmp11_ = vala_parser_parse_block (self, &_inner_error_);
+					_tmp10_ = _tmp11_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9710,16 +9737,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp12_ = _tmp10_;
+					_tmp10_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = (ValaStatement*) _tmp14_;
+					stmt = (ValaStatement*) _tmp12_;
+					_vala_code_node_unref0 (_tmp10_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_SEMICOLON:
 				{
+					ValaStatement* _tmp13_ = NULL;
+					ValaStatement* _tmp14_ = NULL;
 					ValaStatement* _tmp15_ = NULL;
-					ValaStatement* _tmp16_;
-					_tmp15_ = vala_parser_parse_empty_statement (self, &_inner_error_);
-					_tmp16_ = _tmp15_;
+					_tmp14_ = vala_parser_parse_empty_statement (self, &_inner_error_);
+					_tmp13_ = _tmp14_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9730,16 +9761,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp15_ = _tmp13_;
+					_tmp13_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp16_;
+					stmt = _tmp15_;
+					_vala_code_node_unref0 (_tmp13_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_IF:
 				{
+					ValaStatement* _tmp16_ = NULL;
 					ValaStatement* _tmp17_ = NULL;
-					ValaStatement* _tmp18_;
+					ValaStatement* _tmp18_ = NULL;
 					_tmp17_ = vala_parser_parse_if_statement (self, &_inner_error_);
-					_tmp18_ = _tmp17_;
+					_tmp16_ = _tmp17_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9750,16 +9785,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp18_ = _tmp16_;
+					_tmp16_ = NULL;
 					_vala_code_node_unref0 (stmt);
 					stmt = _tmp18_;
+					_vala_code_node_unref0 (_tmp16_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_SWITCH:
 				{
 					ValaStatement* _tmp19_ = NULL;
-					ValaStatement* _tmp20_;
-					_tmp19_ = vala_parser_parse_switch_statement (self, &_inner_error_);
-					_tmp20_ = _tmp19_;
+					ValaStatement* _tmp20_ = NULL;
+					ValaStatement* _tmp21_ = NULL;
+					_tmp20_ = vala_parser_parse_switch_statement (self, &_inner_error_);
+					_tmp19_ = _tmp20_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9770,16 +9809,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp21_ = _tmp19_;
+					_tmp19_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp20_;
+					stmt = _tmp21_;
+					_vala_code_node_unref0 (_tmp19_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_WHILE:
 				{
-					ValaStatement* _tmp21_ = NULL;
-					ValaStatement* _tmp22_;
-					_tmp21_ = vala_parser_parse_while_statement (self, &_inner_error_);
-					_tmp22_ = _tmp21_;
+					ValaStatement* _tmp22_ = NULL;
+					ValaStatement* _tmp23_ = NULL;
+					ValaStatement* _tmp24_ = NULL;
+					_tmp23_ = vala_parser_parse_while_statement (self, &_inner_error_);
+					_tmp22_ = _tmp23_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9790,16 +9833,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp24_ = _tmp22_;
+					_tmp22_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp22_;
+					stmt = _tmp24_;
+					_vala_code_node_unref0 (_tmp22_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_DO:
 				{
-					ValaStatement* _tmp23_ = NULL;
-					ValaStatement* _tmp24_;
-					_tmp23_ = vala_parser_parse_do_statement (self, &_inner_error_);
-					_tmp24_ = _tmp23_;
+					ValaStatement* _tmp25_ = NULL;
+					ValaStatement* _tmp26_ = NULL;
+					ValaStatement* _tmp27_ = NULL;
+					_tmp26_ = vala_parser_parse_do_statement (self, &_inner_error_);
+					_tmp25_ = _tmp26_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9810,16 +9857,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp27_ = _tmp25_;
+					_tmp25_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp24_;
+					stmt = _tmp27_;
+					_vala_code_node_unref0 (_tmp25_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_FOR:
 				{
-					ValaStatement* _tmp25_ = NULL;
-					ValaStatement* _tmp26_;
-					_tmp25_ = vala_parser_parse_for_statement (self, &_inner_error_);
-					_tmp26_ = _tmp25_;
+					ValaStatement* _tmp28_ = NULL;
+					ValaStatement* _tmp29_ = NULL;
+					ValaStatement* _tmp30_ = NULL;
+					_tmp29_ = vala_parser_parse_for_statement (self, &_inner_error_);
+					_tmp28_ = _tmp29_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9830,16 +9881,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp30_ = _tmp28_;
+					_tmp28_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp26_;
+					stmt = _tmp30_;
+					_vala_code_node_unref0 (_tmp28_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_FOREACH:
 				{
-					ValaStatement* _tmp27_ = NULL;
-					ValaStatement* _tmp28_;
-					_tmp27_ = vala_parser_parse_foreach_statement (self, &_inner_error_);
-					_tmp28_ = _tmp27_;
+					ValaStatement* _tmp31_ = NULL;
+					ValaStatement* _tmp32_ = NULL;
+					ValaStatement* _tmp33_ = NULL;
+					_tmp32_ = vala_parser_parse_foreach_statement (self, &_inner_error_);
+					_tmp31_ = _tmp32_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9850,16 +9905,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp33_ = _tmp31_;
+					_tmp31_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp28_;
+					stmt = _tmp33_;
+					_vala_code_node_unref0 (_tmp31_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_BREAK:
 				{
-					ValaStatement* _tmp29_ = NULL;
-					ValaStatement* _tmp30_;
-					_tmp29_ = vala_parser_parse_break_statement (self, &_inner_error_);
-					_tmp30_ = _tmp29_;
+					ValaStatement* _tmp34_ = NULL;
+					ValaStatement* _tmp35_ = NULL;
+					ValaStatement* _tmp36_ = NULL;
+					_tmp35_ = vala_parser_parse_break_statement (self, &_inner_error_);
+					_tmp34_ = _tmp35_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9870,16 +9929,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp36_ = _tmp34_;
+					_tmp34_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp30_;
+					stmt = _tmp36_;
+					_vala_code_node_unref0 (_tmp34_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_CONTINUE:
 				{
-					ValaStatement* _tmp31_ = NULL;
-					ValaStatement* _tmp32_;
-					_tmp31_ = vala_parser_parse_continue_statement (self, &_inner_error_);
-					_tmp32_ = _tmp31_;
+					ValaStatement* _tmp37_ = NULL;
+					ValaStatement* _tmp38_ = NULL;
+					ValaStatement* _tmp39_ = NULL;
+					_tmp38_ = vala_parser_parse_continue_statement (self, &_inner_error_);
+					_tmp37_ = _tmp38_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9890,16 +9953,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp39_ = _tmp37_;
+					_tmp37_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp32_;
+					stmt = _tmp39_;
+					_vala_code_node_unref0 (_tmp37_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_RETURN:
 				{
-					ValaStatement* _tmp33_ = NULL;
-					ValaStatement* _tmp34_;
-					_tmp33_ = vala_parser_parse_return_statement (self, &_inner_error_);
-					_tmp34_ = _tmp33_;
+					ValaStatement* _tmp40_ = NULL;
+					ValaStatement* _tmp41_ = NULL;
+					ValaStatement* _tmp42_ = NULL;
+					_tmp41_ = vala_parser_parse_return_statement (self, &_inner_error_);
+					_tmp40_ = _tmp41_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9910,16 +9977,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp42_ = _tmp40_;
+					_tmp40_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp34_;
+					stmt = _tmp42_;
+					_vala_code_node_unref0 (_tmp40_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_YIELD:
 				{
-					ValaStatement* _tmp35_ = NULL;
-					ValaStatement* _tmp36_;
-					_tmp35_ = vala_parser_parse_yield_statement (self, &_inner_error_);
-					_tmp36_ = _tmp35_;
+					ValaStatement* _tmp43_ = NULL;
+					ValaStatement* _tmp44_ = NULL;
+					ValaStatement* _tmp45_ = NULL;
+					_tmp44_ = vala_parser_parse_yield_statement (self, &_inner_error_);
+					_tmp43_ = _tmp44_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9930,16 +10001,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp45_ = _tmp43_;
+					_tmp43_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp36_;
+					stmt = _tmp45_;
+					_vala_code_node_unref0 (_tmp43_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_THROW:
 				{
-					ValaStatement* _tmp37_ = NULL;
-					ValaStatement* _tmp38_;
-					_tmp37_ = vala_parser_parse_throw_statement (self, &_inner_error_);
-					_tmp38_ = _tmp37_;
+					ValaStatement* _tmp46_ = NULL;
+					ValaStatement* _tmp47_ = NULL;
+					ValaStatement* _tmp48_ = NULL;
+					_tmp47_ = vala_parser_parse_throw_statement (self, &_inner_error_);
+					_tmp46_ = _tmp47_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9950,16 +10025,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp48_ = _tmp46_;
+					_tmp46_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp38_;
+					stmt = _tmp48_;
+					_vala_code_node_unref0 (_tmp46_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_TRY:
 				{
-					ValaStatement* _tmp39_ = NULL;
-					ValaStatement* _tmp40_;
-					_tmp39_ = vala_parser_parse_try_statement (self, &_inner_error_);
-					_tmp40_ = _tmp39_;
+					ValaStatement* _tmp49_ = NULL;
+					ValaStatement* _tmp50_ = NULL;
+					ValaStatement* _tmp51_ = NULL;
+					_tmp50_ = vala_parser_parse_try_statement (self, &_inner_error_);
+					_tmp49_ = _tmp50_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9970,16 +10049,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp51_ = _tmp49_;
+					_tmp49_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp40_;
+					stmt = _tmp51_;
+					_vala_code_node_unref0 (_tmp49_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_LOCK:
 				{
-					ValaStatement* _tmp41_ = NULL;
-					ValaStatement* _tmp42_;
-					_tmp41_ = vala_parser_parse_lock_statement (self, &_inner_error_);
-					_tmp42_ = _tmp41_;
+					ValaStatement* _tmp52_ = NULL;
+					ValaStatement* _tmp53_ = NULL;
+					ValaStatement* _tmp54_ = NULL;
+					_tmp53_ = vala_parser_parse_lock_statement (self, &_inner_error_);
+					_tmp52_ = _tmp53_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -9990,16 +10073,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp54_ = _tmp52_;
+					_tmp52_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp42_;
+					stmt = _tmp54_;
+					_vala_code_node_unref0 (_tmp52_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_DELETE:
 				{
-					ValaStatement* _tmp43_ = NULL;
-					ValaStatement* _tmp44_;
-					_tmp43_ = vala_parser_parse_delete_statement (self, &_inner_error_);
-					_tmp44_ = _tmp43_;
+					ValaStatement* _tmp55_ = NULL;
+					ValaStatement* _tmp56_ = NULL;
+					ValaStatement* _tmp57_ = NULL;
+					_tmp56_ = vala_parser_parse_delete_statement (self, &_inner_error_);
+					_tmp55_ = _tmp56_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10010,16 +10097,19 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp57_ = _tmp55_;
+					_tmp55_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp44_;
+					stmt = _tmp57_;
+					_vala_code_node_unref0 (_tmp55_);
 					break;
 				}
 				case VALA_TOKEN_TYPE_VAR:
 				{
-					ValaBlock* _tmp45_;
+					ValaBlock* _tmp58_ = NULL;
 					is_decl = TRUE;
-					_tmp45_ = block;
-					vala_parser_parse_local_variable_declarations (self, _tmp45_, &_inner_error_);
+					_tmp58_ = block;
+					vala_parser_parse_local_variable_declarations (self, _tmp58_, &_inner_error_);
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10034,10 +10124,10 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 				}
 				case VALA_TOKEN_TYPE_CONST:
 				{
-					ValaBlock* _tmp46_;
+					ValaBlock* _tmp59_ = NULL;
 					is_decl = TRUE;
-					_tmp46_ = block;
-					vala_parser_parse_local_constant_declarations (self, _tmp46_, &_inner_error_);
+					_tmp59_ = block;
+					vala_parser_parse_local_constant_declarations (self, _tmp59_, &_inner_error_);
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10058,10 +10148,11 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 				case VALA_TOKEN_TYPE_STAR:
 				case VALA_TOKEN_TYPE_NEW:
 				{
-					ValaStatement* _tmp47_ = NULL;
-					ValaStatement* _tmp48_;
-					_tmp47_ = vala_parser_parse_expression_statement (self, &_inner_error_);
-					_tmp48_ = _tmp47_;
+					ValaStatement* _tmp60_ = NULL;
+					ValaStatement* _tmp61_ = NULL;
+					ValaStatement* _tmp62_ = NULL;
+					_tmp61_ = vala_parser_parse_expression_statement (self, &_inner_error_);
+					_tmp60_ = _tmp61_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10072,17 +10163,20 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
+					_tmp62_ = _tmp60_;
+					_tmp60_ = NULL;
 					_vala_code_node_unref0 (stmt);
-					stmt = _tmp48_;
+					stmt = _tmp62_;
+					_vala_code_node_unref0 (_tmp60_);
 					break;
 				}
 				default:
 				{
-					gboolean _tmp49_ = FALSE;
-					gboolean is_expr;
-					gboolean _tmp50_;
-					_tmp49_ = vala_parser_is_expression (self, &_inner_error_);
-					is_expr = _tmp49_;
+					gboolean is_expr = FALSE;
+					gboolean _tmp63_ = FALSE;
+					gboolean _tmp64_ = FALSE;
+					_tmp63_ = vala_parser_is_expression (self, &_inner_error_);
+					is_expr = _tmp63_;
 					if (_inner_error_ != NULL) {
 						_vala_code_node_unref0 (stmt);
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10093,12 +10187,13 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 						g_clear_error (&_inner_error_);
 						return;
 					}
-					_tmp50_ = is_expr;
-					if (_tmp50_) {
-						ValaStatement* _tmp51_ = NULL;
-						ValaStatement* _tmp52_;
-						_tmp51_ = vala_parser_parse_expression_statement (self, &_inner_error_);
-						_tmp52_ = _tmp51_;
+					_tmp64_ = is_expr;
+					if (_tmp64_) {
+						ValaStatement* _tmp65_ = NULL;
+						ValaStatement* _tmp66_ = NULL;
+						ValaStatement* _tmp67_ = NULL;
+						_tmp66_ = vala_parser_parse_expression_statement (self, &_inner_error_);
+						_tmp65_ = _tmp66_;
 						if (_inner_error_ != NULL) {
 							_vala_code_node_unref0 (stmt);
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10109,13 +10204,16 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 							g_clear_error (&_inner_error_);
 							return;
 						}
+						_tmp67_ = _tmp65_;
+						_tmp65_ = NULL;
 						_vala_code_node_unref0 (stmt);
-						stmt = _tmp52_;
+						stmt = _tmp67_;
+						_vala_code_node_unref0 (_tmp65_);
 					} else {
-						ValaBlock* _tmp53_;
+						ValaBlock* _tmp68_ = NULL;
 						is_decl = TRUE;
-						_tmp53_ = block;
-						vala_parser_parse_local_variable_declarations (self, _tmp53_, &_inner_error_);
+						_tmp68_ = block;
+						vala_parser_parse_local_variable_declarations (self, _tmp68_, &_inner_error_);
 						if (_inner_error_ != NULL) {
 							_vala_code_node_unref0 (stmt);
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -10130,13 +10228,13 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 					break;
 				}
 			}
-			_tmp54_ = is_decl;
-			if (!_tmp54_) {
-				ValaBlock* _tmp55_;
-				ValaStatement* _tmp56_;
-				_tmp55_ = block;
-				_tmp56_ = stmt;
-				vala_block_add_statement (_tmp55_, _tmp56_);
+			_tmp69_ = is_decl;
+			if (!_tmp69_) {
+				ValaBlock* _tmp70_ = NULL;
+				ValaStatement* _tmp71_ = NULL;
+				_tmp70_ = block;
+				_tmp71_ = stmt;
+				vala_block_add_statement (_tmp70_, _tmp71_);
 			}
 			_vala_code_node_unref0 (stmt);
 		}
@@ -10144,11 +10242,11 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 		__catch11_vala_parse_error:
 		{
 			GError* e = NULL;
-			ValaParserRecoveryState _tmp57_ = 0;
+			ValaParserRecoveryState _tmp72_ = 0;
 			e = _inner_error_;
 			_inner_error_ = NULL;
-			_tmp57_ = vala_parser_recover (self);
-			if (_tmp57_ != VALA_PARSER_RECOVERY_STATE_STATEMENT_BEGIN) {
+			_tmp72_ = vala_parser_recover (self);
+			if (_tmp72_ != VALA_PARSER_RECOVERY_STATE_STATEMENT_BEGIN) {
 				_g_error_free0 (e);
 				break;
 			}
@@ -10171,8 +10269,8 @@ static void vala_parser_parse_statements (ValaParser* self, ValaBlock* block, GE
 
 static gboolean vala_parser_is_expression (ValaParser* self, GError** error) {
 	gboolean result = FALSE;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	ValaTokenType _tmp1_ = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
@@ -10208,7 +10306,7 @@ static gboolean vala_parser_is_expression (ValaParser* self, GError** error) {
 		case VALA_TOKEN_TYPE_DOT:
 		case VALA_TOKEN_TYPE_OP_PTR:
 		{
-			ValaSourceLocation _tmp2_;
+			ValaSourceLocation _tmp2_ = {0};
 			_tmp2_ = begin;
 			vala_parser_rollback (self, &_tmp2_);
 			result = TRUE;
@@ -10216,7 +10314,7 @@ static gboolean vala_parser_is_expression (ValaParser* self, GError** error) {
 		}
 		default:
 		{
-			ValaSourceLocation _tmp3_;
+			ValaSourceLocation _tmp3_ = {0};
 			_tmp3_ = begin;
 			vala_parser_rollback (self, &_tmp3_);
 			result = FALSE;
@@ -10228,10 +10326,10 @@ static gboolean vala_parser_is_expression (ValaParser* self, GError** error) {
 
 static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 	gboolean result = FALSE;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	ValaTokenType _tmp1_ = 0;
-	ValaSourceLocation _tmp24_;
+	ValaSourceLocation _tmp20_ = {0};
 	g_return_val_if_fail (self != NULL, FALSE);
 	vala_parser_get_location (self, &_tmp0_);
 	begin = _tmp0_;
@@ -10242,7 +10340,6 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 		{
 			gboolean _tmp2_ = FALSE;
 			gboolean _tmp3_ = FALSE;
-			gboolean _tmp5_;
 			vala_parser_next (self);
 			_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IDENTIFIER);
 			if (_tmp3_) {
@@ -10252,11 +10349,10 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 			} else {
 				_tmp2_ = FALSE;
 			}
-			_tmp5_ = _tmp2_;
-			if (_tmp5_) {
-				ValaSourceLocation _tmp6_;
-				_tmp6_ = begin;
-				vala_parser_rollback (self, &_tmp6_);
+			if (_tmp2_) {
+				ValaSourceLocation _tmp5_ = {0};
+				_tmp5_ = begin;
+				vala_parser_rollback (self, &_tmp5_);
 				result = TRUE;
 				return result;
 			}
@@ -10264,13 +10360,13 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 		}
 		case VALA_TOKEN_TYPE_IDENTIFIER:
 		{
-			gboolean _tmp7_ = FALSE;
+			gboolean _tmp6_ = FALSE;
 			vala_parser_next (self);
-			_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_LAMBDA);
-			if (_tmp7_) {
-				ValaSourceLocation _tmp8_;
-				_tmp8_ = begin;
-				vala_parser_rollback (self, &_tmp8_);
+			_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_LAMBDA);
+			if (_tmp6_) {
+				ValaSourceLocation _tmp7_ = {0};
+				_tmp7_ = begin;
+				vala_parser_rollback (self, &_tmp7_);
 				result = TRUE;
 				return result;
 			}
@@ -10278,67 +10374,61 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 		}
 		case VALA_TOKEN_TYPE_OPEN_PARENS:
 		{
-			ValaTokenType _tmp9_ = 0;
-			gboolean _tmp19_ = FALSE;
-			gboolean _tmp20_ = FALSE;
-			gboolean _tmp22_;
+			ValaTokenType _tmp8_ = 0;
+			gboolean _tmp16_ = FALSE;
+			gboolean _tmp17_ = FALSE;
 			vala_parser_next (self);
-			_tmp9_ = vala_parser_current (self);
-			if (_tmp9_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+			_tmp8_ = vala_parser_current (self);
+			if (_tmp8_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 				{
-					gboolean _tmp10_;
-					_tmp10_ = TRUE;
+					gboolean _tmp9_ = FALSE;
+					_tmp9_ = TRUE;
 					while (TRUE) {
-						gboolean _tmp11_;
-						gboolean _tmp13_ = FALSE;
-						ValaTokenType _tmp14_ = 0;
-						gboolean _tmp16_;
-						gboolean _tmp17_ = FALSE;
-						_tmp11_ = _tmp10_;
-						if (!_tmp11_) {
-							gboolean _tmp12_ = FALSE;
-							_tmp12_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-							if (!_tmp12_) {
+						gboolean _tmp11_ = FALSE;
+						ValaTokenType _tmp12_ = 0;
+						gboolean _tmp14_ = FALSE;
+						if (!_tmp9_) {
+							gboolean _tmp10_ = FALSE;
+							_tmp10_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+							if (!_tmp10_) {
 								break;
 							}
 						}
-						_tmp10_ = FALSE;
-						_tmp14_ = vala_parser_current (self);
-						if (_tmp14_ == VALA_TOKEN_TYPE_OUT) {
-							_tmp13_ = TRUE;
+						_tmp9_ = FALSE;
+						_tmp12_ = vala_parser_current (self);
+						if (_tmp12_ == VALA_TOKEN_TYPE_OUT) {
+							_tmp11_ = TRUE;
 						} else {
-							ValaTokenType _tmp15_ = 0;
-							_tmp15_ = vala_parser_current (self);
-							_tmp13_ = _tmp15_ == VALA_TOKEN_TYPE_REF;
+							ValaTokenType _tmp13_ = 0;
+							_tmp13_ = vala_parser_current (self);
+							_tmp11_ = _tmp13_ == VALA_TOKEN_TYPE_REF;
 						}
-						_tmp16_ = _tmp13_;
-						if (_tmp16_) {
+						if (_tmp11_) {
 							vala_parser_next (self);
 						}
-						_tmp17_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IDENTIFIER);
-						if (!_tmp17_) {
-							ValaSourceLocation _tmp18_;
-							_tmp18_ = begin;
-							vala_parser_rollback (self, &_tmp18_);
+						_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IDENTIFIER);
+						if (!_tmp14_) {
+							ValaSourceLocation _tmp15_ = {0};
+							_tmp15_ = begin;
+							vala_parser_rollback (self, &_tmp15_);
 							result = FALSE;
 							return result;
 						}
 					}
 				}
 			}
-			_tmp20_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_PARENS);
-			if (_tmp20_) {
-				gboolean _tmp21_ = FALSE;
-				_tmp21_ = vala_parser_accept (self, VALA_TOKEN_TYPE_LAMBDA);
-				_tmp19_ = _tmp21_;
+			_tmp17_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_PARENS);
+			if (_tmp17_) {
+				gboolean _tmp18_ = FALSE;
+				_tmp18_ = vala_parser_accept (self, VALA_TOKEN_TYPE_LAMBDA);
+				_tmp16_ = _tmp18_;
 			} else {
-				_tmp19_ = FALSE;
+				_tmp16_ = FALSE;
 			}
-			_tmp22_ = _tmp19_;
-			if (_tmp22_) {
-				ValaSourceLocation _tmp23_;
-				_tmp23_ = begin;
-				vala_parser_rollback (self, &_tmp23_);
+			if (_tmp16_) {
+				ValaSourceLocation _tmp19_ = {0};
+				_tmp19_ = begin;
+				vala_parser_rollback (self, &_tmp19_);
 				result = TRUE;
 				return result;
 			}
@@ -10347,8 +10437,8 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 		default:
 		break;
 	}
-	_tmp24_ = begin;
-	vala_parser_rollback (self, &_tmp24_);
+	_tmp20_ = begin;
+	vala_parser_rollback (self, &_tmp20_);
 	result = FALSE;
 	return result;
 }
@@ -10357,24 +10447,24 @@ static gboolean vala_parser_is_lambda_expression (ValaParser* self) {
 static ValaBlock* vala_parser_parse_embedded_statement (ValaParser* self, GError** error) {
 	ValaBlock* result = NULL;
 	ValaTokenType _tmp0_ = 0;
-	ValaScanner* _tmp2_;
+	ValaScanner* _tmp2_ = NULL;
 	ValaComment* _tmp3_ = NULL;
+	ValaBlock* block = NULL;
 	ValaSourceLocation _tmp4_ = {0};
 	ValaSourceReference* _tmp5_ = NULL;
-	ValaSourceReference* _tmp6_;
-	ValaBlock* _tmp7_;
-	ValaBlock* _tmp8_;
-	ValaBlock* block;
+	ValaSourceReference* _tmp6_ = NULL;
+	ValaBlock* _tmp7_ = NULL;
+	ValaBlock* _tmp8_ = NULL;
+	ValaStatement* stmt = NULL;
 	ValaStatement* _tmp9_ = NULL;
-	ValaStatement* stmt;
-	ValaBlock* _tmp10_;
-	ValaStatement* _tmp11_;
+	ValaBlock* _tmp10_ = NULL;
+	ValaStatement* _tmp11_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_current (self);
 	if (_tmp0_ == VALA_TOKEN_TYPE_OPEN_BRACE) {
+		ValaBlock* block = NULL;
 		ValaBlock* _tmp1_ = NULL;
-		ValaBlock* block;
 		_tmp1_ = vala_parser_parse_block (self, &_inner_error_);
 		block = _tmp1_;
 		if (_inner_error_ != NULL) {
@@ -10434,9 +10524,10 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 		case VALA_TOKEN_TYPE_SEMICOLON:
 		{
 			ValaStatement* _tmp1_ = NULL;
-			ValaStatement* _tmp2_;
-			_tmp1_ = vala_parser_parse_empty_statement (self, &_inner_error_);
-			_tmp2_ = _tmp1_;
+			ValaStatement* _tmp2_ = NULL;
+			ValaStatement* _tmp3_ = NULL;
+			_tmp2_ = vala_parser_parse_empty_statement (self, &_inner_error_);
+			_tmp1_ = _tmp2_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10447,15 +10538,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp2_;
+			_tmp3_ = _tmp1_;
+			_tmp1_ = NULL;
+			result = _tmp3_;
+			_vala_code_node_unref0 (_tmp1_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_IF:
 		{
-			ValaStatement* _tmp3_ = NULL;
-			ValaStatement* _tmp4_;
-			_tmp3_ = vala_parser_parse_if_statement (self, &_inner_error_);
-			_tmp4_ = _tmp3_;
+			ValaStatement* _tmp4_ = NULL;
+			ValaStatement* _tmp5_ = NULL;
+			ValaStatement* _tmp6_ = NULL;
+			_tmp5_ = vala_parser_parse_if_statement (self, &_inner_error_);
+			_tmp4_ = _tmp5_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10466,15 +10561,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp4_;
+			_tmp6_ = _tmp4_;
+			_tmp4_ = NULL;
+			result = _tmp6_;
+			_vala_code_node_unref0 (_tmp4_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_SWITCH:
 		{
-			ValaStatement* _tmp5_ = NULL;
-			ValaStatement* _tmp6_;
-			_tmp5_ = vala_parser_parse_switch_statement (self, &_inner_error_);
-			_tmp6_ = _tmp5_;
+			ValaStatement* _tmp7_ = NULL;
+			ValaStatement* _tmp8_ = NULL;
+			ValaStatement* _tmp9_ = NULL;
+			_tmp8_ = vala_parser_parse_switch_statement (self, &_inner_error_);
+			_tmp7_ = _tmp8_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10485,15 +10584,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp6_;
+			_tmp9_ = _tmp7_;
+			_tmp7_ = NULL;
+			result = _tmp9_;
+			_vala_code_node_unref0 (_tmp7_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_WHILE:
 		{
-			ValaStatement* _tmp7_ = NULL;
-			ValaStatement* _tmp8_;
-			_tmp7_ = vala_parser_parse_while_statement (self, &_inner_error_);
-			_tmp8_ = _tmp7_;
+			ValaStatement* _tmp10_ = NULL;
+			ValaStatement* _tmp11_ = NULL;
+			ValaStatement* _tmp12_ = NULL;
+			_tmp11_ = vala_parser_parse_while_statement (self, &_inner_error_);
+			_tmp10_ = _tmp11_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10504,15 +10607,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp8_;
+			_tmp12_ = _tmp10_;
+			_tmp10_ = NULL;
+			result = _tmp12_;
+			_vala_code_node_unref0 (_tmp10_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_DO:
 		{
-			ValaStatement* _tmp9_ = NULL;
-			ValaStatement* _tmp10_;
-			_tmp9_ = vala_parser_parse_do_statement (self, &_inner_error_);
-			_tmp10_ = _tmp9_;
+			ValaStatement* _tmp13_ = NULL;
+			ValaStatement* _tmp14_ = NULL;
+			ValaStatement* _tmp15_ = NULL;
+			_tmp14_ = vala_parser_parse_do_statement (self, &_inner_error_);
+			_tmp13_ = _tmp14_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10523,15 +10630,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp10_;
+			_tmp15_ = _tmp13_;
+			_tmp13_ = NULL;
+			result = _tmp15_;
+			_vala_code_node_unref0 (_tmp13_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_FOR:
 		{
-			ValaStatement* _tmp11_ = NULL;
-			ValaStatement* _tmp12_;
-			_tmp11_ = vala_parser_parse_for_statement (self, &_inner_error_);
-			_tmp12_ = _tmp11_;
+			ValaStatement* _tmp16_ = NULL;
+			ValaStatement* _tmp17_ = NULL;
+			ValaStatement* _tmp18_ = NULL;
+			_tmp17_ = vala_parser_parse_for_statement (self, &_inner_error_);
+			_tmp16_ = _tmp17_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10542,15 +10653,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp12_;
+			_tmp18_ = _tmp16_;
+			_tmp16_ = NULL;
+			result = _tmp18_;
+			_vala_code_node_unref0 (_tmp16_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_FOREACH:
 		{
-			ValaStatement* _tmp13_ = NULL;
-			ValaStatement* _tmp14_;
-			_tmp13_ = vala_parser_parse_foreach_statement (self, &_inner_error_);
-			_tmp14_ = _tmp13_;
+			ValaStatement* _tmp19_ = NULL;
+			ValaStatement* _tmp20_ = NULL;
+			ValaStatement* _tmp21_ = NULL;
+			_tmp20_ = vala_parser_parse_foreach_statement (self, &_inner_error_);
+			_tmp19_ = _tmp20_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10561,15 +10676,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp14_;
+			_tmp21_ = _tmp19_;
+			_tmp19_ = NULL;
+			result = _tmp21_;
+			_vala_code_node_unref0 (_tmp19_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_BREAK:
 		{
-			ValaStatement* _tmp15_ = NULL;
-			ValaStatement* _tmp16_;
-			_tmp15_ = vala_parser_parse_break_statement (self, &_inner_error_);
-			_tmp16_ = _tmp15_;
+			ValaStatement* _tmp22_ = NULL;
+			ValaStatement* _tmp23_ = NULL;
+			ValaStatement* _tmp24_ = NULL;
+			_tmp23_ = vala_parser_parse_break_statement (self, &_inner_error_);
+			_tmp22_ = _tmp23_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10580,15 +10699,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp16_;
+			_tmp24_ = _tmp22_;
+			_tmp22_ = NULL;
+			result = _tmp24_;
+			_vala_code_node_unref0 (_tmp22_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_CONTINUE:
 		{
-			ValaStatement* _tmp17_ = NULL;
-			ValaStatement* _tmp18_;
-			_tmp17_ = vala_parser_parse_continue_statement (self, &_inner_error_);
-			_tmp18_ = _tmp17_;
+			ValaStatement* _tmp25_ = NULL;
+			ValaStatement* _tmp26_ = NULL;
+			ValaStatement* _tmp27_ = NULL;
+			_tmp26_ = vala_parser_parse_continue_statement (self, &_inner_error_);
+			_tmp25_ = _tmp26_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10599,15 +10722,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp18_;
+			_tmp27_ = _tmp25_;
+			_tmp25_ = NULL;
+			result = _tmp27_;
+			_vala_code_node_unref0 (_tmp25_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_RETURN:
 		{
-			ValaStatement* _tmp19_ = NULL;
-			ValaStatement* _tmp20_;
-			_tmp19_ = vala_parser_parse_return_statement (self, &_inner_error_);
-			_tmp20_ = _tmp19_;
+			ValaStatement* _tmp28_ = NULL;
+			ValaStatement* _tmp29_ = NULL;
+			ValaStatement* _tmp30_ = NULL;
+			_tmp29_ = vala_parser_parse_return_statement (self, &_inner_error_);
+			_tmp28_ = _tmp29_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10618,15 +10745,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp20_;
+			_tmp30_ = _tmp28_;
+			_tmp28_ = NULL;
+			result = _tmp30_;
+			_vala_code_node_unref0 (_tmp28_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_YIELD:
 		{
-			ValaStatement* _tmp21_ = NULL;
-			ValaStatement* _tmp22_;
-			_tmp21_ = vala_parser_parse_yield_statement (self, &_inner_error_);
-			_tmp22_ = _tmp21_;
+			ValaStatement* _tmp31_ = NULL;
+			ValaStatement* _tmp32_ = NULL;
+			ValaStatement* _tmp33_ = NULL;
+			_tmp32_ = vala_parser_parse_yield_statement (self, &_inner_error_);
+			_tmp31_ = _tmp32_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10637,15 +10768,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp22_;
+			_tmp33_ = _tmp31_;
+			_tmp31_ = NULL;
+			result = _tmp33_;
+			_vala_code_node_unref0 (_tmp31_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_THROW:
 		{
-			ValaStatement* _tmp23_ = NULL;
-			ValaStatement* _tmp24_;
-			_tmp23_ = vala_parser_parse_throw_statement (self, &_inner_error_);
-			_tmp24_ = _tmp23_;
+			ValaStatement* _tmp34_ = NULL;
+			ValaStatement* _tmp35_ = NULL;
+			ValaStatement* _tmp36_ = NULL;
+			_tmp35_ = vala_parser_parse_throw_statement (self, &_inner_error_);
+			_tmp34_ = _tmp35_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10656,15 +10791,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp24_;
+			_tmp36_ = _tmp34_;
+			_tmp34_ = NULL;
+			result = _tmp36_;
+			_vala_code_node_unref0 (_tmp34_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_TRY:
 		{
-			ValaStatement* _tmp25_ = NULL;
-			ValaStatement* _tmp26_;
-			_tmp25_ = vala_parser_parse_try_statement (self, &_inner_error_);
-			_tmp26_ = _tmp25_;
+			ValaStatement* _tmp37_ = NULL;
+			ValaStatement* _tmp38_ = NULL;
+			ValaStatement* _tmp39_ = NULL;
+			_tmp38_ = vala_parser_parse_try_statement (self, &_inner_error_);
+			_tmp37_ = _tmp38_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10675,15 +10814,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp26_;
+			_tmp39_ = _tmp37_;
+			_tmp37_ = NULL;
+			result = _tmp39_;
+			_vala_code_node_unref0 (_tmp37_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_LOCK:
 		{
-			ValaStatement* _tmp27_ = NULL;
-			ValaStatement* _tmp28_;
-			_tmp27_ = vala_parser_parse_lock_statement (self, &_inner_error_);
-			_tmp28_ = _tmp27_;
+			ValaStatement* _tmp40_ = NULL;
+			ValaStatement* _tmp41_ = NULL;
+			ValaStatement* _tmp42_ = NULL;
+			_tmp41_ = vala_parser_parse_lock_statement (self, &_inner_error_);
+			_tmp40_ = _tmp41_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10694,15 +10837,19 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp28_;
+			_tmp42_ = _tmp40_;
+			_tmp40_ = NULL;
+			result = _tmp42_;
+			_vala_code_node_unref0 (_tmp40_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_DELETE:
 		{
-			ValaStatement* _tmp29_ = NULL;
-			ValaStatement* _tmp30_;
-			_tmp29_ = vala_parser_parse_delete_statement (self, &_inner_error_);
-			_tmp30_ = _tmp29_;
+			ValaStatement* _tmp43_ = NULL;
+			ValaStatement* _tmp44_ = NULL;
+			ValaStatement* _tmp45_ = NULL;
+			_tmp44_ = vala_parser_parse_delete_statement (self, &_inner_error_);
+			_tmp43_ = _tmp44_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10713,22 +10860,25 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp30_;
+			_tmp45_ = _tmp43_;
+			_tmp43_ = NULL;
+			result = _tmp45_;
+			_vala_code_node_unref0 (_tmp43_);
 			return result;
 		}
 		case VALA_TOKEN_TYPE_VAR:
 		case VALA_TOKEN_TYPE_CONST:
 		{
-			gchar* _tmp31_ = NULL;
-			gchar* _tmp32_;
-			GError* _tmp33_;
-			GError* _tmp34_;
-			_tmp31_ = vala_parser_get_error (self, "embedded statement cannot be declaration ");
-			_tmp32_ = _tmp31_;
-			_tmp33_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp32_);
-			_tmp34_ = _tmp33_;
-			_g_free0 (_tmp32_);
-			_inner_error_ = _tmp34_;
+			gchar* _tmp46_ = NULL;
+			gchar* _tmp47_ = NULL;
+			GError* _tmp48_ = NULL;
+			GError* _tmp49_ = NULL;
+			_tmp46_ = vala_parser_get_error (self, "embedded statement cannot be declaration ");
+			_tmp47_ = _tmp46_;
+			_tmp48_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp47_);
+			_tmp49_ = _tmp48_;
+			_g_free0 (_tmp47_);
+			_inner_error_ = _tmp49_;
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				return NULL;
@@ -10746,10 +10896,11 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 		case VALA_TOKEN_TYPE_STAR:
 		case VALA_TOKEN_TYPE_NEW:
 		{
-			ValaStatement* _tmp35_ = NULL;
-			ValaStatement* _tmp36_;
-			_tmp35_ = vala_parser_parse_expression_statement (self, &_inner_error_);
-			_tmp36_ = _tmp35_;
+			ValaStatement* _tmp50_ = NULL;
+			ValaStatement* _tmp51_ = NULL;
+			ValaStatement* _tmp52_ = NULL;
+			_tmp51_ = vala_parser_parse_expression_statement (self, &_inner_error_);
+			_tmp50_ = _tmp51_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10760,15 +10911,18 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			result = _tmp36_;
+			_tmp52_ = _tmp50_;
+			_tmp50_ = NULL;
+			result = _tmp52_;
+			_vala_code_node_unref0 (_tmp50_);
 			return result;
 		}
 		default:
 		{
-			gboolean _tmp37_ = FALSE;
-			gboolean _tmp38_;
-			_tmp37_ = vala_parser_is_expression (self, &_inner_error_);
-			_tmp38_ = _tmp37_;
+			gboolean _tmp53_ = FALSE;
+			gboolean _tmp54_ = FALSE;
+			_tmp54_ = vala_parser_is_expression (self, &_inner_error_);
+			_tmp53_ = _tmp54_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -10779,11 +10933,12 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 					return NULL;
 				}
 			}
-			if (_tmp38_) {
-				ValaStatement* _tmp39_ = NULL;
-				ValaStatement* _tmp40_;
-				_tmp39_ = vala_parser_parse_expression_statement (self, &_inner_error_);
-				_tmp40_ = _tmp39_;
+			if (_tmp53_) {
+				ValaStatement* _tmp55_ = NULL;
+				ValaStatement* _tmp56_ = NULL;
+				ValaStatement* _tmp57_ = NULL;
+				_tmp56_ = vala_parser_parse_expression_statement (self, &_inner_error_);
+				_tmp55_ = _tmp56_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -10794,19 +10949,22 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 						return NULL;
 					}
 				}
-				result = _tmp40_;
+				_tmp57_ = _tmp55_;
+				_tmp55_ = NULL;
+				result = _tmp57_;
+				_vala_code_node_unref0 (_tmp55_);
 				return result;
 			} else {
-				gchar* _tmp41_ = NULL;
-				gchar* _tmp42_;
-				GError* _tmp43_;
-				GError* _tmp44_;
-				_tmp41_ = vala_parser_get_error (self, "embedded statement cannot be declaration");
-				_tmp42_ = _tmp41_;
-				_tmp43_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp42_);
-				_tmp44_ = _tmp43_;
-				_g_free0 (_tmp42_);
-				_inner_error_ = _tmp44_;
+				gchar* _tmp58_ = NULL;
+				gchar* _tmp59_ = NULL;
+				GError* _tmp60_ = NULL;
+				GError* _tmp61_ = NULL;
+				_tmp58_ = vala_parser_get_error (self, "embedded statement cannot be declaration");
+				_tmp59_ = _tmp58_;
+				_tmp60_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp59_);
+				_tmp61_ = _tmp60_;
+				_g_free0 (_tmp59_);
+				_inner_error_ = _tmp61_;
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
 					return NULL;
@@ -10823,23 +10981,23 @@ static ValaStatement* vala_parser_parse_embedded_statement_without_block (ValaPa
 
 static ValaBlock* vala_parser_parse_block (ValaParser* self, GError** error) {
 	ValaBlock* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaBlock* block = NULL;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaBlock* _tmp4_;
-	ValaBlock* _tmp5_;
-	ValaBlock* block;
-	ValaBlock* _tmp6_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaBlock* _tmp4_ = NULL;
+	ValaBlock* _tmp5_ = NULL;
+	ValaBlock* _tmp6_ = NULL;
 	gboolean _tmp7_ = FALSE;
-	ValaBlock* _tmp14_;
-	ValaSourceReference* _tmp15_;
-	ValaSourceReference* _tmp16_;
+	ValaBlock* _tmp14_ = NULL;
+	ValaSourceReference* _tmp15_ = NULL;
+	ValaSourceReference* _tmp16_ = NULL;
 	ValaSourceReference* _tmp17_ = NULL;
-	ValaSourceReference* _tmp18_;
-	ValaSourceLocation _tmp19_;
-	ValaSourceLocation _tmp20_;
+	ValaSourceReference* _tmp18_ = NULL;
+	ValaSourceLocation _tmp19_ = {0};
+	ValaSourceLocation _tmp20_ = {0};
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -10878,9 +11036,9 @@ static ValaBlock* vala_parser_parse_block (ValaParser* self, GError** error) {
 	}
 	_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_BRACE);
 	if (!_tmp7_) {
-		ValaCodeContext* _tmp8_;
-		ValaReport* _tmp9_;
-		ValaReport* _tmp10_;
+		ValaCodeContext* _tmp8_ = NULL;
+		ValaReport* _tmp9_ = NULL;
+		ValaReport* _tmp10_ = NULL;
 		gint _tmp11_ = 0;
 		_tmp8_ = self->priv->context;
 		_tmp9_ = vala_code_context_get_report (_tmp8_);
@@ -10888,7 +11046,7 @@ static ValaBlock* vala_parser_parse_block (ValaParser* self, GError** error) {
 		_tmp11_ = vala_report_get_errors (_tmp10_);
 		if (_tmp11_ == 0) {
 			ValaSourceReference* _tmp12_ = NULL;
-			ValaSourceReference* _tmp13_;
+			ValaSourceReference* _tmp13_ = NULL;
 			_tmp12_ = vala_parser_get_current_src (self);
 			_tmp13_ = _tmp12_;
 			vala_report_error (_tmp13_, "expected `}'");
@@ -10911,13 +11069,13 @@ static ValaBlock* vala_parser_parse_block (ValaParser* self, GError** error) {
 
 static ValaStatement* vala_parser_parse_empty_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaEmptyStatement* _tmp4_;
-	ValaStatement* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaEmptyStatement* _tmp4_ = NULL;
+	ValaStatement* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -10966,9 +11124,10 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 		variable_type = NULL;
 	} else {
 		ValaDataType* _tmp1_ = NULL;
-		ValaDataType* _tmp2_;
-		_tmp1_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
-		_tmp2_ = _tmp1_;
+		ValaDataType* _tmp2_ = NULL;
+		ValaDataType* _tmp3_ = NULL;
+		_tmp2_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
+		_tmp1_ = _tmp2_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -10981,30 +11140,30 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 				return;
 			}
 		}
+		_tmp3_ = _tmp1_;
+		_tmp1_ = NULL;
 		_vala_code_node_unref0 (variable_type);
-		variable_type = _tmp2_;
+		variable_type = _tmp3_;
+		_vala_code_node_unref0 (_tmp1_);
 	}
 	{
-		gboolean _tmp3_;
-		_tmp3_ = TRUE;
+		gboolean _tmp4_ = FALSE;
+		_tmp4_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp4_;
 			gboolean _tmp6_ = FALSE;
-			ValaDataType* _tmp7_;
-			gboolean _tmp9_;
-			ValaDataType* type_copy;
-			ValaDataType* _tmp72_;
-			ValaDataType* _tmp75_;
+			ValaDataType* _tmp7_ = NULL;
+			ValaDataType* type_copy = NULL;
+			ValaDataType* _tmp70_ = NULL;
+			ValaLocalVariable* local = NULL;
+			ValaDataType* _tmp73_ = NULL;
+			ValaLocalVariable* _tmp74_ = NULL;
+			ValaBlock* _tmp75_ = NULL;
 			ValaLocalVariable* _tmp76_ = NULL;
-			ValaLocalVariable* local;
-			ValaBlock* _tmp77_;
-			ValaLocalVariable* _tmp78_;
-			ValaLocalVariable* _tmp79_;
-			ValaSourceReference* _tmp80_;
-			ValaSourceReference* _tmp81_;
-			ValaDeclarationStatement* _tmp82_;
-			ValaDeclarationStatement* _tmp83_;
-			_tmp4_ = _tmp3_;
+			ValaLocalVariable* _tmp77_ = NULL;
+			ValaSourceReference* _tmp78_ = NULL;
+			ValaSourceReference* _tmp79_ = NULL;
+			ValaDeclarationStatement* _tmp80_ = NULL;
+			ValaDeclarationStatement* _tmp81_ = NULL;
 			if (!_tmp4_) {
 				gboolean _tmp5_ = FALSE;
 				_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
@@ -11012,7 +11171,7 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 					break;
 				}
 			}
-			_tmp3_ = FALSE;
+			_tmp4_ = FALSE;
 			_tmp7_ = variable_type;
 			if (_tmp7_ == NULL) {
 				gboolean _tmp8_ = FALSE;
@@ -11021,58 +11180,56 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 			} else {
 				_tmp6_ = FALSE;
 			}
-			_tmp9_ = _tmp6_;
-			if (_tmp9_) {
-				ValaSourceLocation _tmp10_ = {0};
-				ValaSourceLocation begin;
-				gchar** _tmp11_ = NULL;
-				gchar** identifiers;
-				gint identifiers_length1;
-				gint _identifiers_size_;
-				ValaExpression* _tmp18_ = NULL;
-				ValaExpression* tuple;
+			if (_tmp6_) {
+				ValaSourceLocation begin = {0};
+				ValaSourceLocation _tmp9_ = {0};
+				gchar** identifiers = NULL;
+				gchar** _tmp10_ = NULL;
+				gint identifiers_length1 = 0;
+				gint _identifiers_size_ = 0;
+				ValaExpression* tuple = NULL;
+				ValaExpression* _tmp17_ = NULL;
+				ValaLocalVariable* tuple_local = NULL;
+				gchar* _tmp18_ = NULL;
 				gchar* _tmp19_ = NULL;
-				gchar* _tmp20_;
-				ValaExpression* _tmp21_;
-				ValaSourceLocation _tmp22_;
+				ValaExpression* _tmp20_ = NULL;
+				ValaSourceLocation _tmp21_ = {0};
+				ValaSourceReference* _tmp22_ = NULL;
 				ValaSourceReference* _tmp23_ = NULL;
-				ValaSourceReference* _tmp24_;
-				ValaLocalVariable* _tmp25_;
-				ValaLocalVariable* _tmp26_;
-				ValaLocalVariable* tuple_local;
-				ValaBlock* _tmp27_;
-				ValaLocalVariable* _tmp28_;
-				ValaLocalVariable* _tmp29_;
-				ValaSourceReference* _tmp30_;
-				ValaSourceReference* _tmp31_;
-				ValaDeclarationStatement* _tmp32_;
-				ValaDeclarationStatement* _tmp33_;
-				vala_parser_get_location (self, &_tmp10_);
-				begin = _tmp10_;
-				_tmp11_ = g_new0 (gchar*, 0 + 1);
-				identifiers = _tmp11_;
+				ValaLocalVariable* _tmp24_ = NULL;
+				ValaLocalVariable* _tmp25_ = NULL;
+				ValaBlock* _tmp26_ = NULL;
+				ValaLocalVariable* _tmp27_ = NULL;
+				ValaLocalVariable* _tmp28_ = NULL;
+				ValaSourceReference* _tmp29_ = NULL;
+				ValaSourceReference* _tmp30_ = NULL;
+				ValaDeclarationStatement* _tmp31_ = NULL;
+				ValaDeclarationStatement* _tmp32_ = NULL;
+				vala_parser_get_location (self, &_tmp9_);
+				begin = _tmp9_;
+				_tmp10_ = g_new0 (gchar*, 0 + 1);
+				identifiers = _tmp10_;
 				identifiers_length1 = 0;
 				_identifiers_size_ = identifiers_length1;
 				{
-					gboolean _tmp12_;
-					_tmp12_ = TRUE;
+					gboolean _tmp11_ = FALSE;
+					_tmp11_ = TRUE;
 					while (TRUE) {
-						gboolean _tmp13_;
-						gchar* _tmp15_ = NULL;
-						gchar* _tmp16_;
-						gchar** _tmp17_;
-						gint _tmp17__length1;
-						_tmp13_ = _tmp12_;
-						if (!_tmp13_) {
-							gboolean _tmp14_ = FALSE;
-							_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-							if (!_tmp14_) {
+						gchar* _tmp13_ = NULL;
+						gchar* _tmp14_ = NULL;
+						gchar** _tmp15_ = NULL;
+						gint _tmp15__length1 = 0;
+						gchar* _tmp16_ = NULL;
+						if (!_tmp11_) {
+							gboolean _tmp12_ = FALSE;
+							_tmp12_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+							if (!_tmp12_) {
 								break;
 							}
 						}
-						_tmp12_ = FALSE;
-						_tmp15_ = vala_parser_parse_identifier (self, &_inner_error_);
-						_tmp16_ = _tmp15_;
+						_tmp11_ = FALSE;
+						_tmp14_ = vala_parser_parse_identifier (self, &_inner_error_);
+						_tmp13_ = _tmp14_;
 						if (_inner_error_ != NULL) {
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
 								g_propagate_error (error, _inner_error_);
@@ -11087,9 +11244,12 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 								return;
 							}
 						}
-						_tmp17_ = identifiers;
-						_tmp17__length1 = identifiers_length1;
+						_tmp15_ = identifiers;
+						_tmp15__length1 = identifiers_length1;
+						_tmp16_ = _tmp13_;
+						_tmp13_ = NULL;
 						_vala_array_add12 (&identifiers, &identifiers_length1, &_identifiers_size_, _tmp16_);
+						_g_free0 (_tmp13_);
 					}
 				}
 				vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
@@ -11122,8 +11282,8 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 						return;
 					}
 				}
-				_tmp18_ = vala_parser_parse_expression (self, &_inner_error_);
-				tuple = _tmp18_;
+				_tmp17_ = vala_parser_parse_expression (self, &_inner_error_);
+				tuple = _tmp17_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -11138,129 +11298,127 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 						return;
 					}
 				}
-				_tmp19_ = vala_code_node_get_temp_name ();
-				_tmp20_ = _tmp19_;
-				_tmp21_ = tuple;
-				_tmp22_ = begin;
-				_tmp23_ = vala_parser_get_src (self, &_tmp22_);
-				_tmp24_ = _tmp23_;
-				_tmp25_ = vala_local_variable_new (NULL, _tmp20_, _tmp21_, _tmp24_);
-				_tmp26_ = _tmp25_;
-				_vala_source_reference_unref0 (_tmp24_);
-				_g_free0 (_tmp20_);
-				tuple_local = _tmp26_;
-				_tmp27_ = block;
+				_tmp18_ = vala_code_node_get_temp_name ();
+				_tmp19_ = _tmp18_;
+				_tmp20_ = tuple;
+				_tmp21_ = begin;
+				_tmp22_ = vala_parser_get_src (self, &_tmp21_);
+				_tmp23_ = _tmp22_;
+				_tmp24_ = vala_local_variable_new (NULL, _tmp19_, _tmp20_, _tmp23_);
+				_tmp25_ = _tmp24_;
+				_vala_source_reference_unref0 (_tmp23_);
+				_g_free0 (_tmp19_);
+				tuple_local = _tmp25_;
+				_tmp26_ = block;
+				_tmp27_ = tuple_local;
 				_tmp28_ = tuple_local;
-				_tmp29_ = tuple_local;
-				_tmp30_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp29_);
-				_tmp31_ = _tmp30_;
-				_tmp32_ = vala_declaration_statement_new ((ValaSymbol*) _tmp28_, _tmp31_);
-				_tmp33_ = _tmp32_;
-				vala_block_add_statement (_tmp27_, (ValaStatement*) _tmp33_);
-				_vala_code_node_unref0 (_tmp33_);
+				_tmp29_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp28_);
+				_tmp30_ = _tmp29_;
+				_tmp31_ = vala_declaration_statement_new ((ValaSymbol*) _tmp27_, _tmp30_);
+				_tmp32_ = _tmp31_;
+				vala_block_add_statement (_tmp26_, (ValaStatement*) _tmp32_);
+				_vala_code_node_unref0 (_tmp32_);
 				{
-					gint i;
+					gint i = 0;
 					i = 0;
 					{
-						gboolean _tmp34_;
-						_tmp34_ = TRUE;
+						gboolean _tmp33_ = FALSE;
+						_tmp33_ = TRUE;
 						while (TRUE) {
-							gboolean _tmp35_;
-							gint _tmp37_;
-							gchar** _tmp38_;
-							gint _tmp38__length1;
-							ValaLocalVariable* _tmp39_;
-							const gchar* _tmp40_;
-							const gchar* _tmp41_;
-							ValaLocalVariable* _tmp42_;
-							ValaSourceReference* _tmp43_;
-							ValaSourceReference* _tmp44_;
-							ValaMemberAccess* _tmp45_;
-							ValaMemberAccess* temp_access;
-							ValaMemberAccess* _tmp46_;
-							ValaLocalVariable* _tmp47_;
-							ValaSourceReference* _tmp48_;
-							ValaSourceReference* _tmp49_;
-							ValaElementAccess* _tmp50_;
-							ValaElementAccess* ea;
-							ValaElementAccess* _tmp51_;
-							gint _tmp52_;
-							gchar* _tmp53_ = NULL;
-							gchar* _tmp54_;
-							ValaIntegerLiteral* _tmp55_;
-							ValaIntegerLiteral* _tmp56_;
-							gchar** _tmp57_;
-							gint _tmp57__length1;
-							gint _tmp58_;
-							const gchar* _tmp59_;
-							ValaElementAccess* _tmp60_;
-							ValaLocalVariable* _tmp61_;
-							ValaSourceReference* _tmp62_;
-							ValaSourceReference* _tmp63_;
-							ValaLocalVariable* _tmp64_;
-							ValaLocalVariable* local;
-							ValaBlock* _tmp65_;
-							ValaLocalVariable* _tmp66_;
-							ValaLocalVariable* _tmp67_;
-							ValaSourceReference* _tmp68_;
-							ValaSourceReference* _tmp69_;
-							ValaDeclarationStatement* _tmp70_;
-							ValaDeclarationStatement* _tmp71_;
-							_tmp35_ = _tmp34_;
-							if (!_tmp35_) {
-								gint _tmp36_;
-								_tmp36_ = i;
-								i = _tmp36_ + 1;
+							gint _tmp35_ = 0;
+							gchar** _tmp36_ = NULL;
+							gint _tmp36__length1 = 0;
+							ValaMemberAccess* temp_access = NULL;
+							ValaLocalVariable* _tmp37_ = NULL;
+							const gchar* _tmp38_ = NULL;
+							const gchar* _tmp39_ = NULL;
+							ValaLocalVariable* _tmp40_ = NULL;
+							ValaSourceReference* _tmp41_ = NULL;
+							ValaSourceReference* _tmp42_ = NULL;
+							ValaMemberAccess* _tmp43_ = NULL;
+							ValaElementAccess* ea = NULL;
+							ValaMemberAccess* _tmp44_ = NULL;
+							ValaLocalVariable* _tmp45_ = NULL;
+							ValaSourceReference* _tmp46_ = NULL;
+							ValaSourceReference* _tmp47_ = NULL;
+							ValaElementAccess* _tmp48_ = NULL;
+							ValaElementAccess* _tmp49_ = NULL;
+							gint _tmp50_ = 0;
+							gchar* _tmp51_ = NULL;
+							gchar* _tmp52_ = NULL;
+							ValaIntegerLiteral* _tmp53_ = NULL;
+							ValaIntegerLiteral* _tmp54_ = NULL;
+							ValaLocalVariable* local = NULL;
+							gchar** _tmp55_ = NULL;
+							gint _tmp55__length1 = 0;
+							gint _tmp56_ = 0;
+							const gchar* _tmp57_ = NULL;
+							ValaElementAccess* _tmp58_ = NULL;
+							ValaLocalVariable* _tmp59_ = NULL;
+							ValaSourceReference* _tmp60_ = NULL;
+							ValaSourceReference* _tmp61_ = NULL;
+							ValaLocalVariable* _tmp62_ = NULL;
+							ValaBlock* _tmp63_ = NULL;
+							ValaLocalVariable* _tmp64_ = NULL;
+							ValaLocalVariable* _tmp65_ = NULL;
+							ValaSourceReference* _tmp66_ = NULL;
+							ValaSourceReference* _tmp67_ = NULL;
+							ValaDeclarationStatement* _tmp68_ = NULL;
+							ValaDeclarationStatement* _tmp69_ = NULL;
+							if (!_tmp33_) {
+								gint _tmp34_ = 0;
+								_tmp34_ = i;
+								i = _tmp34_ + 1;
 							}
-							_tmp34_ = FALSE;
-							_tmp37_ = i;
-							_tmp38_ = identifiers;
-							_tmp38__length1 = identifiers_length1;
-							if (!(_tmp37_ < _tmp38__length1)) {
+							_tmp33_ = FALSE;
+							_tmp35_ = i;
+							_tmp36_ = identifiers;
+							_tmp36__length1 = identifiers_length1;
+							if (!(_tmp35_ < _tmp36__length1)) {
 								break;
 							}
-							_tmp39_ = tuple_local;
-							_tmp40_ = vala_symbol_get_name ((ValaSymbol*) _tmp39_);
-							_tmp41_ = _tmp40_;
-							_tmp42_ = tuple_local;
-							_tmp43_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp42_);
-							_tmp44_ = _tmp43_;
-							_tmp45_ = vala_member_access_new_simple (_tmp41_, _tmp44_);
-							temp_access = _tmp45_;
-							_tmp46_ = temp_access;
-							_tmp47_ = tuple_local;
-							_tmp48_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp47_);
-							_tmp49_ = _tmp48_;
-							_tmp50_ = vala_element_access_new ((ValaExpression*) _tmp46_, _tmp49_);
-							ea = _tmp50_;
-							_tmp51_ = ea;
-							_tmp52_ = i;
-							_tmp53_ = g_strdup_printf ("%i", _tmp52_);
+							_tmp37_ = tuple_local;
+							_tmp38_ = vala_symbol_get_name ((ValaSymbol*) _tmp37_);
+							_tmp39_ = _tmp38_;
+							_tmp40_ = tuple_local;
+							_tmp41_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp40_);
+							_tmp42_ = _tmp41_;
+							_tmp43_ = vala_member_access_new_simple (_tmp39_, _tmp42_);
+							temp_access = _tmp43_;
+							_tmp44_ = temp_access;
+							_tmp45_ = tuple_local;
+							_tmp46_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp45_);
+							_tmp47_ = _tmp46_;
+							_tmp48_ = vala_element_access_new ((ValaExpression*) _tmp44_, _tmp47_);
+							ea = _tmp48_;
+							_tmp49_ = ea;
+							_tmp50_ = i;
+							_tmp51_ = g_strdup_printf ("%i", _tmp50_);
+							_tmp52_ = _tmp51_;
+							_tmp53_ = vala_integer_literal_new (_tmp52_, NULL);
 							_tmp54_ = _tmp53_;
-							_tmp55_ = vala_integer_literal_new (_tmp54_, NULL);
-							_tmp56_ = _tmp55_;
-							vala_element_access_append_index (_tmp51_, (ValaExpression*) _tmp56_);
-							_vala_code_node_unref0 (_tmp56_);
-							_g_free0 (_tmp54_);
-							_tmp57_ = identifiers;
-							_tmp57__length1 = identifiers_length1;
-							_tmp58_ = i;
-							_tmp59_ = _tmp57_[_tmp58_];
-							_tmp60_ = ea;
-							_tmp61_ = tuple_local;
-							_tmp62_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp61_);
-							_tmp63_ = _tmp62_;
-							_tmp64_ = vala_local_variable_new (NULL, _tmp59_, (ValaExpression*) _tmp60_, _tmp63_);
-							local = _tmp64_;
-							_tmp65_ = block;
-							_tmp66_ = local;
-							_tmp67_ = local;
-							_tmp68_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp67_);
+							vala_element_access_append_index (_tmp49_, (ValaExpression*) _tmp54_);
+							_vala_code_node_unref0 (_tmp54_);
+							_g_free0 (_tmp52_);
+							_tmp55_ = identifiers;
+							_tmp55__length1 = identifiers_length1;
+							_tmp56_ = i;
+							_tmp57_ = _tmp55_[_tmp56_];
+							_tmp58_ = ea;
+							_tmp59_ = tuple_local;
+							_tmp60_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp59_);
+							_tmp61_ = _tmp60_;
+							_tmp62_ = vala_local_variable_new (NULL, _tmp57_, (ValaExpression*) _tmp58_, _tmp61_);
+							local = _tmp62_;
+							_tmp63_ = block;
+							_tmp64_ = local;
+							_tmp65_ = local;
+							_tmp66_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp65_);
+							_tmp67_ = _tmp66_;
+							_tmp68_ = vala_declaration_statement_new ((ValaSymbol*) _tmp64_, _tmp67_);
 							_tmp69_ = _tmp68_;
-							_tmp70_ = vala_declaration_statement_new ((ValaSymbol*) _tmp66_, _tmp69_);
-							_tmp71_ = _tmp70_;
-							vala_block_add_statement (_tmp65_, (ValaStatement*) _tmp71_);
-							_vala_code_node_unref0 (_tmp71_);
+							vala_block_add_statement (_tmp63_, (ValaStatement*) _tmp69_);
+							_vala_code_node_unref0 (_tmp69_);
 							_vala_code_node_unref0 (local);
 							_vala_code_node_unref0 (ea);
 							_vala_code_node_unref0 (temp_access);
@@ -11273,18 +11431,18 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 				continue;
 			}
 			type_copy = NULL;
-			_tmp72_ = variable_type;
-			if (_tmp72_ != NULL) {
-				ValaDataType* _tmp73_;
-				ValaDataType* _tmp74_ = NULL;
-				_tmp73_ = variable_type;
-				_tmp74_ = vala_data_type_copy (_tmp73_);
+			_tmp70_ = variable_type;
+			if (_tmp70_ != NULL) {
+				ValaDataType* _tmp71_ = NULL;
+				ValaDataType* _tmp72_ = NULL;
+				_tmp71_ = variable_type;
+				_tmp72_ = vala_data_type_copy (_tmp71_);
 				_vala_code_node_unref0 (type_copy);
-				type_copy = _tmp74_;
+				type_copy = _tmp72_;
 			}
-			_tmp75_ = type_copy;
-			_tmp76_ = vala_parser_parse_local_variable (self, _tmp75_, &_inner_error_);
-			local = _tmp76_;
+			_tmp73_ = type_copy;
+			_tmp74_ = vala_parser_parse_local_variable (self, _tmp73_, &_inner_error_);
+			local = _tmp74_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -11299,15 +11457,15 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 					return;
 				}
 			}
-			_tmp77_ = block;
-			_tmp78_ = local;
-			_tmp79_ = local;
-			_tmp80_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp79_);
+			_tmp75_ = block;
+			_tmp76_ = local;
+			_tmp77_ = local;
+			_tmp78_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp77_);
+			_tmp79_ = _tmp78_;
+			_tmp80_ = vala_declaration_statement_new ((ValaSymbol*) _tmp76_, _tmp79_);
 			_tmp81_ = _tmp80_;
-			_tmp82_ = vala_declaration_statement_new ((ValaSymbol*) _tmp78_, _tmp81_);
-			_tmp83_ = _tmp82_;
-			vala_block_add_statement (_tmp77_, (ValaStatement*) _tmp83_);
-			_vala_code_node_unref0 (_tmp83_);
+			vala_block_add_statement (_tmp75_, (ValaStatement*) _tmp81_);
+			_vala_code_node_unref0 (_tmp81_);
 			_vala_code_node_unref0 (local);
 			_vala_code_node_unref0 (type_copy);
 		}
@@ -11331,23 +11489,23 @@ static void vala_parser_parse_local_variable_declarations (ValaParser* self, Val
 
 static ValaLocalVariable* vala_parser_parse_local_variable (ValaParser* self, ValaDataType* variable_type, GError** error) {
 	ValaLocalVariable* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	gchar* id = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* id;
-	ValaDataType* _tmp2_;
+	ValaDataType* type = NULL;
+	ValaDataType* _tmp2_ = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
-	ValaExpression* initializer;
+	ValaExpression* initializer = NULL;
 	gboolean _tmp4_ = FALSE;
-	ValaDataType* _tmp7_;
-	const gchar* _tmp8_;
-	ValaExpression* _tmp9_;
-	ValaSourceLocation _tmp10_;
-	ValaSourceReference* _tmp11_ = NULL;
-	ValaSourceReference* _tmp12_;
-	ValaLocalVariable* _tmp13_;
-	ValaLocalVariable* _tmp14_;
+	ValaDataType* _tmp8_ = NULL;
+	const gchar* _tmp9_ = NULL;
+	ValaExpression* _tmp10_ = NULL;
+	ValaSourceLocation _tmp11_ = {0};
+	ValaSourceReference* _tmp12_ = NULL;
+	ValaSourceReference* _tmp13_ = NULL;
+	ValaLocalVariable* _tmp14_ = NULL;
+	ValaLocalVariable* _tmp15_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -11383,9 +11541,10 @@ static ValaLocalVariable* vala_parser_parse_local_variable (ValaParser* self, Va
 	_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
 	if (_tmp4_) {
 		ValaExpression* _tmp5_ = NULL;
-		ValaExpression* _tmp6_;
-		_tmp5_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp6_ = _tmp5_;
+		ValaExpression* _tmp6_ = NULL;
+		ValaExpression* _tmp7_ = NULL;
+		_tmp6_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp5_ = _tmp6_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -11402,19 +11561,22 @@ static ValaLocalVariable* vala_parser_parse_local_variable (ValaParser* self, Va
 				return NULL;
 			}
 		}
+		_tmp7_ = _tmp5_;
+		_tmp5_ = NULL;
 		_vala_code_node_unref0 (initializer);
-		initializer = _tmp6_;
+		initializer = _tmp7_;
+		_vala_code_node_unref0 (_tmp5_);
 	}
-	_tmp7_ = type;
-	_tmp8_ = id;
-	_tmp9_ = initializer;
-	_tmp10_ = begin;
-	_tmp11_ = vala_parser_get_src (self, &_tmp10_);
-	_tmp12_ = _tmp11_;
-	_tmp13_ = vala_local_variable_new (_tmp7_, _tmp8_, _tmp9_, _tmp12_);
-	_tmp14_ = _tmp13_;
-	_vala_source_reference_unref0 (_tmp12_);
-	result = _tmp14_;
+	_tmp8_ = type;
+	_tmp9_ = id;
+	_tmp10_ = initializer;
+	_tmp11_ = begin;
+	_tmp12_ = vala_parser_get_src (self, &_tmp11_);
+	_tmp13_ = _tmp12_;
+	_tmp14_ = vala_local_variable_new (_tmp8_, _tmp9_, _tmp10_, _tmp13_);
+	_tmp15_ = _tmp14_;
+	_vala_source_reference_unref0 (_tmp13_);
+	result = _tmp15_;
 	_vala_code_node_unref0 (initializer);
 	_vala_code_node_unref0 (type);
 	_g_free0 (id);
@@ -11423,8 +11585,12 @@ static ValaLocalVariable* vala_parser_parse_local_variable (ValaParser* self, Va
 
 
 static void vala_parser_parse_local_constant_declarations (ValaParser* self, ValaBlock* block, GError** error) {
+	ValaDataType* constant_type = NULL;
 	ValaDataType* _tmp0_ = NULL;
-	ValaDataType* constant_type;
+	ValaArrayType* array_type = NULL;
+	ValaDataType* _tmp1_ = NULL;
+	ValaArrayType* _tmp2_ = NULL;
+	ValaArrayType* _tmp3_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (block != NULL);
@@ -11451,70 +11617,83 @@ static void vala_parser_parse_local_constant_declarations (ValaParser* self, Val
 			return;
 		}
 	}
+	_tmp1_ = constant_type;
+	_tmp2_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp1_, VALA_TYPE_ARRAY_TYPE) ? ((ValaArrayType*) _tmp1_) : NULL);
+	array_type = _tmp2_;
+	_tmp3_ = array_type;
+	if (_tmp3_ != NULL) {
+		ValaArrayType* _tmp4_ = NULL;
+		ValaDataType* _tmp5_ = NULL;
+		ValaDataType* _tmp6_ = NULL;
+		_tmp4_ = array_type;
+		_tmp5_ = vala_array_type_get_element_type (_tmp4_);
+		_tmp6_ = _tmp5_;
+		vala_data_type_set_value_owned (_tmp6_, FALSE);
+	}
 	{
-		gboolean _tmp1_;
-		_tmp1_ = TRUE;
+		gboolean _tmp7_ = FALSE;
+		_tmp7_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp2_;
-			ValaDataType* _tmp4_;
-			ValaDataType* _tmp5_ = NULL;
-			ValaDataType* type_copy;
-			ValaDataType* _tmp6_;
-			ValaConstant* _tmp7_ = NULL;
-			ValaConstant* local;
-			ValaBlock* _tmp8_;
-			ValaConstant* _tmp9_;
-			ValaConstant* _tmp10_;
-			ValaSourceReference* _tmp11_;
-			ValaSourceReference* _tmp12_;
-			ValaDeclarationStatement* _tmp13_;
-			ValaDeclarationStatement* _tmp14_;
-			ValaBlock* _tmp15_;
-			ValaConstant* _tmp16_;
-			ValaConstant* _tmp17_;
-			_tmp2_ = _tmp1_;
-			if (!_tmp2_) {
-				gboolean _tmp3_ = FALSE;
-				_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-				if (!_tmp3_) {
+			ValaDataType* type_copy = NULL;
+			ValaDataType* _tmp9_ = NULL;
+			ValaDataType* _tmp10_ = NULL;
+			ValaConstant* local = NULL;
+			ValaDataType* _tmp11_ = NULL;
+			ValaConstant* _tmp12_ = NULL;
+			ValaBlock* _tmp13_ = NULL;
+			ValaConstant* _tmp14_ = NULL;
+			ValaConstant* _tmp15_ = NULL;
+			ValaSourceReference* _tmp16_ = NULL;
+			ValaSourceReference* _tmp17_ = NULL;
+			ValaDeclarationStatement* _tmp18_ = NULL;
+			ValaDeclarationStatement* _tmp19_ = NULL;
+			ValaBlock* _tmp20_ = NULL;
+			ValaConstant* _tmp21_ = NULL;
+			ValaConstant* _tmp22_ = NULL;
+			if (!_tmp7_) {
+				gboolean _tmp8_ = FALSE;
+				_tmp8_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+				if (!_tmp8_) {
 					break;
 				}
 			}
-			_tmp1_ = FALSE;
-			_tmp4_ = constant_type;
-			_tmp5_ = vala_data_type_copy (_tmp4_);
-			type_copy = _tmp5_;
-			_tmp6_ = type_copy;
-			_tmp7_ = vala_parser_parse_local_constant (self, _tmp6_, &_inner_error_);
-			local = _tmp7_;
+			_tmp7_ = FALSE;
+			_tmp9_ = constant_type;
+			_tmp10_ = vala_data_type_copy (_tmp9_);
+			type_copy = _tmp10_;
+			_tmp11_ = type_copy;
+			_tmp12_ = vala_parser_parse_local_constant (self, _tmp11_, &_inner_error_);
+			local = _tmp12_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
 					_vala_code_node_unref0 (type_copy);
+					_vala_code_node_unref0 (array_type);
 					_vala_code_node_unref0 (constant_type);
 					return;
 				} else {
 					_vala_code_node_unref0 (type_copy);
+					_vala_code_node_unref0 (array_type);
 					_vala_code_node_unref0 (constant_type);
 					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 					g_clear_error (&_inner_error_);
 					return;
 				}
 			}
-			_tmp8_ = block;
-			_tmp9_ = local;
-			_tmp10_ = local;
-			_tmp11_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp10_);
-			_tmp12_ = _tmp11_;
-			_tmp13_ = vala_declaration_statement_new ((ValaSymbol*) _tmp9_, _tmp12_);
-			_tmp14_ = _tmp13_;
-			vala_block_add_statement (_tmp8_, (ValaStatement*) _tmp14_);
-			_vala_code_node_unref0 (_tmp14_);
-			_tmp15_ = block;
-			_tmp16_ = local;
-			vala_block_add_local_constant (_tmp15_, _tmp16_);
-			_tmp17_ = local;
-			vala_symbol_set_active ((ValaSymbol*) _tmp17_, FALSE);
+			_tmp13_ = block;
+			_tmp14_ = local;
+			_tmp15_ = local;
+			_tmp16_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp15_);
+			_tmp17_ = _tmp16_;
+			_tmp18_ = vala_declaration_statement_new ((ValaSymbol*) _tmp14_, _tmp17_);
+			_tmp19_ = _tmp18_;
+			vala_block_add_statement (_tmp13_, (ValaStatement*) _tmp19_);
+			_vala_code_node_unref0 (_tmp19_);
+			_tmp20_ = block;
+			_tmp21_ = local;
+			vala_block_add_local_constant (_tmp20_, _tmp21_);
+			_tmp22_ = local;
+			vala_symbol_set_active ((ValaSymbol*) _tmp22_, FALSE);
 			_vala_code_node_unref0 (local);
 			_vala_code_node_unref0 (type_copy);
 		}
@@ -11523,38 +11702,41 @@ static void vala_parser_parse_local_constant_declarations (ValaParser* self, Val
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
+			_vala_code_node_unref0 (array_type);
 			_vala_code_node_unref0 (constant_type);
 			return;
 		} else {
+			_vala_code_node_unref0 (array_type);
 			_vala_code_node_unref0 (constant_type);
 			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 			g_clear_error (&_inner_error_);
 			return;
 		}
 	}
+	_vala_code_node_unref0 (array_type);
 	_vala_code_node_unref0 (constant_type);
 }
 
 
 static ValaConstant* vala_parser_parse_local_constant (ValaParser* self, ValaDataType* constant_type, GError** error) {
 	ValaConstant* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	gchar* id = NULL;
 	gchar* _tmp1_ = NULL;
-	gchar* id;
-	ValaDataType* _tmp2_;
+	ValaDataType* type = NULL;
+	ValaDataType* _tmp2_ = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
+	ValaExpression* initializer = NULL;
 	ValaExpression* _tmp4_ = NULL;
-	ValaExpression* initializer;
-	const gchar* _tmp5_;
-	ValaDataType* _tmp6_;
-	ValaExpression* _tmp7_;
-	ValaSourceLocation _tmp8_;
+	const gchar* _tmp5_ = NULL;
+	ValaDataType* _tmp6_ = NULL;
+	ValaExpression* _tmp7_ = NULL;
+	ValaSourceLocation _tmp8_ = {0};
 	ValaSourceReference* _tmp9_ = NULL;
-	ValaSourceReference* _tmp10_;
-	ValaConstant* _tmp11_;
-	ValaConstant* _tmp12_;
+	ValaSourceReference* _tmp10_ = NULL;
+	ValaConstant* _tmp11_ = NULL;
+	ValaConstant* _tmp12_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	g_return_val_if_fail (constant_type != NULL, NULL);
@@ -11637,16 +11819,16 @@ static ValaConstant* vala_parser_parse_local_constant (ValaParser* self, ValaDat
 
 static ValaStatement* vala_parser_parse_expression_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* expr;
-	ValaExpression* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaExpression* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaExpressionStatement* _tmp6_;
-	ValaStatement* _tmp7_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaExpressionStatement* _tmp6_ = NULL;
+	ValaStatement* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -11691,8 +11873,8 @@ static ValaStatement* vala_parser_parse_expression_statement (ValaParser* self, 
 
 static ValaExpression* vala_parser_parse_statement_expression (ValaParser* self, GError** error) {
 	ValaExpression* result = NULL;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp0_ = NULL;
-	ValaExpression* expr;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_parse_expression (self, &_inner_error_);
@@ -11714,22 +11896,22 @@ static ValaExpression* vala_parser_parse_statement_expression (ValaParser* self,
 
 static ValaStatement* vala_parser_parse_if_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* condition = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* condition;
-	ValaSourceLocation _tmp2_;
+	ValaSourceReference* src = NULL;
+	ValaSourceLocation _tmp2_ = {0};
 	ValaSourceReference* _tmp3_ = NULL;
-	ValaSourceReference* src;
+	ValaBlock* true_stmt = NULL;
 	ValaBlock* _tmp4_ = NULL;
-	ValaBlock* true_stmt;
-	ValaBlock* false_stmt;
+	ValaBlock* false_stmt = NULL;
 	gboolean _tmp5_ = FALSE;
-	ValaExpression* _tmp8_;
-	ValaBlock* _tmp9_;
-	ValaBlock* _tmp10_;
-	ValaSourceReference* _tmp11_;
-	ValaIfStatement* _tmp12_;
+	ValaExpression* _tmp9_ = NULL;
+	ValaBlock* _tmp10_ = NULL;
+	ValaBlock* _tmp11_ = NULL;
+	ValaSourceReference* _tmp12_ = NULL;
+	ValaIfStatement* _tmp13_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -11804,9 +11986,10 @@ static ValaStatement* vala_parser_parse_if_statement (ValaParser* self, GError**
 	_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ELSE);
 	if (_tmp5_) {
 		ValaBlock* _tmp6_ = NULL;
-		ValaBlock* _tmp7_;
-		_tmp6_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
-		_tmp7_ = _tmp6_;
+		ValaBlock* _tmp7_ = NULL;
+		ValaBlock* _tmp8_ = NULL;
+		_tmp7_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
+		_tmp6_ = _tmp7_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -11825,15 +12008,18 @@ static ValaStatement* vala_parser_parse_if_statement (ValaParser* self, GError**
 				return NULL;
 			}
 		}
+		_tmp8_ = _tmp6_;
+		_tmp6_ = NULL;
 		_vala_code_node_unref0 (false_stmt);
-		false_stmt = _tmp7_;
+		false_stmt = _tmp8_;
+		_vala_code_node_unref0 (_tmp6_);
 	}
-	_tmp8_ = condition;
-	_tmp9_ = true_stmt;
-	_tmp10_ = false_stmt;
-	_tmp11_ = src;
-	_tmp12_ = vala_if_statement_new (_tmp8_, _tmp9_, _tmp10_, _tmp11_);
-	result = (ValaStatement*) _tmp12_;
+	_tmp9_ = condition;
+	_tmp10_ = true_stmt;
+	_tmp11_ = false_stmt;
+	_tmp12_ = src;
+	_tmp13_ = vala_if_statement_new (_tmp9_, _tmp10_, _tmp11_, _tmp12_);
+	result = (ValaStatement*) _tmp13_;
 	_vala_code_node_unref0 (false_stmt);
 	_vala_code_node_unref0 (true_stmt);
 	_vala_source_reference_unref0 (src);
@@ -11844,17 +12030,17 @@ static ValaStatement* vala_parser_parse_if_statement (ValaParser* self, GError**
 
 static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* condition = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* condition;
-	ValaExpression* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaSwitchStatement* stmt = NULL;
+	ValaExpression* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaSwitchStatement* _tmp6_;
-	ValaSwitchStatement* _tmp7_;
-	ValaSwitchStatement* stmt;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaSwitchStatement* _tmp6_ = NULL;
+	ValaSwitchStatement* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -11932,15 +12118,15 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 	while (TRUE) {
 		ValaTokenType _tmp8_ = 0;
 		ValaSourceLocation _tmp9_ = {0};
-		ValaSourceLocation _tmp10_;
+		ValaSwitchSection* section = NULL;
+		ValaSourceLocation _tmp10_ = {0};
 		ValaSourceReference* _tmp11_ = NULL;
-		ValaSourceReference* _tmp12_;
-		ValaSwitchSection* _tmp13_;
-		ValaSwitchSection* _tmp14_;
-		ValaSwitchSection* section;
-		ValaSwitchSection* _tmp37_;
-		ValaSwitchStatement* _tmp38_;
-		ValaSwitchSection* _tmp39_;
+		ValaSourceReference* _tmp12_ = NULL;
+		ValaSwitchSection* _tmp13_ = NULL;
+		ValaSwitchSection* _tmp14_ = NULL;
+		ValaSwitchSection* _tmp34_ = NULL;
+		ValaSwitchStatement* _tmp35_ = NULL;
+		ValaSwitchSection* _tmp36_ = NULL;
 		_tmp8_ = vala_parser_current (self);
 		if (!(_tmp8_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
 			break;
@@ -11955,43 +12141,38 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 		_vala_source_reference_unref0 (_tmp12_);
 		section = _tmp14_;
 		{
-			gboolean _tmp15_;
+			gboolean _tmp15_ = FALSE;
 			_tmp15_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp16_;
-				gboolean _tmp21_ = FALSE;
-				_tmp16_ = _tmp15_;
-				if (!_tmp16_) {
-					gboolean _tmp17_ = FALSE;
-					ValaTokenType _tmp18_ = 0;
-					gboolean _tmp20_;
-					_tmp18_ = vala_parser_current (self);
-					if (_tmp18_ == VALA_TOKEN_TYPE_CASE) {
-						_tmp17_ = TRUE;
+				gboolean _tmp19_ = FALSE;
+				if (!_tmp15_) {
+					gboolean _tmp16_ = FALSE;
+					ValaTokenType _tmp17_ = 0;
+					_tmp17_ = vala_parser_current (self);
+					if (_tmp17_ == VALA_TOKEN_TYPE_CASE) {
+						_tmp16_ = TRUE;
 					} else {
-						ValaTokenType _tmp19_ = 0;
-						_tmp19_ = vala_parser_current (self);
-						_tmp17_ = _tmp19_ == VALA_TOKEN_TYPE_DEFAULT;
+						ValaTokenType _tmp18_ = 0;
+						_tmp18_ = vala_parser_current (self);
+						_tmp16_ = _tmp18_ == VALA_TOKEN_TYPE_DEFAULT;
 					}
-					_tmp20_ = _tmp17_;
-					if (!_tmp20_) {
+					if (!_tmp16_) {
 						break;
 					}
 				}
 				_tmp15_ = FALSE;
-				_tmp21_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CASE);
-				if (_tmp21_) {
-					ValaExpression* _tmp22_ = NULL;
-					ValaExpression* _tmp23_;
-					ValaSwitchSection* _tmp24_;
-					ValaExpression* _tmp25_;
-					ValaSourceLocation _tmp26_;
-					ValaSourceReference* _tmp27_ = NULL;
-					ValaSourceReference* _tmp28_;
-					ValaSwitchLabel* _tmp29_;
-					ValaSwitchLabel* _tmp30_;
-					_tmp22_ = vala_parser_parse_expression (self, &_inner_error_);
-					_tmp23_ = _tmp22_;
+				_tmp19_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CASE);
+				if (_tmp19_) {
+					ValaExpression* _tmp20_ = NULL;
+					ValaExpression* _tmp21_ = NULL;
+					ValaSwitchSection* _tmp22_ = NULL;
+					ValaSourceLocation _tmp23_ = {0};
+					ValaSourceReference* _tmp24_ = NULL;
+					ValaSourceReference* _tmp25_ = NULL;
+					ValaSwitchLabel* _tmp26_ = NULL;
+					ValaSwitchLabel* _tmp27_ = NULL;
+					_tmp21_ = vala_parser_parse_expression (self, &_inner_error_);
+					_tmp20_ = _tmp21_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -12008,24 +12189,23 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 							return NULL;
 						}
 					}
-					_tmp24_ = section;
-					_tmp25_ = _tmp23_;
-					_tmp26_ = begin;
-					_tmp27_ = vala_parser_get_src (self, &_tmp26_);
-					_tmp28_ = _tmp27_;
-					_tmp29_ = vala_switch_label_new (_tmp25_, _tmp28_);
-					_tmp30_ = _tmp29_;
-					vala_switch_section_add_label (_tmp24_, _tmp30_);
-					_vala_code_node_unref0 (_tmp30_);
-					_vala_source_reference_unref0 (_tmp28_);
-					_vala_code_node_unref0 (_tmp25_);
+					_tmp22_ = section;
+					_tmp23_ = begin;
+					_tmp24_ = vala_parser_get_src (self, &_tmp23_);
+					_tmp25_ = _tmp24_;
+					_tmp26_ = vala_switch_label_new (_tmp20_, _tmp25_);
+					_tmp27_ = _tmp26_;
+					vala_switch_section_add_label (_tmp22_, _tmp27_);
+					_vala_code_node_unref0 (_tmp27_);
+					_vala_source_reference_unref0 (_tmp25_);
+					_vala_code_node_unref0 (_tmp20_);
 				} else {
-					ValaSwitchSection* _tmp31_;
-					ValaSourceLocation _tmp32_;
-					ValaSourceReference* _tmp33_ = NULL;
-					ValaSourceReference* _tmp34_;
-					ValaSwitchLabel* _tmp35_;
-					ValaSwitchLabel* _tmp36_;
+					ValaSwitchSection* _tmp28_ = NULL;
+					ValaSourceLocation _tmp29_ = {0};
+					ValaSourceReference* _tmp30_ = NULL;
+					ValaSourceReference* _tmp31_ = NULL;
+					ValaSwitchLabel* _tmp32_ = NULL;
+					ValaSwitchLabel* _tmp33_ = NULL;
 					vala_parser_expect (self, VALA_TOKEN_TYPE_DEFAULT, &_inner_error_);
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -12043,15 +12223,15 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 							return NULL;
 						}
 					}
-					_tmp31_ = section;
-					_tmp32_ = begin;
-					_tmp33_ = vala_parser_get_src (self, &_tmp32_);
-					_tmp34_ = _tmp33_;
-					_tmp35_ = vala_switch_label_new_with_default (_tmp34_);
-					_tmp36_ = _tmp35_;
-					vala_switch_section_add_label (_tmp31_, _tmp36_);
-					_vala_code_node_unref0 (_tmp36_);
-					_vala_source_reference_unref0 (_tmp34_);
+					_tmp28_ = section;
+					_tmp29_ = begin;
+					_tmp30_ = vala_parser_get_src (self, &_tmp29_);
+					_tmp31_ = _tmp30_;
+					_tmp32_ = vala_switch_label_new_with_default (_tmp31_);
+					_tmp33_ = _tmp32_;
+					vala_switch_section_add_label (_tmp28_, _tmp33_);
+					_vala_code_node_unref0 (_tmp33_);
+					_vala_source_reference_unref0 (_tmp31_);
 				}
 				vala_parser_expect (self, VALA_TOKEN_TYPE_COLON, &_inner_error_);
 				if (_inner_error_ != NULL) {
@@ -12072,8 +12252,8 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 				}
 			}
 		}
-		_tmp37_ = section;
-		vala_parser_parse_statements (self, (ValaBlock*) _tmp37_, &_inner_error_);
+		_tmp34_ = section;
+		vala_parser_parse_statements (self, (ValaBlock*) _tmp34_, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -12090,9 +12270,9 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 				return NULL;
 			}
 		}
-		_tmp38_ = stmt;
-		_tmp39_ = section;
-		vala_switch_statement_add_section (_tmp38_, _tmp39_);
+		_tmp35_ = stmt;
+		_tmp36_ = section;
+		vala_switch_statement_add_section (_tmp35_, _tmp36_);
 		_vala_code_node_unref0 (section);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_BRACE, &_inner_error_);
@@ -12118,19 +12298,19 @@ static ValaStatement* vala_parser_parse_switch_statement (ValaParser* self, GErr
 
 static ValaStatement* vala_parser_parse_while_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* condition = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* condition;
+	ValaBlock* body = NULL;
 	ValaBlock* _tmp2_ = NULL;
-	ValaBlock* body;
-	ValaExpression* _tmp3_;
-	ValaBlock* _tmp4_;
-	ValaSourceLocation _tmp5_;
+	ValaExpression* _tmp3_ = NULL;
+	ValaBlock* _tmp4_ = NULL;
+	ValaSourceLocation _tmp5_ = {0};
 	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaWhileStatement* _tmp8_;
-	ValaStatement* _tmp9_;
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaWhileStatement* _tmp8_ = NULL;
+	ValaStatement* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -12213,19 +12393,19 @@ static ValaStatement* vala_parser_parse_while_statement (ValaParser* self, GErro
 
 static ValaStatement* vala_parser_parse_do_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaBlock* body = NULL;
 	ValaBlock* _tmp1_ = NULL;
-	ValaBlock* body;
+	ValaExpression* condition = NULL;
 	ValaExpression* _tmp2_ = NULL;
-	ValaExpression* condition;
-	ValaBlock* _tmp3_;
-	ValaExpression* _tmp4_;
-	ValaSourceLocation _tmp5_;
+	ValaBlock* _tmp3_ = NULL;
+	ValaExpression* _tmp4_ = NULL;
+	ValaSourceLocation _tmp5_ = {0};
 	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaDoStatement* _tmp8_;
-	ValaStatement* _tmp9_;
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaDoStatement* _tmp8_ = NULL;
+	ValaStatement* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -12340,30 +12520,30 @@ static ValaStatement* vala_parser_parse_do_statement (ValaParser* self, GError**
 
 static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaBlock* block;
-	GEqualFunc _tmp1_;
-	ValaArrayList* _tmp2_;
-	ValaArrayList* initializer_list;
+	ValaBlock* block = NULL;
+	ValaArrayList* initializer_list = NULL;
+	GEqualFunc _tmp1_ = NULL;
+	ValaArrayList* _tmp2_ = NULL;
 	gboolean _tmp3_ = FALSE;
-	ValaExpression* condition;
-	ValaTokenType _tmp20_ = 0;
-	GEqualFunc _tmp23_;
-	ValaArrayList* _tmp24_;
-	ValaArrayList* iterator_list;
-	ValaTokenType _tmp25_ = 0;
-	ValaSourceLocation _tmp33_;
-	ValaSourceReference* _tmp34_ = NULL;
-	ValaSourceReference* src;
-	ValaBlock* _tmp35_ = NULL;
-	ValaBlock* body;
-	ValaExpression* _tmp36_;
-	ValaBlock* _tmp37_;
-	ValaSourceReference* _tmp38_;
-	ValaForStatement* _tmp39_;
-	ValaForStatement* stmt;
-	ValaBlock* _tmp66_;
+	ValaExpression* condition = NULL;
+	ValaTokenType _tmp18_ = 0;
+	ValaArrayList* iterator_list = NULL;
+	GEqualFunc _tmp22_ = NULL;
+	ValaArrayList* _tmp23_ = NULL;
+	ValaTokenType _tmp24_ = 0;
+	ValaSourceReference* src = NULL;
+	ValaSourceLocation _tmp30_ = {0};
+	ValaSourceReference* _tmp31_ = NULL;
+	ValaBlock* body = NULL;
+	ValaBlock* _tmp32_ = NULL;
+	ValaForStatement* stmt = NULL;
+	ValaExpression* _tmp33_ = NULL;
+	ValaBlock* _tmp34_ = NULL;
+	ValaSourceReference* _tmp35_ = NULL;
+	ValaForStatement* _tmp36_ = NULL;
+	ValaBlock* _tmp63_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -12402,7 +12582,7 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 	if (!_tmp3_) {
 		gboolean is_expr = FALSE;
 		ValaTokenType _tmp4_ = 0;
-		gboolean _tmp7_;
+		gboolean _tmp7_ = FALSE;
 		_tmp4_ = vala_parser_current (self);
 		switch (_tmp4_) {
 			case VALA_TOKEN_TYPE_VAR:
@@ -12419,9 +12599,9 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 			default:
 			{
 				gboolean _tmp5_ = FALSE;
-				gboolean _tmp6_;
-				_tmp5_ = vala_parser_is_expression (self, &_inner_error_);
-				_tmp6_ = _tmp5_;
+				gboolean _tmp6_ = FALSE;
+				_tmp6_ = vala_parser_is_expression (self, &_inner_error_);
+				_tmp5_ = _tmp6_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -12436,32 +12616,29 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 						return NULL;
 					}
 				}
-				is_expr = _tmp6_;
+				is_expr = _tmp5_;
 				break;
 			}
 		}
 		_tmp7_ = is_expr;
 		if (_tmp7_) {
 			{
-				gboolean _tmp8_;
+				gboolean _tmp8_ = FALSE;
 				_tmp8_ = TRUE;
 				while (TRUE) {
-					gboolean _tmp9_;
+					ValaExpression* _tmp10_ = NULL;
 					ValaExpression* _tmp11_ = NULL;
-					ValaExpression* _tmp12_;
-					ValaArrayList* _tmp13_;
-					ValaExpression* _tmp14_;
-					_tmp9_ = _tmp8_;
-					if (!_tmp9_) {
-						gboolean _tmp10_ = FALSE;
-						_tmp10_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-						if (!_tmp10_) {
+					ValaArrayList* _tmp12_ = NULL;
+					if (!_tmp8_) {
+						gboolean _tmp9_ = FALSE;
+						_tmp9_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+						if (!_tmp9_) {
 							break;
 						}
 					}
 					_tmp8_ = FALSE;
 					_tmp11_ = vala_parser_parse_statement_expression (self, &_inner_error_);
-					_tmp12_ = _tmp11_;
+					_tmp10_ = _tmp11_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -12476,10 +12653,9 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 							return NULL;
 						}
 					}
-					_tmp13_ = initializer_list;
-					_tmp14_ = _tmp12_;
-					vala_collection_add ((ValaCollection*) _tmp13_, _tmp14_);
-					_vala_code_node_unref0 (_tmp14_);
+					_tmp12_ = initializer_list;
+					vala_collection_add ((ValaCollection*) _tmp12_, _tmp10_);
+					_vala_code_node_unref0 (_tmp10_);
 				}
 			}
 			vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
@@ -12498,20 +12674,20 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 				}
 			}
 		} else {
-			ValaSourceLocation _tmp15_;
-			ValaSourceReference* _tmp16_ = NULL;
-			ValaSourceReference* _tmp17_;
-			ValaBlock* _tmp18_;
-			ValaBlock* _tmp19_;
-			_tmp15_ = begin;
-			_tmp16_ = vala_parser_get_src (self, &_tmp15_);
-			_tmp17_ = _tmp16_;
-			_tmp18_ = vala_block_new (_tmp17_);
+			ValaSourceLocation _tmp13_ = {0};
+			ValaSourceReference* _tmp14_ = NULL;
+			ValaSourceReference* _tmp15_ = NULL;
+			ValaBlock* _tmp16_ = NULL;
+			ValaBlock* _tmp17_ = NULL;
+			_tmp13_ = begin;
+			_tmp14_ = vala_parser_get_src (self, &_tmp13_);
+			_tmp15_ = _tmp14_;
+			_tmp16_ = vala_block_new (_tmp15_);
 			_vala_code_node_unref0 (block);
-			block = _tmp18_;
-			_vala_source_reference_unref0 (_tmp17_);
-			_tmp19_ = block;
-			vala_parser_parse_local_variable_declarations (self, _tmp19_, &_inner_error_);
+			block = _tmp16_;
+			_vala_source_reference_unref0 (_tmp15_);
+			_tmp17_ = block;
+			vala_parser_parse_local_variable_declarations (self, _tmp17_, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -12529,12 +12705,13 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 		}
 	}
 	condition = NULL;
-	_tmp20_ = vala_parser_current (self);
-	if (_tmp20_ != VALA_TOKEN_TYPE_SEMICOLON) {
+	_tmp18_ = vala_parser_current (self);
+	if (_tmp18_ != VALA_TOKEN_TYPE_SEMICOLON) {
+		ValaExpression* _tmp19_ = NULL;
+		ValaExpression* _tmp20_ = NULL;
 		ValaExpression* _tmp21_ = NULL;
-		ValaExpression* _tmp22_;
-		_tmp21_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp22_ = _tmp21_;
+		_tmp20_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp19_ = _tmp20_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -12551,8 +12728,11 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 				return NULL;
 			}
 		}
+		_tmp21_ = _tmp19_;
+		_tmp19_ = NULL;
 		_vala_code_node_unref0 (condition);
-		condition = _tmp22_;
+		condition = _tmp21_;
+		_vala_code_node_unref0 (_tmp19_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -12571,31 +12751,28 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 			return NULL;
 		}
 	}
-	_tmp23_ = g_direct_equal;
-	_tmp24_ = vala_array_list_new (VALA_TYPE_EXPRESSION, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp23_);
-	iterator_list = _tmp24_;
-	_tmp25_ = vala_parser_current (self);
-	if (_tmp25_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+	_tmp22_ = g_direct_equal;
+	_tmp23_ = vala_array_list_new (VALA_TYPE_EXPRESSION, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp22_);
+	iterator_list = _tmp23_;
+	_tmp24_ = vala_parser_current (self);
+	if (_tmp24_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp26_;
-			_tmp26_ = TRUE;
+			gboolean _tmp25_ = FALSE;
+			_tmp25_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp27_;
-				ValaExpression* _tmp29_ = NULL;
-				ValaExpression* _tmp30_;
-				ValaArrayList* _tmp31_;
-				ValaExpression* _tmp32_;
-				_tmp27_ = _tmp26_;
-				if (!_tmp27_) {
-					gboolean _tmp28_ = FALSE;
-					_tmp28_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp28_) {
+				ValaExpression* _tmp27_ = NULL;
+				ValaExpression* _tmp28_ = NULL;
+				ValaArrayList* _tmp29_ = NULL;
+				if (!_tmp25_) {
+					gboolean _tmp26_ = FALSE;
+					_tmp26_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp26_) {
 						break;
 					}
 				}
-				_tmp26_ = FALSE;
-				_tmp29_ = vala_parser_parse_statement_expression (self, &_inner_error_);
-				_tmp30_ = _tmp29_;
+				_tmp25_ = FALSE;
+				_tmp28_ = vala_parser_parse_statement_expression (self, &_inner_error_);
+				_tmp27_ = _tmp28_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -12614,10 +12791,9 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 						return NULL;
 					}
 				}
-				_tmp31_ = iterator_list;
-				_tmp32_ = _tmp30_;
-				vala_collection_add ((ValaCollection*) _tmp31_, _tmp32_);
-				_vala_code_node_unref0 (_tmp32_);
+				_tmp29_ = iterator_list;
+				vala_collection_add ((ValaCollection*) _tmp29_, _tmp27_);
+				_vala_code_node_unref0 (_tmp27_);
 			}
 		}
 	}
@@ -12640,11 +12816,11 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 			return NULL;
 		}
 	}
-	_tmp33_ = begin;
-	_tmp34_ = vala_parser_get_src (self, &_tmp33_);
-	src = _tmp34_;
-	_tmp35_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
-	body = _tmp35_;
+	_tmp30_ = begin;
+	_tmp31_ = vala_parser_get_src (self, &_tmp30_);
+	src = _tmp31_;
+	_tmp32_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
+	body = _tmp32_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -12665,108 +12841,108 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 			return NULL;
 		}
 	}
-	_tmp36_ = condition;
-	_tmp37_ = body;
-	_tmp38_ = src;
-	_tmp39_ = vala_for_statement_new (_tmp36_, _tmp37_, _tmp38_);
-	stmt = _tmp39_;
+	_tmp33_ = condition;
+	_tmp34_ = body;
+	_tmp35_ = src;
+	_tmp36_ = vala_for_statement_new (_tmp33_, _tmp34_, _tmp35_);
+	stmt = _tmp36_;
 	{
-		ValaArrayList* _tmp40_;
-		ValaArrayList* _tmp41_;
-		ValaArrayList* _init_list;
-		ValaArrayList* _tmp42_;
-		gint _tmp43_;
-		gint _tmp44_;
-		gint _init_size;
-		gint _init_index;
-		_tmp40_ = initializer_list;
-		_tmp41_ = _vala_iterable_ref0 (_tmp40_);
-		_init_list = _tmp41_;
-		_tmp42_ = _init_list;
-		_tmp43_ = vala_collection_get_size ((ValaCollection*) _tmp42_);
-		_tmp44_ = _tmp43_;
-		_init_size = _tmp44_;
+		ValaArrayList* _init_list = NULL;
+		ValaArrayList* _tmp37_ = NULL;
+		ValaArrayList* _tmp38_ = NULL;
+		gint _init_size = 0;
+		ValaArrayList* _tmp39_ = NULL;
+		gint _tmp40_ = 0;
+		gint _tmp41_ = 0;
+		gint _init_index = 0;
+		_tmp37_ = initializer_list;
+		_tmp38_ = _vala_iterable_ref0 (_tmp37_);
+		_init_list = _tmp38_;
+		_tmp39_ = _init_list;
+		_tmp40_ = vala_collection_get_size ((ValaCollection*) _tmp39_);
+		_tmp41_ = _tmp40_;
+		_init_size = _tmp41_;
 		_init_index = -1;
 		while (TRUE) {
-			gint _tmp45_;
-			gint _tmp46_;
-			gint _tmp47_;
-			ValaArrayList* _tmp48_;
-			gint _tmp49_;
-			gpointer _tmp50_ = NULL;
-			ValaExpression* init;
-			ValaForStatement* _tmp51_;
-			ValaExpression* _tmp52_;
-			_tmp45_ = _init_index;
-			_init_index = _tmp45_ + 1;
-			_tmp46_ = _init_index;
-			_tmp47_ = _init_size;
-			if (!(_tmp46_ < _tmp47_)) {
+			gint _tmp42_ = 0;
+			gint _tmp43_ = 0;
+			gint _tmp44_ = 0;
+			ValaExpression* init = NULL;
+			ValaArrayList* _tmp45_ = NULL;
+			gint _tmp46_ = 0;
+			gpointer _tmp47_ = NULL;
+			ValaForStatement* _tmp48_ = NULL;
+			ValaExpression* _tmp49_ = NULL;
+			_tmp42_ = _init_index;
+			_init_index = _tmp42_ + 1;
+			_tmp43_ = _init_index;
+			_tmp44_ = _init_size;
+			if (!(_tmp43_ < _tmp44_)) {
 				break;
 			}
-			_tmp48_ = _init_list;
-			_tmp49_ = _init_index;
-			_tmp50_ = vala_list_get ((ValaList*) _tmp48_, _tmp49_);
-			init = (ValaExpression*) _tmp50_;
-			_tmp51_ = stmt;
-			_tmp52_ = init;
-			vala_for_statement_add_initializer (_tmp51_, _tmp52_);
+			_tmp45_ = _init_list;
+			_tmp46_ = _init_index;
+			_tmp47_ = vala_list_get ((ValaList*) _tmp45_, _tmp46_);
+			init = (ValaExpression*) _tmp47_;
+			_tmp48_ = stmt;
+			_tmp49_ = init;
+			vala_for_statement_add_initializer (_tmp48_, _tmp49_);
 			_vala_code_node_unref0 (init);
 		}
 		_vala_iterable_unref0 (_init_list);
 	}
 	{
-		ValaArrayList* _tmp53_;
-		ValaArrayList* _tmp54_;
-		ValaArrayList* _iter_list;
-		ValaArrayList* _tmp55_;
-		gint _tmp56_;
-		gint _tmp57_;
-		gint _iter_size;
-		gint _iter_index;
-		_tmp53_ = iterator_list;
-		_tmp54_ = _vala_iterable_ref0 (_tmp53_);
-		_iter_list = _tmp54_;
-		_tmp55_ = _iter_list;
-		_tmp56_ = vala_collection_get_size ((ValaCollection*) _tmp55_);
-		_tmp57_ = _tmp56_;
-		_iter_size = _tmp57_;
+		ValaArrayList* _iter_list = NULL;
+		ValaArrayList* _tmp50_ = NULL;
+		ValaArrayList* _tmp51_ = NULL;
+		gint _iter_size = 0;
+		ValaArrayList* _tmp52_ = NULL;
+		gint _tmp53_ = 0;
+		gint _tmp54_ = 0;
+		gint _iter_index = 0;
+		_tmp50_ = iterator_list;
+		_tmp51_ = _vala_iterable_ref0 (_tmp50_);
+		_iter_list = _tmp51_;
+		_tmp52_ = _iter_list;
+		_tmp53_ = vala_collection_get_size ((ValaCollection*) _tmp52_);
+		_tmp54_ = _tmp53_;
+		_iter_size = _tmp54_;
 		_iter_index = -1;
 		while (TRUE) {
-			gint _tmp58_;
-			gint _tmp59_;
-			gint _tmp60_;
-			ValaArrayList* _tmp61_;
-			gint _tmp62_;
-			gpointer _tmp63_ = NULL;
-			ValaExpression* iter;
-			ValaForStatement* _tmp64_;
-			ValaExpression* _tmp65_;
-			_tmp58_ = _iter_index;
-			_iter_index = _tmp58_ + 1;
-			_tmp59_ = _iter_index;
-			_tmp60_ = _iter_size;
-			if (!(_tmp59_ < _tmp60_)) {
+			gint _tmp55_ = 0;
+			gint _tmp56_ = 0;
+			gint _tmp57_ = 0;
+			ValaExpression* iter = NULL;
+			ValaArrayList* _tmp58_ = NULL;
+			gint _tmp59_ = 0;
+			gpointer _tmp60_ = NULL;
+			ValaForStatement* _tmp61_ = NULL;
+			ValaExpression* _tmp62_ = NULL;
+			_tmp55_ = _iter_index;
+			_iter_index = _tmp55_ + 1;
+			_tmp56_ = _iter_index;
+			_tmp57_ = _iter_size;
+			if (!(_tmp56_ < _tmp57_)) {
 				break;
 			}
-			_tmp61_ = _iter_list;
-			_tmp62_ = _iter_index;
-			_tmp63_ = vala_list_get ((ValaList*) _tmp61_, _tmp62_);
-			iter = (ValaExpression*) _tmp63_;
-			_tmp64_ = stmt;
-			_tmp65_ = iter;
-			vala_for_statement_add_iterator (_tmp64_, _tmp65_);
+			_tmp58_ = _iter_list;
+			_tmp59_ = _iter_index;
+			_tmp60_ = vala_list_get ((ValaList*) _tmp58_, _tmp59_);
+			iter = (ValaExpression*) _tmp60_;
+			_tmp61_ = stmt;
+			_tmp62_ = iter;
+			vala_for_statement_add_iterator (_tmp61_, _tmp62_);
 			_vala_code_node_unref0 (iter);
 		}
 		_vala_iterable_unref0 (_iter_list);
 	}
-	_tmp66_ = block;
-	if (_tmp66_ != NULL) {
-		ValaBlock* _tmp67_;
-		ValaForStatement* _tmp68_;
-		_tmp67_ = block;
-		_tmp68_ = stmt;
-		vala_block_add_statement (_tmp67_, (ValaStatement*) _tmp68_);
+	_tmp63_ = block;
+	if (_tmp63_ != NULL) {
+		ValaBlock* _tmp64_ = NULL;
+		ValaForStatement* _tmp65_ = NULL;
+		_tmp64_ = block;
+		_tmp65_ = stmt;
+		vala_block_add_statement (_tmp64_, (ValaStatement*) _tmp65_);
 		result = (ValaStatement*) block;
 		_vala_code_node_unref0 (stmt);
 		_vala_code_node_unref0 (body);
@@ -12797,25 +12973,25 @@ static ValaStatement* vala_parser_parse_for_statement (ValaParser* self, GError*
 
 static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaDataType* type;
+	ValaDataType* type = NULL;
 	gboolean _tmp1_ = FALSE;
-	gchar* _tmp9_ = NULL;
-	gchar* id;
-	ValaExpression* _tmp10_ = NULL;
-	ValaExpression* collection;
-	ValaSourceLocation _tmp11_;
-	ValaSourceReference* _tmp12_ = NULL;
-	ValaSourceReference* src;
-	ValaBlock* _tmp13_ = NULL;
-	ValaBlock* body;
-	ValaDataType* _tmp14_;
-	const gchar* _tmp15_;
-	ValaExpression* _tmp16_;
-	ValaBlock* _tmp17_;
-	ValaSourceReference* _tmp18_;
-	ValaForeachStatement* _tmp19_;
+	gchar* id = NULL;
+	gchar* _tmp10_ = NULL;
+	ValaExpression* collection = NULL;
+	ValaExpression* _tmp11_ = NULL;
+	ValaSourceReference* src = NULL;
+	ValaSourceLocation _tmp12_ = {0};
+	ValaSourceReference* _tmp13_ = NULL;
+	ValaBlock* body = NULL;
+	ValaBlock* _tmp14_ = NULL;
+	ValaDataType* _tmp15_ = NULL;
+	const gchar* _tmp16_ = NULL;
+	ValaExpression* _tmp17_ = NULL;
+	ValaBlock* _tmp18_ = NULL;
+	ValaSourceReference* _tmp19_ = NULL;
+	ValaForeachStatement* _tmp20_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -12846,10 +13022,11 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 	_tmp1_ = vala_parser_accept (self, VALA_TOKEN_TYPE_VAR);
 	if (!_tmp1_) {
 		ValaDataType* _tmp2_ = NULL;
-		ValaDataType* _tmp3_;
-		gboolean _tmp4_ = FALSE;
-		_tmp2_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
-		_tmp3_ = _tmp2_;
+		ValaDataType* _tmp3_ = NULL;
+		ValaDataType* _tmp4_ = NULL;
+		gboolean _tmp5_ = FALSE;
+		_tmp3_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
+		_tmp2_ = _tmp3_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -12862,34 +13039,39 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 				return NULL;
 			}
 		}
+		_tmp4_ = _tmp2_;
+		_tmp2_ = NULL;
 		_vala_code_node_unref0 (type);
-		type = _tmp3_;
-		_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IN);
-		if (_tmp4_) {
-			ValaDataType* _tmp5_;
-			ValaSourceReference* _tmp6_;
-			ValaSourceReference* _tmp7_;
-			GError* _tmp8_;
-			_tmp5_ = type;
-			_tmp6_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp5_);
-			_tmp7_ = _tmp6_;
-			vala_report_error (_tmp7_, "syntax error, expected var or type");
-			_tmp8_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, "expected var or type");
-			_inner_error_ = _tmp8_;
+		type = _tmp4_;
+		_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_IN);
+		if (_tmp5_) {
+			ValaDataType* _tmp6_ = NULL;
+			ValaSourceReference* _tmp7_ = NULL;
+			ValaSourceReference* _tmp8_ = NULL;
+			GError* _tmp9_ = NULL;
+			_tmp6_ = type;
+			_tmp7_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp6_);
+			_tmp8_ = _tmp7_;
+			vala_report_error (_tmp8_, "syntax error, expected var or type");
+			_tmp9_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, "expected var or type");
+			_inner_error_ = _tmp9_;
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp2_);
 				_vala_code_node_unref0 (type);
 				return NULL;
 			} else {
+				_vala_code_node_unref0 (_tmp2_);
 				_vala_code_node_unref0 (type);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
 				return NULL;
 			}
 		}
+		_vala_code_node_unref0 (_tmp2_);
 	}
-	_tmp9_ = vala_parser_parse_identifier (self, &_inner_error_);
-	id = _tmp9_;
+	_tmp10_ = vala_parser_parse_identifier (self, &_inner_error_);
+	id = _tmp10_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -12917,8 +13099,8 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 			return NULL;
 		}
 	}
-	_tmp10_ = vala_parser_parse_expression (self, &_inner_error_);
-	collection = _tmp10_;
+	_tmp11_ = vala_parser_parse_expression (self, &_inner_error_);
+	collection = _tmp11_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -12950,11 +13132,11 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 			return NULL;
 		}
 	}
-	_tmp11_ = begin;
-	_tmp12_ = vala_parser_get_src (self, &_tmp11_);
-	src = _tmp12_;
-	_tmp13_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
-	body = _tmp13_;
+	_tmp12_ = begin;
+	_tmp13_ = vala_parser_get_src (self, &_tmp12_);
+	src = _tmp13_;
+	_tmp14_ = vala_parser_parse_embedded_statement (self, &_inner_error_);
+	body = _tmp14_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -12973,13 +13155,13 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 			return NULL;
 		}
 	}
-	_tmp14_ = type;
-	_tmp15_ = id;
-	_tmp16_ = collection;
-	_tmp17_ = body;
-	_tmp18_ = src;
-	_tmp19_ = vala_foreach_statement_new (_tmp14_, _tmp15_, _tmp16_, _tmp17_, _tmp18_);
-	result = (ValaStatement*) _tmp19_;
+	_tmp15_ = type;
+	_tmp16_ = id;
+	_tmp17_ = collection;
+	_tmp18_ = body;
+	_tmp19_ = src;
+	_tmp20_ = vala_foreach_statement_new (_tmp15_, _tmp16_, _tmp17_, _tmp18_, _tmp19_);
+	result = (ValaStatement*) _tmp20_;
 	_vala_code_node_unref0 (body);
 	_vala_source_reference_unref0 (src);
 	_vala_code_node_unref0 (collection);
@@ -12991,13 +13173,13 @@ static ValaStatement* vala_parser_parse_foreach_statement (ValaParser* self, GEr
 
 static ValaStatement* vala_parser_parse_break_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaBreakStatement* _tmp4_;
-	ValaStatement* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaBreakStatement* _tmp4_ = NULL;
+	ValaStatement* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13037,13 +13219,13 @@ static ValaStatement* vala_parser_parse_break_statement (ValaParser* self, GErro
 
 static ValaStatement* vala_parser_parse_continue_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaContinueStatement* _tmp4_;
-	ValaStatement* _tmp5_;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaContinueStatement* _tmp4_ = NULL;
+	ValaStatement* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13083,16 +13265,16 @@ static ValaStatement* vala_parser_parse_continue_statement (ValaParser* self, GE
 
 static ValaStatement* vala_parser_parse_return_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaExpression* expr;
+	ValaExpression* expr = NULL;
 	ValaTokenType _tmp1_ = 0;
-	ValaExpression* _tmp4_;
-	ValaSourceLocation _tmp5_;
-	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaReturnStatement* _tmp8_;
-	ValaStatement* _tmp9_;
+	ValaExpression* _tmp5_ = NULL;
+	ValaSourceLocation _tmp6_ = {0};
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaSourceReference* _tmp8_ = NULL;
+	ValaReturnStatement* _tmp9_ = NULL;
+	ValaStatement* _tmp10_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13112,9 +13294,10 @@ static ValaStatement* vala_parser_parse_return_statement (ValaParser* self, GErr
 	_tmp1_ = vala_parser_current (self);
 	if (_tmp1_ != VALA_TOKEN_TYPE_SEMICOLON) {
 		ValaExpression* _tmp2_ = NULL;
-		ValaExpression* _tmp3_;
-		_tmp2_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp3_ = _tmp2_;
+		ValaExpression* _tmp3_ = NULL;
+		ValaExpression* _tmp4_ = NULL;
+		_tmp3_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp2_ = _tmp3_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -13127,8 +13310,11 @@ static ValaStatement* vala_parser_parse_return_statement (ValaParser* self, GErr
 				return NULL;
 			}
 		}
+		_tmp4_ = _tmp2_;
+		_tmp2_ = NULL;
 		_vala_code_node_unref0 (expr);
-		expr = _tmp3_;
+		expr = _tmp4_;
+		_vala_code_node_unref0 (_tmp2_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -13143,14 +13329,14 @@ static ValaStatement* vala_parser_parse_return_statement (ValaParser* self, GErr
 			return NULL;
 		}
 	}
-	_tmp4_ = expr;
-	_tmp5_ = begin;
-	_tmp6_ = vala_parser_get_src (self, &_tmp5_);
-	_tmp7_ = _tmp6_;
-	_tmp8_ = vala_return_statement_new (_tmp4_, _tmp7_);
-	_tmp9_ = (ValaStatement*) _tmp8_;
-	_vala_source_reference_unref0 (_tmp7_);
-	result = _tmp9_;
+	_tmp5_ = expr;
+	_tmp6_ = begin;
+	_tmp7_ = vala_parser_get_src (self, &_tmp6_);
+	_tmp8_ = _tmp7_;
+	_tmp9_ = vala_return_statement_new (_tmp5_, _tmp8_);
+	_tmp10_ = (ValaStatement*) _tmp9_;
+	_vala_source_reference_unref0 (_tmp8_);
+	result = _tmp10_;
 	_vala_code_node_unref0 (expr);
 	return result;
 }
@@ -13158,19 +13344,18 @@ static ValaStatement* vala_parser_parse_return_statement (ValaParser* self, GErr
 
 static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	gboolean _tmp1_ = FALSE;
 	ValaTokenType _tmp2_ = 0;
-	gboolean _tmp4_;
-	ValaExpression* expr;
+	ValaExpression* expr = NULL;
 	gboolean _tmp7_ = FALSE;
-	ValaExpression* _tmp10_;
-	ValaSourceLocation _tmp11_;
-	ValaSourceReference* _tmp12_ = NULL;
-	ValaSourceReference* _tmp13_;
-	ValaYieldStatement* _tmp14_;
-	ValaStatement* _tmp15_;
+	ValaExpression* _tmp11_ = NULL;
+	ValaSourceLocation _tmp12_ = {0};
+	ValaSourceReference* _tmp13_ = NULL;
+	ValaSourceReference* _tmp14_ = NULL;
+	ValaYieldStatement* _tmp15_ = NULL;
+	ValaStatement* _tmp16_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13194,13 +13379,13 @@ static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GErro
 	} else {
 		_tmp1_ = FALSE;
 	}
-	_tmp4_ = _tmp1_;
-	if (_tmp4_) {
+	if (_tmp1_) {
+		ValaStatement* _tmp4_ = NULL;
 		ValaStatement* _tmp5_ = NULL;
-		ValaStatement* _tmp6_;
+		ValaStatement* _tmp6_ = NULL;
 		vala_parser_prev (self);
 		_tmp5_ = vala_parser_parse_expression_statement (self, &_inner_error_);
-		_tmp6_ = _tmp5_;
+		_tmp4_ = _tmp5_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -13211,16 +13396,20 @@ static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GErro
 				return NULL;
 			}
 		}
+		_tmp6_ = _tmp4_;
+		_tmp4_ = NULL;
 		result = _tmp6_;
+		_vala_code_node_unref0 (_tmp4_);
 		return result;
 	}
 	expr = NULL;
 	_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_RETURN);
 	if (_tmp7_) {
 		ValaExpression* _tmp8_ = NULL;
-		ValaExpression* _tmp9_;
-		_tmp8_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp9_ = _tmp8_;
+		ValaExpression* _tmp9_ = NULL;
+		ValaExpression* _tmp10_ = NULL;
+		_tmp9_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp8_ = _tmp9_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -13233,8 +13422,11 @@ static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GErro
 				return NULL;
 			}
 		}
+		_tmp10_ = _tmp8_;
+		_tmp8_ = NULL;
 		_vala_code_node_unref0 (expr);
-		expr = _tmp9_;
+		expr = _tmp10_;
+		_vala_code_node_unref0 (_tmp8_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -13249,14 +13441,14 @@ static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GErro
 			return NULL;
 		}
 	}
-	_tmp10_ = expr;
-	_tmp11_ = begin;
-	_tmp12_ = vala_parser_get_src (self, &_tmp11_);
-	_tmp13_ = _tmp12_;
-	_tmp14_ = vala_yield_statement_new (_tmp10_, _tmp13_);
-	_tmp15_ = (ValaStatement*) _tmp14_;
-	_vala_source_reference_unref0 (_tmp13_);
-	result = _tmp15_;
+	_tmp11_ = expr;
+	_tmp12_ = begin;
+	_tmp13_ = vala_parser_get_src (self, &_tmp12_);
+	_tmp14_ = _tmp13_;
+	_tmp15_ = vala_yield_statement_new (_tmp11_, _tmp14_);
+	_tmp16_ = (ValaStatement*) _tmp15_;
+	_vala_source_reference_unref0 (_tmp14_);
+	result = _tmp16_;
 	_vala_code_node_unref0 (expr);
 	return result;
 }
@@ -13264,16 +13456,16 @@ static ValaStatement* vala_parser_parse_yield_statement (ValaParser* self, GErro
 
 static ValaStatement* vala_parser_parse_throw_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* expr;
-	ValaExpression* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaExpression* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaThrowStatement* _tmp6_;
-	ValaStatement* _tmp7_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaThrowStatement* _tmp6_ = NULL;
+	ValaStatement* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13329,23 +13521,23 @@ static ValaStatement* vala_parser_parse_throw_statement (ValaParser* self, GErro
 
 static ValaStatement* vala_parser_parse_try_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaBlock* try_block = NULL;
 	ValaBlock* _tmp1_ = NULL;
-	ValaBlock* try_block;
-	ValaBlock* finally_clause;
-	GEqualFunc _tmp2_;
-	ValaArrayList* _tmp3_;
-	ValaArrayList* catch_clauses;
+	ValaBlock* finally_clause = NULL;
+	ValaArrayList* catch_clauses = NULL;
+	GEqualFunc _tmp2_ = NULL;
+	ValaArrayList* _tmp3_ = NULL;
 	ValaTokenType _tmp4_ = 0;
-	ValaBlock* _tmp11_;
-	ValaBlock* _tmp12_;
-	ValaSourceLocation _tmp13_;
-	ValaSourceReference* _tmp14_ = NULL;
-	ValaSourceReference* _tmp15_;
-	ValaTryStatement* _tmp16_;
-	ValaTryStatement* _tmp17_;
-	ValaTryStatement* stmt;
+	ValaTryStatement* stmt = NULL;
+	ValaBlock* _tmp13_ = NULL;
+	ValaBlock* _tmp14_ = NULL;
+	ValaSourceLocation _tmp15_ = {0};
+	ValaSourceReference* _tmp16_ = NULL;
+	ValaSourceReference* _tmp17_ = NULL;
+	ValaTryStatement* _tmp18_ = NULL;
+	ValaTryStatement* _tmp19_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13379,7 +13571,7 @@ static ValaStatement* vala_parser_parse_try_statement (ValaParser* self, GError*
 	catch_clauses = _tmp3_;
 	_tmp4_ = vala_parser_current (self);
 	if (_tmp4_ == VALA_TOKEN_TYPE_CATCH) {
-		ValaArrayList* _tmp5_;
+		ValaArrayList* _tmp5_ = NULL;
 		ValaTokenType _tmp6_ = 0;
 		_tmp5_ = catch_clauses;
 		vala_parser_parse_catch_clauses (self, (ValaList*) _tmp5_, &_inner_error_);
@@ -13402,9 +13594,10 @@ static ValaStatement* vala_parser_parse_try_statement (ValaParser* self, GError*
 		_tmp6_ = vala_parser_current (self);
 		if (_tmp6_ == VALA_TOKEN_TYPE_FINALLY) {
 			ValaBlock* _tmp7_ = NULL;
-			ValaBlock* _tmp8_;
-			_tmp7_ = vala_parser_parse_finally_clause (self, &_inner_error_);
-			_tmp8_ = _tmp7_;
+			ValaBlock* _tmp8_ = NULL;
+			ValaBlock* _tmp9_ = NULL;
+			_tmp8_ = vala_parser_parse_finally_clause (self, &_inner_error_);
+			_tmp7_ = _tmp8_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -13421,14 +13614,18 @@ static ValaStatement* vala_parser_parse_try_statement (ValaParser* self, GError*
 					return NULL;
 				}
 			}
+			_tmp9_ = _tmp7_;
+			_tmp7_ = NULL;
 			_vala_code_node_unref0 (finally_clause);
-			finally_clause = _tmp8_;
+			finally_clause = _tmp9_;
+			_vala_code_node_unref0 (_tmp7_);
 		}
 	} else {
-		ValaBlock* _tmp9_ = NULL;
-		ValaBlock* _tmp10_;
-		_tmp9_ = vala_parser_parse_finally_clause (self, &_inner_error_);
-		_tmp10_ = _tmp9_;
+		ValaBlock* _tmp10_ = NULL;
+		ValaBlock* _tmp11_ = NULL;
+		ValaBlock* _tmp12_ = NULL;
+		_tmp11_ = vala_parser_parse_finally_clause (self, &_inner_error_);
+		_tmp10_ = _tmp11_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -13445,59 +13642,62 @@ static ValaStatement* vala_parser_parse_try_statement (ValaParser* self, GError*
 				return NULL;
 			}
 		}
+		_tmp12_ = _tmp10_;
+		_tmp10_ = NULL;
 		_vala_code_node_unref0 (finally_clause);
-		finally_clause = _tmp10_;
+		finally_clause = _tmp12_;
+		_vala_code_node_unref0 (_tmp10_);
 	}
-	_tmp11_ = try_block;
-	_tmp12_ = finally_clause;
-	_tmp13_ = begin;
-	_tmp14_ = vala_parser_get_src (self, &_tmp13_);
-	_tmp15_ = _tmp14_;
-	_tmp16_ = vala_try_statement_new (_tmp11_, _tmp12_, _tmp15_);
+	_tmp13_ = try_block;
+	_tmp14_ = finally_clause;
+	_tmp15_ = begin;
+	_tmp16_ = vala_parser_get_src (self, &_tmp15_);
 	_tmp17_ = _tmp16_;
-	_vala_source_reference_unref0 (_tmp15_);
-	stmt = _tmp17_;
+	_tmp18_ = vala_try_statement_new (_tmp13_, _tmp14_, _tmp17_);
+	_tmp19_ = _tmp18_;
+	_vala_source_reference_unref0 (_tmp17_);
+	stmt = _tmp19_;
 	{
-		ValaArrayList* _tmp18_;
-		ValaArrayList* _tmp19_;
-		ValaArrayList* _clause_list;
-		ValaArrayList* _tmp20_;
-		gint _tmp21_;
-		gint _tmp22_;
-		gint _clause_size;
-		gint _clause_index;
-		_tmp18_ = catch_clauses;
-		_tmp19_ = _vala_iterable_ref0 (_tmp18_);
-		_clause_list = _tmp19_;
-		_tmp20_ = _clause_list;
-		_tmp21_ = vala_collection_get_size ((ValaCollection*) _tmp20_);
-		_tmp22_ = _tmp21_;
-		_clause_size = _tmp22_;
+		ValaArrayList* _clause_list = NULL;
+		ValaArrayList* _tmp20_ = NULL;
+		ValaArrayList* _tmp21_ = NULL;
+		gint _clause_size = 0;
+		ValaArrayList* _tmp22_ = NULL;
+		gint _tmp23_ = 0;
+		gint _tmp24_ = 0;
+		gint _clause_index = 0;
+		_tmp20_ = catch_clauses;
+		_tmp21_ = _vala_iterable_ref0 (_tmp20_);
+		_clause_list = _tmp21_;
+		_tmp22_ = _clause_list;
+		_tmp23_ = vala_collection_get_size ((ValaCollection*) _tmp22_);
+		_tmp24_ = _tmp23_;
+		_clause_size = _tmp24_;
 		_clause_index = -1;
 		while (TRUE) {
-			gint _tmp23_;
-			gint _tmp24_;
-			gint _tmp25_;
-			ValaArrayList* _tmp26_;
-			gint _tmp27_;
-			gpointer _tmp28_ = NULL;
-			ValaCatchClause* clause;
-			ValaTryStatement* _tmp29_;
-			ValaCatchClause* _tmp30_;
-			_tmp23_ = _clause_index;
-			_clause_index = _tmp23_ + 1;
-			_tmp24_ = _clause_index;
-			_tmp25_ = _clause_size;
-			if (!(_tmp24_ < _tmp25_)) {
+			gint _tmp25_ = 0;
+			gint _tmp26_ = 0;
+			gint _tmp27_ = 0;
+			ValaCatchClause* clause = NULL;
+			ValaArrayList* _tmp28_ = NULL;
+			gint _tmp29_ = 0;
+			gpointer _tmp30_ = NULL;
+			ValaTryStatement* _tmp31_ = NULL;
+			ValaCatchClause* _tmp32_ = NULL;
+			_tmp25_ = _clause_index;
+			_clause_index = _tmp25_ + 1;
+			_tmp26_ = _clause_index;
+			_tmp27_ = _clause_size;
+			if (!(_tmp26_ < _tmp27_)) {
 				break;
 			}
-			_tmp26_ = _clause_list;
-			_tmp27_ = _clause_index;
-			_tmp28_ = vala_list_get ((ValaList*) _tmp26_, _tmp27_);
-			clause = (ValaCatchClause*) _tmp28_;
-			_tmp29_ = stmt;
-			_tmp30_ = clause;
-			vala_try_statement_add_catch_clause (_tmp29_, _tmp30_);
+			_tmp28_ = _clause_list;
+			_tmp29_ = _clause_index;
+			_tmp30_ = vala_list_get ((ValaList*) _tmp28_, _tmp29_);
+			clause = (ValaCatchClause*) _tmp30_;
+			_tmp31_ = stmt;
+			_tmp32_ = clause;
+			vala_try_statement_add_catch_clause (_tmp31_, _tmp32_);
 			_vala_code_node_unref0 (clause);
 		}
 		_vala_iterable_unref0 (_clause_list);
@@ -13516,22 +13716,22 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 	g_return_if_fail (catch_clauses != NULL);
 	while (TRUE) {
 		gboolean _tmp0_ = FALSE;
+		ValaSourceLocation begin = {0};
 		ValaSourceLocation _tmp1_ = {0};
-		ValaSourceLocation begin;
-		ValaDataType* type;
-		gchar* id;
+		ValaDataType* type = NULL;
+		gchar* id = NULL;
 		gboolean _tmp2_ = FALSE;
-		ValaBlock* _tmp7_ = NULL;
-		ValaBlock* block;
-		ValaList* _tmp8_;
-		ValaDataType* _tmp9_;
-		const gchar* _tmp10_;
-		ValaBlock* _tmp11_;
-		ValaSourceLocation _tmp12_;
-		ValaSourceReference* _tmp13_ = NULL;
-		ValaSourceReference* _tmp14_;
-		ValaCatchClause* _tmp15_;
-		ValaCatchClause* _tmp16_;
+		ValaBlock* block = NULL;
+		ValaBlock* _tmp9_ = NULL;
+		ValaList* _tmp10_ = NULL;
+		ValaDataType* _tmp11_ = NULL;
+		const gchar* _tmp12_ = NULL;
+		ValaBlock* _tmp13_ = NULL;
+		ValaSourceLocation _tmp14_ = {0};
+		ValaSourceReference* _tmp15_ = NULL;
+		ValaSourceReference* _tmp16_ = NULL;
+		ValaCatchClause* _tmp17_ = NULL;
+		ValaCatchClause* _tmp18_ = NULL;
 		_tmp0_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CATCH);
 		if (!_tmp0_) {
 			break;
@@ -13543,11 +13743,13 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 		_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_PARENS);
 		if (_tmp2_) {
 			ValaDataType* _tmp3_ = NULL;
-			ValaDataType* _tmp4_;
-			gchar* _tmp5_ = NULL;
-			gchar* _tmp6_;
-			_tmp3_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
-			_tmp4_ = _tmp3_;
+			ValaDataType* _tmp4_ = NULL;
+			ValaDataType* _tmp5_ = NULL;
+			gchar* _tmp6_ = NULL;
+			gchar* _tmp7_ = NULL;
+			gchar* _tmp8_ = NULL;
+			_tmp4_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
+			_tmp3_ = _tmp4_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -13562,17 +13764,21 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 					return;
 				}
 			}
+			_tmp5_ = _tmp3_;
+			_tmp3_ = NULL;
 			_vala_code_node_unref0 (type);
-			type = _tmp4_;
-			_tmp5_ = vala_parser_parse_identifier (self, &_inner_error_);
-			_tmp6_ = _tmp5_;
+			type = _tmp5_;
+			_tmp7_ = vala_parser_parse_identifier (self, &_inner_error_);
+			_tmp6_ = _tmp7_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
+					_vala_code_node_unref0 (_tmp3_);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
 					return;
 				} else {
+					_vala_code_node_unref0 (_tmp3_);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
 					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -13580,16 +13786,22 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 					return;
 				}
 			}
+			_tmp8_ = _tmp6_;
+			_tmp6_ = NULL;
 			_g_free0 (id);
-			id = _tmp6_;
+			id = _tmp8_;
 			vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
+					_g_free0 (_tmp6_);
+					_vala_code_node_unref0 (_tmp3_);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
 					return;
 				} else {
+					_g_free0 (_tmp6_);
+					_vala_code_node_unref0 (_tmp3_);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
 					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -13597,9 +13809,11 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 					return;
 				}
 			}
+			_g_free0 (_tmp6_);
+			_vala_code_node_unref0 (_tmp3_);
 		}
-		_tmp7_ = vala_parser_parse_block (self, &_inner_error_);
-		block = _tmp7_;
+		_tmp9_ = vala_parser_parse_block (self, &_inner_error_);
+		block = _tmp9_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -13614,18 +13828,18 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 				return;
 			}
 		}
-		_tmp8_ = catch_clauses;
-		_tmp9_ = type;
-		_tmp10_ = id;
-		_tmp11_ = block;
-		_tmp12_ = begin;
-		_tmp13_ = vala_parser_get_src (self, &_tmp12_);
-		_tmp14_ = _tmp13_;
-		_tmp15_ = vala_catch_clause_new (_tmp9_, _tmp10_, _tmp11_, _tmp14_);
+		_tmp10_ = catch_clauses;
+		_tmp11_ = type;
+		_tmp12_ = id;
+		_tmp13_ = block;
+		_tmp14_ = begin;
+		_tmp15_ = vala_parser_get_src (self, &_tmp14_);
 		_tmp16_ = _tmp15_;
-		vala_collection_add ((ValaCollection*) _tmp8_, _tmp16_);
-		_vala_code_node_unref0 (_tmp16_);
-		_vala_source_reference_unref0 (_tmp14_);
+		_tmp17_ = vala_catch_clause_new (_tmp11_, _tmp12_, _tmp13_, _tmp16_);
+		_tmp18_ = _tmp17_;
+		vala_collection_add ((ValaCollection*) _tmp10_, _tmp18_);
+		_vala_code_node_unref0 (_tmp18_);
+		_vala_source_reference_unref0 (_tmp16_);
 		_vala_code_node_unref0 (block);
 		_g_free0 (id);
 		_vala_code_node_unref0 (type);
@@ -13635,8 +13849,8 @@ static void vala_parser_parse_catch_clauses (ValaParser* self, ValaList* catch_c
 
 static ValaBlock* vala_parser_parse_finally_clause (ValaParser* self, GError** error) {
 	ValaBlock* result = NULL;
+	ValaBlock* block = NULL;
 	ValaBlock* _tmp0_ = NULL;
-	ValaBlock* block;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_expect (self, VALA_TOKEN_TYPE_FINALLY, &_inner_error_);
@@ -13669,19 +13883,19 @@ static ValaBlock* vala_parser_parse_finally_clause (ValaParser* self, GError** e
 
 static ValaStatement* vala_parser_parse_lock_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* expr;
+	ValaBlock* stmt = NULL;
 	ValaBlock* _tmp2_ = NULL;
-	ValaBlock* stmt;
-	ValaExpression* _tmp3_;
-	ValaBlock* _tmp4_;
-	ValaSourceLocation _tmp5_;
+	ValaExpression* _tmp3_ = NULL;
+	ValaBlock* _tmp4_ = NULL;
+	ValaSourceLocation _tmp5_ = {0};
 	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaLockStatement* _tmp8_;
-	ValaStatement* _tmp9_;
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaLockStatement* _tmp8_ = NULL;
+	ValaStatement* _tmp9_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13764,16 +13978,16 @@ static ValaStatement* vala_parser_parse_lock_statement (ValaParser* self, GError
 
 static ValaStatement* vala_parser_parse_delete_statement (ValaParser* self, GError** error) {
 	ValaStatement* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaExpression* expr = NULL;
 	ValaExpression* _tmp1_ = NULL;
-	ValaExpression* expr;
-	ValaExpression* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaExpression* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaDeleteStatement* _tmp6_;
-	ValaStatement* _tmp7_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaDeleteStatement* _tmp6_ = NULL;
+	ValaStatement* _tmp7_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -13857,9 +14071,9 @@ static gchar* vala_parser_parse_attribute_value (ValaParser* self, GError** erro
 				case VALA_TOKEN_TYPE_REAL_LITERAL:
 				{
 					gchar* _tmp3_ = NULL;
-					gchar* _tmp4_;
-					gchar* _tmp5_;
-					gchar* _tmp6_;
+					gchar* _tmp4_ = NULL;
+					gchar* _tmp5_ = NULL;
+					gchar* _tmp6_ = NULL;
 					vala_parser_next (self);
 					_tmp3_ = vala_parser_get_last_string (self);
 					_tmp4_ = _tmp3_;
@@ -13872,9 +14086,9 @@ static gchar* vala_parser_parse_attribute_value (ValaParser* self, GError** erro
 				default:
 				{
 					gchar* _tmp7_ = NULL;
-					gchar* _tmp8_;
-					GError* _tmp9_;
-					GError* _tmp10_;
+					gchar* _tmp8_ = NULL;
+					GError* _tmp9_ = NULL;
+					GError* _tmp10_ = NULL;
 					_tmp7_ = vala_parser_get_error (self, "expected number");
 					_tmp8_ = _tmp7_;
 					_tmp9_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp8_);
@@ -13895,9 +14109,9 @@ static gchar* vala_parser_parse_attribute_value (ValaParser* self, GError** erro
 		default:
 		{
 			gchar* _tmp11_ = NULL;
-			gchar* _tmp12_;
-			GError* _tmp13_;
-			GError* _tmp14_;
+			gchar* _tmp12_ = NULL;
+			GError* _tmp13_ = NULL;
+			GError* _tmp14_ = NULL;
 			_tmp11_ = vala_parser_get_error (self, "expected literal");
 			_tmp12_ = _tmp11_;
 			_tmp13_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp12_);
@@ -13920,9 +14134,9 @@ static gchar* vala_parser_parse_attribute_value (ValaParser* self, GError** erro
 static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error) {
 	ValaList* result = NULL;
 	ValaTokenType _tmp0_ = 0;
-	GEqualFunc _tmp1_;
-	ValaArrayList* _tmp2_;
-	ValaArrayList* attrs;
+	ValaArrayList* attrs = NULL;
+	GEqualFunc _tmp1_ = NULL;
+	ValaArrayList* _tmp2_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_current (self);
@@ -13940,37 +14154,35 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 			break;
 		}
 		{
-			gboolean _tmp4_;
+			gboolean _tmp4_ = FALSE;
 			_tmp4_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp5_;
-				ValaSourceLocation _tmp7_ = {0};
-				ValaSourceLocation begin;
-				gchar* _tmp8_ = NULL;
-				gchar* id;
-				const gchar* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaSourceLocation begin = {0};
+				ValaSourceLocation _tmp6_ = {0};
+				gchar* id = NULL;
+				gchar* _tmp7_ = NULL;
+				ValaAttribute* attr = NULL;
+				const gchar* _tmp8_ = NULL;
+				ValaSourceLocation _tmp9_ = {0};
+				ValaSourceReference* _tmp10_ = NULL;
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaAttribute* _tmp13_;
-				ValaAttribute* _tmp14_;
-				ValaAttribute* attr;
-				gboolean _tmp15_ = FALSE;
-				ValaArrayList* _tmp27_;
-				ValaAttribute* _tmp28_;
-				_tmp5_ = _tmp4_;
-				if (!_tmp5_) {
-					gboolean _tmp6_ = FALSE;
-					_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp6_) {
+				ValaAttribute* _tmp12_ = NULL;
+				ValaAttribute* _tmp13_ = NULL;
+				gboolean _tmp14_ = FALSE;
+				ValaArrayList* _tmp25_ = NULL;
+				ValaAttribute* _tmp26_ = NULL;
+				if (!_tmp4_) {
+					gboolean _tmp5_ = FALSE;
+					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp5_) {
 						break;
 					}
 				}
 				_tmp4_ = FALSE;
-				vala_parser_get_location (self, &_tmp7_);
-				begin = _tmp7_;
-				_tmp8_ = vala_parser_parse_identifier (self, &_inner_error_);
-				id = _tmp8_;
+				vala_parser_get_location (self, &_tmp6_);
+				begin = _tmp6_;
+				_tmp7_ = vala_parser_parse_identifier (self, &_inner_error_);
+				id = _tmp7_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -13983,42 +14195,40 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 						return NULL;
 					}
 				}
-				_tmp9_ = id;
-				_tmp10_ = begin;
-				_tmp11_ = vala_parser_get_src (self, &_tmp10_);
-				_tmp12_ = _tmp11_;
-				_tmp13_ = vala_attribute_new (_tmp9_, _tmp12_);
-				_tmp14_ = _tmp13_;
-				_vala_source_reference_unref0 (_tmp12_);
-				attr = _tmp14_;
-				_tmp15_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_PARENS);
-				if (_tmp15_) {
-					ValaTokenType _tmp16_ = 0;
-					_tmp16_ = vala_parser_current (self);
-					if (_tmp16_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+				_tmp8_ = id;
+				_tmp9_ = begin;
+				_tmp10_ = vala_parser_get_src (self, &_tmp9_);
+				_tmp11_ = _tmp10_;
+				_tmp12_ = vala_attribute_new (_tmp8_, _tmp11_);
+				_tmp13_ = _tmp12_;
+				_vala_source_reference_unref0 (_tmp11_);
+				attr = _tmp13_;
+				_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OPEN_PARENS);
+				if (_tmp14_) {
+					ValaTokenType _tmp15_ = 0;
+					_tmp15_ = vala_parser_current (self);
+					if (_tmp15_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 						{
-							gboolean _tmp17_;
-							_tmp17_ = TRUE;
+							gboolean _tmp16_ = FALSE;
+							_tmp16_ = TRUE;
 							while (TRUE) {
-								gboolean _tmp18_;
+								gchar* _tmp18_ = NULL;
+								gchar* _tmp19_ = NULL;
 								gchar* _tmp20_ = NULL;
-								gchar* _tmp21_;
+								gchar* _tmp21_ = NULL;
 								gchar* _tmp22_ = NULL;
-								gchar* _tmp23_;
-								ValaAttribute* _tmp24_;
-								const gchar* _tmp25_;
-								gchar* _tmp26_;
-								_tmp18_ = _tmp17_;
-								if (!_tmp18_) {
-									gboolean _tmp19_ = FALSE;
-									_tmp19_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-									if (!_tmp19_) {
+								ValaAttribute* _tmp23_ = NULL;
+								const gchar* _tmp24_ = NULL;
+								if (!_tmp16_) {
+									gboolean _tmp17_ = FALSE;
+									_tmp17_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+									if (!_tmp17_) {
 										break;
 									}
 								}
-								_tmp17_ = FALSE;
-								_tmp20_ = vala_parser_parse_identifier (self, &_inner_error_);
-								_tmp21_ = _tmp20_;
+								_tmp16_ = FALSE;
+								_tmp19_ = vala_parser_parse_identifier (self, &_inner_error_);
+								_tmp18_ = _tmp19_;
 								if (_inner_error_ != NULL) {
 									if (_inner_error_->domain == VALA_PARSE_ERROR) {
 										g_propagate_error (error, _inner_error_);
@@ -14035,17 +14245,21 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 										return NULL;
 									}
 								}
+								_tmp20_ = _tmp18_;
+								_tmp18_ = NULL;
 								_g_free0 (id);
-								id = _tmp21_;
+								id = _tmp20_;
 								vala_parser_expect (self, VALA_TOKEN_TYPE_ASSIGN, &_inner_error_);
 								if (_inner_error_ != NULL) {
 									if (_inner_error_->domain == VALA_PARSE_ERROR) {
 										g_propagate_error (error, _inner_error_);
+										_g_free0 (_tmp18_);
 										_vala_code_node_unref0 (attr);
 										_g_free0 (id);
 										_vala_iterable_unref0 (attrs);
 										return NULL;
 									} else {
+										_g_free0 (_tmp18_);
 										_vala_code_node_unref0 (attr);
 										_g_free0 (id);
 										_vala_iterable_unref0 (attrs);
@@ -14055,15 +14269,17 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 									}
 								}
 								_tmp22_ = vala_parser_parse_attribute_value (self, &_inner_error_);
-								_tmp23_ = _tmp22_;
+								_tmp21_ = _tmp22_;
 								if (_inner_error_ != NULL) {
 									if (_inner_error_->domain == VALA_PARSE_ERROR) {
 										g_propagate_error (error, _inner_error_);
+										_g_free0 (_tmp18_);
 										_vala_code_node_unref0 (attr);
 										_g_free0 (id);
 										_vala_iterable_unref0 (attrs);
 										return NULL;
 									} else {
+										_g_free0 (_tmp18_);
 										_vala_code_node_unref0 (attr);
 										_g_free0 (id);
 										_vala_iterable_unref0 (attrs);
@@ -14072,11 +14288,11 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 										return NULL;
 									}
 								}
-								_tmp24_ = attr;
-								_tmp25_ = id;
-								_tmp26_ = _tmp23_;
-								vala_attribute_add_argument (_tmp24_, _tmp25_, _tmp26_);
-								_g_free0 (_tmp26_);
+								_tmp23_ = attr;
+								_tmp24_ = id;
+								vala_attribute_add_argument (_tmp23_, _tmp24_, _tmp21_);
+								_g_free0 (_tmp21_);
+								_g_free0 (_tmp18_);
 							}
 						}
 					}
@@ -14098,9 +14314,9 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 						}
 					}
 				}
-				_tmp27_ = attrs;
-				_tmp28_ = attr;
-				vala_collection_add ((ValaCollection*) _tmp27_, _tmp28_);
+				_tmp25_ = attrs;
+				_tmp26_ = attr;
+				vala_collection_add ((ValaCollection*) _tmp25_, _tmp26_);
 				_vala_code_node_unref0 (attr);
 				_g_free0 (id);
 			}
@@ -14125,20 +14341,20 @@ static ValaList* vala_parser_parse_attributes (ValaParser* self, GError** error)
 
 
 static void vala_parser_set_attributes (ValaParser* self, ValaCodeNode* node, ValaList* attributes) {
-	ValaList* _tmp0_;
+	ValaList* _tmp0_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (node != NULL);
 	_tmp0_ = attributes;
 	if (_tmp0_ != NULL) {
 		{
-			ValaList* _tmp1_;
-			ValaList* _tmp2_;
-			ValaList* _attr_list;
-			ValaList* _tmp3_;
-			gint _tmp4_;
-			gint _tmp5_;
-			gint _attr_size;
-			gint _attr_index;
+			ValaList* _attr_list = NULL;
+			ValaList* _tmp1_ = NULL;
+			ValaList* _tmp2_ = NULL;
+			gint _attr_size = 0;
+			ValaList* _tmp3_ = NULL;
+			gint _tmp4_ = 0;
+			gint _tmp5_ = 0;
+			gint _attr_index = 0;
 			_tmp1_ = attributes;
 			_tmp2_ = _vala_iterable_ref0 (G_TYPE_CHECK_INSTANCE_CAST (_tmp1_, VALA_TYPE_LIST, ValaList));
 			_attr_list = _tmp2_;
@@ -14148,23 +14364,23 @@ static void vala_parser_set_attributes (ValaParser* self, ValaCodeNode* node, Va
 			_attr_size = _tmp5_;
 			_attr_index = -1;
 			while (TRUE) {
-				gint _tmp6_;
-				gint _tmp7_;
-				gint _tmp8_;
-				ValaList* _tmp9_;
-				gint _tmp10_;
+				gint _tmp6_ = 0;
+				gint _tmp7_ = 0;
+				gint _tmp8_ = 0;
+				ValaAttribute* attr = NULL;
+				ValaList* _tmp9_ = NULL;
+				gint _tmp10_ = 0;
 				gpointer _tmp11_ = NULL;
-				ValaAttribute* attr;
-				ValaCodeNode* _tmp12_;
-				ValaAttribute* _tmp13_;
-				const gchar* _tmp14_;
-				const gchar* _tmp15_;
+				ValaCodeNode* _tmp12_ = NULL;
+				ValaAttribute* _tmp13_ = NULL;
+				const gchar* _tmp14_ = NULL;
+				const gchar* _tmp15_ = NULL;
 				ValaAttribute* _tmp16_ = NULL;
-				ValaAttribute* _tmp17_;
-				gboolean _tmp18_;
-				ValaCodeNode* _tmp27_;
-				ValaAttribute* _tmp28_;
-				ValaAttribute* _tmp29_;
+				ValaAttribute* _tmp17_ = NULL;
+				gboolean _tmp18_ = FALSE;
+				ValaCodeNode* _tmp27_ = NULL;
+				ValaAttribute* _tmp28_ = NULL;
+				ValaAttribute* _tmp29_ = NULL;
 				_tmp6_ = _attr_index;
 				_attr_index = _tmp6_ + 1;
 				_tmp7_ = _attr_index;
@@ -14185,14 +14401,14 @@ static void vala_parser_set_attributes (ValaParser* self, ValaCodeNode* node, Va
 				_tmp18_ = _tmp17_ != NULL;
 				_vala_code_node_unref0 (_tmp17_);
 				if (_tmp18_) {
-					ValaAttribute* _tmp19_;
-					ValaSourceReference* _tmp20_;
-					ValaSourceReference* _tmp21_;
-					ValaAttribute* _tmp22_;
-					const gchar* _tmp23_;
-					const gchar* _tmp24_;
+					ValaAttribute* _tmp19_ = NULL;
+					ValaSourceReference* _tmp20_ = NULL;
+					ValaSourceReference* _tmp21_ = NULL;
+					ValaAttribute* _tmp22_ = NULL;
+					const gchar* _tmp23_ = NULL;
+					const gchar* _tmp24_ = NULL;
 					gchar* _tmp25_ = NULL;
-					gchar* _tmp26_;
+					gchar* _tmp26_ = NULL;
 					_tmp19_ = attr;
 					_tmp20_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp19_);
 					_tmp21_ = _tmp20_;
@@ -14217,36 +14433,36 @@ static void vala_parser_set_attributes (ValaParser* self, ValaCodeNode* node, Va
 
 
 static void vala_parser_parse_main_block (ValaParser* self, ValaSymbol* parent, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaVoidType* _tmp1_;
-	ValaVoidType* _tmp2_;
-	ValaSourceLocation _tmp3_;
+	ValaMethod* method = NULL;
+	ValaVoidType* _tmp1_ = NULL;
+	ValaVoidType* _tmp2_ = NULL;
+	ValaSourceLocation _tmp3_ = {0};
 	ValaSourceReference* _tmp4_ = NULL;
-	ValaSourceReference* _tmp5_;
-	ValaMethod* _tmp6_;
-	ValaMethod* _tmp7_;
-	ValaMethod* method;
-	ValaSourceLocation _tmp8_;
+	ValaSourceReference* _tmp5_ = NULL;
+	ValaMethod* _tmp6_ = NULL;
+	ValaMethod* _tmp7_ = NULL;
+	ValaSourceLocation _tmp8_ = {0};
 	ValaSourceReference* _tmp9_ = NULL;
-	ValaSourceReference* _tmp10_;
-	ValaBlock* _tmp11_;
-	ValaBlock* _tmp12_;
-	ValaBlock* _tmp13_;
-	ValaBlock* _tmp14_;
+	ValaSourceReference* _tmp10_ = NULL;
+	ValaBlock* _tmp11_ = NULL;
+	ValaBlock* _tmp12_ = NULL;
+	ValaBlock* _tmp13_ = NULL;
+	ValaBlock* _tmp14_ = NULL;
 	ValaTokenType _tmp15_ = 0;
-	ValaBlock* _tmp18_;
-	ValaBlock* _tmp19_;
-	ValaSourceReference* _tmp20_;
-	ValaSourceReference* _tmp21_;
+	ValaBlock* _tmp18_ = NULL;
+	ValaBlock* _tmp19_ = NULL;
+	ValaSourceReference* _tmp20_ = NULL;
+	ValaSourceReference* _tmp21_ = NULL;
 	ValaSourceReference* _tmp22_ = NULL;
-	ValaSourceReference* _tmp23_;
-	ValaSourceLocation _tmp24_;
-	ValaSourceLocation _tmp25_;
-	ValaCodeContext* _tmp26_;
-	gboolean _tmp27_;
-	gboolean _tmp28_;
-	ValaSymbol* _tmp31_;
+	ValaSourceReference* _tmp23_ = NULL;
+	ValaSourceLocation _tmp24_ = {0};
+	ValaSourceLocation _tmp25_ = {0};
+	ValaCodeContext* _tmp26_ = NULL;
+	gboolean _tmp27_ = FALSE;
+	gboolean _tmp28_ = FALSE;
+	ValaSymbol* _tmp31_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -14288,7 +14504,7 @@ static void vala_parser_parse_main_block (ValaParser* self, ValaSymbol* parent, 
 	_tmp15_ = vala_parser_current (self);
 	if (_tmp15_ != VALA_TOKEN_TYPE_EOF) {
 		ValaSourceReference* _tmp16_ = NULL;
-		ValaSourceReference* _tmp17_;
+		ValaSourceReference* _tmp17_ = NULL;
 		_tmp16_ = vala_parser_get_current_src (self);
 		_tmp17_ = _tmp16_;
 		vala_report_error (_tmp17_, "expected end of file");
@@ -14308,8 +14524,8 @@ static void vala_parser_parse_main_block (ValaParser* self, ValaSymbol* parent, 
 	_tmp27_ = vala_code_context_get_experimental (_tmp26_);
 	_tmp28_ = _tmp27_;
 	if (!_tmp28_) {
-		ValaSourceReference* _tmp29_;
-		ValaSourceReference* _tmp30_;
+		ValaSourceReference* _tmp29_ = NULL;
+		ValaSourceReference* _tmp30_ = NULL;
 		_tmp29_ = vala_code_node_get_source_reference ((ValaCodeNode*) method);
 		_tmp30_ = _tmp29_;
 		vala_report_warning (_tmp30_, "main blocks are experimental");
@@ -14321,20 +14537,20 @@ static void vala_parser_parse_main_block (ValaParser* self, ValaSymbol* parent, 
 
 
 static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent, gboolean root, GError** error) {
-	ValaScanner* _tmp0_;
+	ValaScanner* _tmp0_ = NULL;
 	ValaComment* _tmp1_ = NULL;
+	ValaList* attrs = NULL;
 	ValaList* _tmp2_ = NULL;
-	ValaList* attrs;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp3_ = {0};
-	ValaSourceLocation begin;
+	ValaTokenType last_keyword = 0;
 	ValaTokenType _tmp4_ = 0;
-	ValaTokenType last_keyword;
 	ValaTokenType _tmp8_ = 0;
-	ValaSourceLocation _tmp68_;
+	ValaSourceLocation _tmp68_ = {0};
 	gchar* _tmp69_ = NULL;
-	gchar* _tmp70_;
-	GError* _tmp71_;
-	GError* _tmp72_;
+	gchar* _tmp70_ = NULL;
+	GError* _tmp71_ = NULL;
+	GError* _tmp72_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -14375,9 +14591,9 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 	switch (_tmp8_) {
 		case VALA_TOKEN_TYPE_CONSTRUCT:
 		{
-			ValaSourceLocation _tmp9_;
-			ValaSymbol* _tmp10_;
-			ValaList* _tmp11_;
+			ValaSourceLocation _tmp9_ = {0};
+			ValaSymbol* _tmp10_ = NULL;
+			ValaList* _tmp11_ = NULL;
 			_tmp9_ = begin;
 			vala_parser_rollback (self, &_tmp9_);
 			_tmp10_ = parent;
@@ -14400,9 +14616,9 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 		}
 		case VALA_TOKEN_TYPE_TILDE:
 		{
-			ValaSourceLocation _tmp12_;
-			ValaSymbol* _tmp13_;
-			ValaList* _tmp14_;
+			ValaSourceLocation _tmp12_ = {0};
+			ValaSymbol* _tmp13_ = NULL;
+			ValaList* _tmp14_ = NULL;
 			_tmp12_ = begin;
 			vala_parser_rollback (self, &_tmp12_);
 			_tmp13_ = parent;
@@ -14448,16 +14664,16 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 		case VALA_TOKEN_TYPE_STAR:
 		case VALA_TOKEN_TYPE_NEW:
 		{
-			ValaList* _tmp15_;
-			gboolean _tmp20_;
-			ValaSourceLocation _tmp25_;
-			ValaSymbol* _tmp26_;
+			ValaList* _tmp15_ = NULL;
+			gboolean _tmp20_ = FALSE;
+			ValaSourceLocation _tmp25_ = {0};
+			ValaSymbol* _tmp26_ = NULL;
 			_tmp15_ = attrs;
 			if (_tmp15_ != NULL) {
 				gchar* _tmp16_ = NULL;
-				gchar* _tmp17_;
-				GError* _tmp18_;
-				GError* _tmp19_;
+				gchar* _tmp17_ = NULL;
+				GError* _tmp18_ = NULL;
+				GError* _tmp19_ = NULL;
 				_tmp16_ = vala_parser_get_error (self, "expected statement");
 				_tmp17_ = _tmp16_;
 				_tmp18_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp17_);
@@ -14478,9 +14694,9 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 			_tmp20_ = root;
 			if (!_tmp20_) {
 				gchar* _tmp21_ = NULL;
-				gchar* _tmp22_;
-				GError* _tmp23_;
-				GError* _tmp24_;
+				gchar* _tmp22_ = NULL;
+				GError* _tmp23_ = NULL;
+				GError* _tmp24_ = NULL;
 				_tmp21_ = vala_parser_get_error (self, "statements outside blocks allowed only in root namespace");
 				_tmp22_ = _tmp21_;
 				_tmp23_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp22_);
@@ -14519,13 +14735,13 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 		}
 		default:
 		{
-			gboolean _tmp27_;
+			gboolean _tmp27_ = FALSE;
 			ValaTokenType _tmp32_ = 0;
 			_tmp27_ = root;
 			if (_tmp27_) {
+				gboolean is_expr = FALSE;
 				gboolean _tmp28_ = FALSE;
-				gboolean is_expr;
-				gboolean _tmp29_;
+				gboolean _tmp29_ = FALSE;
 				_tmp28_ = vala_parser_is_expression (self, &_inner_error_);
 				is_expr = _tmp28_;
 				if (_inner_error_ != NULL) {
@@ -14542,8 +14758,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 				}
 				_tmp29_ = is_expr;
 				if (_tmp29_) {
-					ValaSourceLocation _tmp30_;
-					ValaSymbol* _tmp31_;
+					ValaSourceLocation _tmp30_ = {0};
+					ValaSymbol* _tmp31_ = NULL;
 					_tmp30_ = begin;
 					vala_parser_rollback (self, &_tmp30_);
 					_tmp31_ = parent;
@@ -14583,16 +14799,16 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 				case VALA_TOKEN_TYPE_SEMICOLON:
 				case VALA_TOKEN_TYPE_COLON:
 				{
-					ValaSourceLocation _tmp33_;
-					ValaTokenType _tmp34_;
+					ValaSourceLocation _tmp33_ = {0};
+					ValaTokenType _tmp34_ = 0;
 					_tmp33_ = begin;
 					vala_parser_rollback (self, &_tmp33_);
 					_tmp34_ = last_keyword;
 					switch (_tmp34_) {
 						case VALA_TOKEN_TYPE_CLASS:
 						{
-							ValaSymbol* _tmp35_;
-							ValaList* _tmp36_;
+							ValaSymbol* _tmp35_ = NULL;
+							ValaList* _tmp36_ = NULL;
 							_tmp35_ = parent;
 							_tmp36_ = attrs;
 							vala_parser_parse_class_declaration (self, _tmp35_, _tmp36_, &_inner_error_);
@@ -14613,8 +14829,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						}
 						case VALA_TOKEN_TYPE_ENUM:
 						{
-							ValaSymbol* _tmp37_;
-							ValaList* _tmp38_;
+							ValaSymbol* _tmp37_ = NULL;
+							ValaList* _tmp38_ = NULL;
 							_tmp37_ = parent;
 							_tmp38_ = attrs;
 							vala_parser_parse_enum_declaration (self, _tmp37_, _tmp38_, &_inner_error_);
@@ -14635,8 +14851,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						}
 						case VALA_TOKEN_TYPE_ERRORDOMAIN:
 						{
-							ValaSymbol* _tmp39_;
-							ValaList* _tmp40_;
+							ValaSymbol* _tmp39_ = NULL;
+							ValaList* _tmp40_ = NULL;
 							_tmp39_ = parent;
 							_tmp40_ = attrs;
 							vala_parser_parse_errordomain_declaration (self, _tmp39_, _tmp40_, &_inner_error_);
@@ -14657,8 +14873,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						}
 						case VALA_TOKEN_TYPE_INTERFACE:
 						{
-							ValaSymbol* _tmp41_;
-							ValaList* _tmp42_;
+							ValaSymbol* _tmp41_ = NULL;
+							ValaList* _tmp42_ = NULL;
 							_tmp41_ = parent;
 							_tmp42_ = attrs;
 							vala_parser_parse_interface_declaration (self, _tmp41_, _tmp42_, &_inner_error_);
@@ -14679,8 +14895,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						}
 						case VALA_TOKEN_TYPE_NAMESPACE:
 						{
-							ValaSymbol* _tmp43_;
-							ValaList* _tmp44_;
+							ValaSymbol* _tmp43_ = NULL;
+							ValaList* _tmp44_ = NULL;
 							_tmp43_ = parent;
 							_tmp44_ = attrs;
 							vala_parser_parse_namespace_declaration (self, _tmp43_, _tmp44_, &_inner_error_);
@@ -14701,8 +14917,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						}
 						case VALA_TOKEN_TYPE_STRUCT:
 						{
-							ValaSymbol* _tmp45_;
-							ValaList* _tmp46_;
+							ValaSymbol* _tmp45_ = NULL;
+							ValaList* _tmp46_ = NULL;
 							_tmp45_ = parent;
 							_tmp46_ = attrs;
 							vala_parser_parse_struct_declaration (self, _tmp45_, _tmp46_, &_inner_error_);
@@ -14730,9 +14946,9 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 				}
 				case VALA_TOKEN_TYPE_OPEN_PARENS:
 				{
-					ValaSourceLocation _tmp47_;
-					ValaSymbol* _tmp48_;
-					ValaList* _tmp49_;
+					ValaSourceLocation _tmp47_ = {0};
+					ValaSymbol* _tmp48_ = NULL;
+					ValaList* _tmp49_ = NULL;
 					_tmp47_ = begin;
 					vala_parser_rollback (self, &_tmp47_);
 					_tmp48_ = parent;
@@ -14773,16 +14989,16 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 					switch (_tmp50_) {
 						case VALA_TOKEN_TYPE_OPEN_PARENS:
 						{
-							ValaSourceLocation _tmp51_;
-							ValaTokenType _tmp52_;
+							ValaSourceLocation _tmp51_ = {0};
+							ValaTokenType _tmp52_ = 0;
 							_tmp51_ = begin;
 							vala_parser_rollback (self, &_tmp51_);
 							_tmp52_ = last_keyword;
 							switch (_tmp52_) {
 								case VALA_TOKEN_TYPE_DELEGATE:
 								{
-									ValaSymbol* _tmp53_;
-									ValaList* _tmp54_;
+									ValaSymbol* _tmp53_ = NULL;
+									ValaList* _tmp54_ = NULL;
 									_tmp53_ = parent;
 									_tmp54_ = attrs;
 									vala_parser_parse_delegate_declaration (self, _tmp53_, _tmp54_, &_inner_error_);
@@ -14803,8 +15019,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 								}
 								case VALA_TOKEN_TYPE_SIGNAL:
 								{
-									ValaSymbol* _tmp55_;
-									ValaList* _tmp56_;
+									ValaSymbol* _tmp55_ = NULL;
+									ValaList* _tmp56_ = NULL;
 									_tmp55_ = parent;
 									_tmp56_ = attrs;
 									vala_parser_parse_signal_declaration (self, _tmp55_, _tmp56_, &_inner_error_);
@@ -14825,8 +15041,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 								}
 								default:
 								{
-									ValaSymbol* _tmp57_;
-									ValaList* _tmp58_;
+									ValaSymbol* _tmp57_ = NULL;
+									ValaList* _tmp58_ = NULL;
 									_tmp57_ = parent;
 									_tmp58_ = attrs;
 									vala_parser_parse_method_declaration (self, _tmp57_, _tmp58_, &_inner_error_);
@@ -14850,16 +15066,16 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						case VALA_TOKEN_TYPE_ASSIGN:
 						case VALA_TOKEN_TYPE_SEMICOLON:
 						{
-							ValaSourceLocation _tmp59_;
-							ValaTokenType _tmp60_;
+							ValaSourceLocation _tmp59_ = {0};
+							ValaTokenType _tmp60_ = 0;
 							_tmp59_ = begin;
 							vala_parser_rollback (self, &_tmp59_);
 							_tmp60_ = last_keyword;
 							switch (_tmp60_) {
 								case VALA_TOKEN_TYPE_CONST:
 								{
-									ValaSymbol* _tmp61_;
-									ValaList* _tmp62_;
+									ValaSymbol* _tmp61_ = NULL;
+									ValaList* _tmp62_ = NULL;
 									_tmp61_ = parent;
 									_tmp62_ = attrs;
 									vala_parser_parse_constant_declaration (self, _tmp61_, _tmp62_, &_inner_error_);
@@ -14880,8 +15096,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 								}
 								default:
 								{
-									ValaSymbol* _tmp63_;
-									ValaList* _tmp64_;
+									ValaSymbol* _tmp63_ = NULL;
+									ValaList* _tmp64_ = NULL;
 									_tmp63_ = parent;
 									_tmp64_ = attrs;
 									vala_parser_parse_field_declaration (self, _tmp63_, _tmp64_, &_inner_error_);
@@ -14905,9 +15121,9 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 						case VALA_TOKEN_TYPE_OPEN_BRACE:
 						case VALA_TOKEN_TYPE_THROWS:
 						{
-							ValaSourceLocation _tmp65_;
-							ValaSymbol* _tmp66_;
-							ValaList* _tmp67_;
+							ValaSourceLocation _tmp65_ = {0};
+							ValaSymbol* _tmp66_ = NULL;
+							ValaList* _tmp67_ = NULL;
 							_tmp65_ = begin;
 							vala_parser_rollback (self, &_tmp65_);
 							_tmp66_ = parent;
@@ -14962,8 +15178,8 @@ static void vala_parser_parse_declaration (ValaParser* self, ValaSymbol* parent,
 
 
 static void vala_parser_parse_declarations (ValaParser* self, ValaSymbol* parent, gboolean root, GError** error) {
-	gboolean _tmp0_;
-	gboolean _tmp13_;
+	gboolean _tmp0_ = FALSE;
+	gboolean _tmp12_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -14984,7 +15200,6 @@ static void vala_parser_parse_declarations (ValaParser* self, ValaSymbol* parent
 	while (TRUE) {
 		gboolean _tmp1_ = FALSE;
 		ValaTokenType _tmp2_ = 0;
-		gboolean _tmp4_;
 		_tmp2_ = vala_parser_current (self);
 		if (_tmp2_ != VALA_TOKEN_TYPE_CLOSE_BRACE) {
 			ValaTokenType _tmp3_ = 0;
@@ -14993,22 +15208,21 @@ static void vala_parser_parse_declarations (ValaParser* self, ValaSymbol* parent
 		} else {
 			_tmp1_ = FALSE;
 		}
-		_tmp4_ = _tmp1_;
-		if (!_tmp4_) {
+		if (!_tmp1_) {
 			break;
 		}
 		{
-			ValaSymbol* _tmp5_;
-			ValaSymbol* _tmp6_;
-			ValaCodeContext* _tmp7_;
-			ValaNamespace* _tmp8_;
-			ValaNamespace* _tmp9_;
+			ValaSymbol* _tmp4_ = NULL;
+			ValaSymbol* _tmp5_ = NULL;
+			ValaCodeContext* _tmp6_ = NULL;
+			ValaNamespace* _tmp7_ = NULL;
+			ValaNamespace* _tmp8_ = NULL;
+			_tmp4_ = parent;
 			_tmp5_ = parent;
-			_tmp6_ = parent;
-			_tmp7_ = self->priv->context;
-			_tmp8_ = vala_code_context_get_root (_tmp7_);
-			_tmp9_ = _tmp8_;
-			vala_parser_parse_declaration (self, _tmp5_, _tmp6_ == G_TYPE_CHECK_INSTANCE_CAST (_tmp9_, VALA_TYPE_SYMBOL, ValaSymbol), &_inner_error_);
+			_tmp6_ = self->priv->context;
+			_tmp7_ = vala_code_context_get_root (_tmp6_);
+			_tmp8_ = _tmp7_;
+			vala_parser_parse_declaration (self, _tmp4_, _tmp5_ == G_TYPE_CHECK_INSTANCE_CAST (_tmp8_, VALA_TYPE_SYMBOL, ValaSymbol), &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					goto __catch12_vala_parse_error;
@@ -15023,23 +15237,23 @@ static void vala_parser_parse_declarations (ValaParser* self, ValaSymbol* parent
 		{
 			GError* e = NULL;
 			gint r = 0;
-			gint _tmp12_;
+			gint _tmp11_ = 0;
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			while (TRUE) {
-				ValaParserRecoveryState _tmp10_ = 0;
-				gint _tmp11_;
-				_tmp10_ = vala_parser_recover (self);
-				r = (gint) _tmp10_;
-				_tmp11_ = r;
-				if (_tmp11_ == ((gint) VALA_PARSER_RECOVERY_STATE_STATEMENT_BEGIN)) {
+				ValaParserRecoveryState _tmp9_ = 0;
+				gint _tmp10_ = 0;
+				_tmp9_ = vala_parser_recover (self);
+				r = (gint) _tmp9_;
+				_tmp10_ = r;
+				if (_tmp10_ == ((gint) VALA_PARSER_RECOVERY_STATE_STATEMENT_BEGIN)) {
 					vala_parser_next (self);
 				} else {
 					break;
 				}
 			}
-			_tmp12_ = r;
-			if (_tmp12_ == ((gint) VALA_PARSER_RECOVERY_STATE_EOF)) {
+			_tmp11_ = r;
+			if (_tmp11_ == ((gint) VALA_PARSER_RECOVERY_STATE_EOF)) {
 				_g_error_free0 (e);
 				return;
 			}
@@ -15057,26 +15271,26 @@ static void vala_parser_parse_declarations (ValaParser* self, ValaSymbol* parent
 			}
 		}
 	}
-	_tmp13_ = root;
-	if (!_tmp13_) {
-		gboolean _tmp14_ = FALSE;
-		_tmp14_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_BRACE);
-		if (!_tmp14_) {
-			ValaCodeContext* _tmp15_;
-			ValaReport* _tmp16_;
-			ValaReport* _tmp17_;
-			gint _tmp18_ = 0;
-			_tmp15_ = self->priv->context;
-			_tmp16_ = vala_code_context_get_report (_tmp15_);
-			_tmp17_ = _tmp16_;
-			_tmp18_ = vala_report_get_errors (_tmp17_);
-			if (_tmp18_ == 0) {
+	_tmp12_ = root;
+	if (!_tmp12_) {
+		gboolean _tmp13_ = FALSE;
+		_tmp13_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_BRACE);
+		if (!_tmp13_) {
+			ValaCodeContext* _tmp14_ = NULL;
+			ValaReport* _tmp15_ = NULL;
+			ValaReport* _tmp16_ = NULL;
+			gint _tmp17_ = 0;
+			_tmp14_ = self->priv->context;
+			_tmp15_ = vala_code_context_get_report (_tmp14_);
+			_tmp16_ = _tmp15_;
+			_tmp17_ = vala_report_get_errors (_tmp16_);
+			if (_tmp17_ == 0) {
+				ValaSourceReference* _tmp18_ = NULL;
 				ValaSourceReference* _tmp19_ = NULL;
-				ValaSourceReference* _tmp20_;
-				_tmp19_ = vala_parser_get_current_src (self);
-				_tmp20_ = _tmp19_;
-				vala_report_error (_tmp20_, "expected `}'");
-				_vala_source_reference_unref0 (_tmp20_);
+				_tmp18_ = vala_parser_get_current_src (self);
+				_tmp19_ = _tmp18_;
+				vala_report_error (_tmp19_, "expected `}'");
+				_vala_source_reference_unref0 (_tmp19_);
 			}
 		}
 	}
@@ -15154,39 +15368,39 @@ static ValaParserRecoveryState vala_parser_recover (ValaParser* self) {
 
 
 static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp1_ = NULL;
-	ValaUnresolvedSymbol* sym;
-	ValaUnresolvedSymbol* _tmp2_;
-	const gchar* _tmp3_;
-	const gchar* _tmp4_;
-	ValaSourceLocation _tmp5_;
+	ValaNamespace* ns = NULL;
+	ValaUnresolvedSymbol* _tmp2_ = NULL;
+	const gchar* _tmp3_ = NULL;
+	const gchar* _tmp4_ = NULL;
+	ValaSourceLocation _tmp5_ = {0};
 	ValaSourceReference* _tmp6_ = NULL;
-	ValaSourceReference* _tmp7_;
-	ValaNamespace* _tmp8_;
-	ValaNamespace* _tmp9_;
-	ValaNamespace* ns;
-	ValaComment* _tmp10_;
-	ValaNamespace* _tmp13_;
-	ValaList* _tmp14_;
-	ValaScanner* _tmp15_;
-	ValaSourceFile* _tmp16_;
-	ValaSourceFile* _tmp17_;
-	ValaList* _tmp18_;
-	ValaList* _tmp19_;
-	ValaList* _tmp20_;
-	ValaList* old_using_directives;
-	ValaNamespace* _tmp21_;
-	ValaNamespace* _tmp22_;
-	ValaScanner* _tmp23_;
-	ValaSourceFile* _tmp24_;
-	ValaSourceFile* _tmp25_;
-	ValaList* _tmp26_;
+	ValaSourceReference* _tmp7_ = NULL;
+	ValaNamespace* _tmp8_ = NULL;
+	ValaNamespace* _tmp9_ = NULL;
+	ValaComment* _tmp10_ = NULL;
+	ValaNamespace* _tmp13_ = NULL;
+	ValaList* _tmp14_ = NULL;
+	ValaList* old_using_directives = NULL;
+	ValaScanner* _tmp15_ = NULL;
+	ValaSourceFile* _tmp16_ = NULL;
+	ValaSourceFile* _tmp17_ = NULL;
+	ValaList* _tmp18_ = NULL;
+	ValaList* _tmp19_ = NULL;
+	ValaList* _tmp20_ = NULL;
+	ValaNamespace* _tmp21_ = NULL;
+	ValaNamespace* _tmp22_ = NULL;
+	ValaScanner* _tmp23_ = NULL;
+	ValaSourceFile* _tmp24_ = NULL;
+	ValaSourceFile* _tmp25_ = NULL;
+	ValaList* _tmp26_ = NULL;
 	gboolean _tmp27_ = FALSE;
-	ValaNamespace* _tmp34_;
-	ValaSymbol* _tmp35_;
-	ValaSymbol* _result_;
+	ValaSymbol* _result_ = NULL;
+	ValaNamespace* _tmp34_ = NULL;
+	ValaSymbol* _tmp35_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -15227,8 +15441,8 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 	ns = _tmp9_;
 	_tmp10_ = self->priv->comment;
 	if (_tmp10_ != NULL) {
-		ValaNamespace* _tmp11_;
-		ValaComment* _tmp12_;
+		ValaNamespace* _tmp11_ = NULL;
+		ValaComment* _tmp12_ = NULL;
 		_tmp11_ = ns;
 		_tmp12_ = self->priv->comment;
 		vala_namespace_add_comment (_tmp11_, _tmp12_);
@@ -15303,9 +15517,9 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 	vala_source_file_set_current_using_directives (_tmp25_, _tmp26_);
 	_tmp27_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CLOSE_BRACE);
 	if (!_tmp27_) {
-		ValaCodeContext* _tmp28_;
-		ValaReport* _tmp29_;
-		ValaReport* _tmp30_;
+		ValaCodeContext* _tmp28_ = NULL;
+		ValaReport* _tmp29_ = NULL;
+		ValaReport* _tmp30_ = NULL;
 		gint _tmp31_ = 0;
 		_tmp28_ = self->priv->context;
 		_tmp29_ = vala_code_context_get_report (_tmp28_);
@@ -15313,7 +15527,7 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 		_tmp31_ = vala_report_get_errors (_tmp30_);
 		if (_tmp31_ == 0) {
 			ValaSourceReference* _tmp32_ = NULL;
-			ValaSourceReference* _tmp33_;
+			ValaSourceReference* _tmp33_ = NULL;
 			_tmp32_ = vala_parser_get_current_src (self);
 			_tmp33_ = _tmp32_;
 			vala_report_error (_tmp33_, "expected `}'");
@@ -15324,20 +15538,19 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 	_tmp35_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp34_);
 	_result_ = _tmp35_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp36_;
-		ValaUnresolvedSymbol* _tmp37_;
-		ValaUnresolvedSymbol* _tmp38_;
-		ValaUnresolvedSymbol* _tmp39_;
-		ValaUnresolvedSymbol* _tmp40_;
+		ValaUnresolvedSymbol* _tmp36_ = NULL;
+		ValaUnresolvedSymbol* _tmp37_ = NULL;
+		ValaUnresolvedSymbol* _tmp38_ = NULL;
+		ValaUnresolvedSymbol* _tmp39_ = NULL;
+		ValaUnresolvedSymbol* _tmp40_ = NULL;
 		ValaSymbol* _tmp41_ = NULL;
-		ValaUnresolvedSymbol* _tmp42_;
-		ValaSymbol* _tmp52_;
-		ValaSymbol* _tmp53_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp54_;
-		ValaSymbol* _tmp55_;
-		ValaSymbol* _tmp56_;
-		ValaSymbol* _tmp57_;
+		ValaUnresolvedSymbol* _tmp42_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp52_ = NULL;
+		ValaSymbol* _tmp53_ = NULL;
+		ValaSymbol* _tmp54_ = NULL;
+		ValaSymbol* _tmp55_ = NULL;
+		ValaSymbol* _tmp56_ = NULL;
 		_tmp36_ = sym;
 		if (!(_tmp36_ != NULL)) {
 			break;
@@ -15350,13 +15563,13 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 		sym = _tmp40_;
 		_tmp42_ = sym;
 		if (_tmp42_ != NULL) {
-			ValaUnresolvedSymbol* _tmp43_;
-			const gchar* _tmp44_;
-			const gchar* _tmp45_;
-			ValaNamespace* _tmp46_;
-			ValaSourceReference* _tmp47_;
-			ValaSourceReference* _tmp48_;
-			ValaNamespace* _tmp49_;
+			ValaUnresolvedSymbol* _tmp43_ = NULL;
+			const gchar* _tmp44_ = NULL;
+			const gchar* _tmp45_ = NULL;
+			ValaNamespace* _tmp46_ = NULL;
+			ValaSourceReference* _tmp47_ = NULL;
+			ValaSourceReference* _tmp48_ = NULL;
+			ValaNamespace* _tmp49_ = NULL;
 			_tmp43_ = sym;
 			_tmp44_ = vala_symbol_get_name ((ValaSymbol*) _tmp43_);
 			_tmp45_ = _tmp44_;
@@ -15367,23 +15580,22 @@ static void vala_parser_parse_namespace_declaration (ValaParser* self, ValaSymbo
 			_vala_code_node_unref0 (_tmp41_);
 			_tmp41_ = (ValaSymbol*) _tmp49_;
 		} else {
-			ValaSymbol* _tmp50_;
-			ValaSymbol* _tmp51_;
+			ValaSymbol* _tmp50_ = NULL;
+			ValaSymbol* _tmp51_ = NULL;
 			_tmp50_ = parent;
 			_tmp51_ = _vala_code_node_ref0 (_tmp50_);
 			_vala_code_node_unref0 (_tmp41_);
 			_tmp41_ = _tmp51_;
 		}
-		_tmp52_ = _tmp41_;
-		_tmp53_ = _vala_code_node_ref0 (_tmp52_);
-		next = _tmp53_;
-		_tmp54_ = next;
-		_tmp55_ = _result_;
-		vala_symbol_add_namespace (_tmp54_, G_TYPE_CHECK_INSTANCE_CAST (_tmp55_, VALA_TYPE_NAMESPACE, ValaNamespace));
-		_tmp56_ = next;
-		_tmp57_ = _vala_code_node_ref0 (_tmp56_);
+		_tmp52_ = _vala_code_node_ref0 (_tmp41_);
+		next = _tmp52_;
+		_tmp53_ = next;
+		_tmp54_ = _result_;
+		vala_symbol_add_namespace (_tmp53_, G_TYPE_CHECK_INSTANCE_CAST (_tmp54_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp55_ = next;
+		_tmp56_ = _vala_code_node_ref0 (_tmp55_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp57_;
+		_result_ = _tmp56_;
 		_vala_code_node_unref0 (next);
 		_vala_code_node_unref0 (_tmp41_);
 	}
@@ -15405,40 +15617,38 @@ static void vala_parser_parse_using_directives (ValaParser* self, ValaNamespace*
 			break;
 		}
 		{
-			gboolean _tmp1_;
+			gboolean _tmp1_ = FALSE;
 			_tmp1_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp2_;
-				ValaSourceLocation _tmp4_ = {0};
-				ValaSourceLocation begin;
+				ValaSourceLocation begin = {0};
+				ValaSourceLocation _tmp3_ = {0};
+				ValaUnresolvedSymbol* sym = NULL;
+				ValaUnresolvedSymbol* _tmp4_ = NULL;
+				ValaUsingDirective* ns_ref = NULL;
 				ValaUnresolvedSymbol* _tmp5_ = NULL;
-				ValaUnresolvedSymbol* sym;
-				ValaUnresolvedSymbol* _tmp6_;
-				ValaSourceLocation _tmp7_;
+				ValaSourceLocation _tmp6_ = {0};
+				ValaSourceReference* _tmp7_ = NULL;
 				ValaSourceReference* _tmp8_ = NULL;
-				ValaSourceReference* _tmp9_;
-				ValaUsingDirective* _tmp10_;
-				ValaUsingDirective* _tmp11_;
-				ValaUsingDirective* ns_ref;
-				ValaScanner* _tmp12_;
-				ValaSourceFile* _tmp13_;
-				ValaSourceFile* _tmp14_;
-				ValaUsingDirective* _tmp15_;
-				ValaNamespace* _tmp16_;
-				ValaUsingDirective* _tmp17_;
-				_tmp2_ = _tmp1_;
-				if (!_tmp2_) {
-					gboolean _tmp3_ = FALSE;
-					_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp3_) {
+				ValaUsingDirective* _tmp9_ = NULL;
+				ValaUsingDirective* _tmp10_ = NULL;
+				ValaScanner* _tmp11_ = NULL;
+				ValaSourceFile* _tmp12_ = NULL;
+				ValaSourceFile* _tmp13_ = NULL;
+				ValaUsingDirective* _tmp14_ = NULL;
+				ValaNamespace* _tmp15_ = NULL;
+				ValaUsingDirective* _tmp16_ = NULL;
+				if (!_tmp1_) {
+					gboolean _tmp2_ = FALSE;
+					_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp2_) {
 						break;
 					}
 				}
 				_tmp1_ = FALSE;
-				vala_parser_get_location (self, &_tmp4_);
-				begin = _tmp4_;
-				_tmp5_ = vala_parser_parse_symbol_name (self, &_inner_error_);
-				sym = _tmp5_;
+				vala_parser_get_location (self, &_tmp3_);
+				begin = _tmp3_;
+				_tmp4_ = vala_parser_parse_symbol_name (self, &_inner_error_);
+				sym = _tmp4_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -15449,22 +15659,22 @@ static void vala_parser_parse_using_directives (ValaParser* self, ValaNamespace*
 						return;
 					}
 				}
-				_tmp6_ = sym;
-				_tmp7_ = begin;
-				_tmp8_ = vala_parser_get_src (self, &_tmp7_);
-				_tmp9_ = _tmp8_;
-				_tmp10_ = vala_using_directive_new ((ValaSymbol*) _tmp6_, _tmp9_);
-				_tmp11_ = _tmp10_;
-				_vala_source_reference_unref0 (_tmp9_);
-				ns_ref = _tmp11_;
-				_tmp12_ = self->priv->scanner;
-				_tmp13_ = vala_scanner_get_source_file (_tmp12_);
-				_tmp14_ = _tmp13_;
-				_tmp15_ = ns_ref;
-				vala_source_file_add_using_directive (_tmp14_, _tmp15_);
-				_tmp16_ = ns;
-				_tmp17_ = ns_ref;
-				vala_namespace_add_using_directive (_tmp16_, _tmp17_);
+				_tmp5_ = sym;
+				_tmp6_ = begin;
+				_tmp7_ = vala_parser_get_src (self, &_tmp6_);
+				_tmp8_ = _tmp7_;
+				_tmp9_ = vala_using_directive_new ((ValaSymbol*) _tmp5_, _tmp8_);
+				_tmp10_ = _tmp9_;
+				_vala_source_reference_unref0 (_tmp8_);
+				ns_ref = _tmp10_;
+				_tmp11_ = self->priv->scanner;
+				_tmp12_ = vala_scanner_get_source_file (_tmp11_);
+				_tmp13_ = _tmp12_;
+				_tmp14_ = ns_ref;
+				vala_source_file_add_using_directive (_tmp13_, _tmp14_);
+				_tmp15_ = ns;
+				_tmp16_ = ns_ref;
+				vala_namespace_add_using_directive (_tmp15_, _tmp16_);
 				_vala_code_node_unref0 (ns_ref);
 				_vala_code_node_unref0 (sym);
 			}
@@ -15485,49 +15695,47 @@ static void vala_parser_parse_using_directives (ValaParser* self, ValaNamespace*
 
 
 static void vala_parser_parse_class_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
+	ValaList* type_param_list = NULL;
 	ValaList* _tmp4_ = NULL;
-	ValaList* type_param_list;
-	GEqualFunc _tmp5_;
-	ValaArrayList* _tmp6_;
-	ValaArrayList* base_types;
+	ValaArrayList* base_types = NULL;
+	GEqualFunc _tmp5_ = NULL;
+	ValaArrayList* _tmp6_ = NULL;
 	gboolean _tmp7_ = FALSE;
-	ValaUnresolvedSymbol* _tmp15_;
-	const gchar* _tmp16_;
-	const gchar* _tmp17_;
-	ValaSourceLocation _tmp18_;
-	ValaSourceReference* _tmp19_ = NULL;
-	ValaSourceReference* _tmp20_;
-	ValaComment* _tmp21_;
-	ValaClass* _tmp22_;
-	ValaClass* _tmp23_;
-	ValaClass* cl;
-	ValaClass* _tmp24_;
-	ValaSymbolAccessibility _tmp25_;
-	ValaParserModifierFlags _tmp26_;
-	gboolean _tmp28_ = FALSE;
-	ValaParserModifierFlags _tmp29_;
-	gboolean _tmp35_;
-	ValaClass* _tmp37_;
-	ValaList* _tmp38_;
-	ValaClass* _tmp65_;
-	gboolean _tmp66_ = FALSE;
-	ValaScanner* _tmp67_;
-	ValaSourceFile* _tmp68_;
-	ValaSourceFile* _tmp69_;
-	ValaSourceFileType _tmp70_;
-	ValaSourceFileType _tmp71_;
-	gboolean _tmp75_;
-	ValaClass* _tmp92_;
-	ValaSymbol* _tmp93_;
-	ValaSymbol* _result_;
+	ValaClass* cl = NULL;
+	ValaUnresolvedSymbol* _tmp13_ = NULL;
+	const gchar* _tmp14_ = NULL;
+	const gchar* _tmp15_ = NULL;
+	ValaSourceLocation _tmp16_ = {0};
+	ValaSourceReference* _tmp17_ = NULL;
+	ValaSourceReference* _tmp18_ = NULL;
+	ValaComment* _tmp19_ = NULL;
+	ValaClass* _tmp20_ = NULL;
+	ValaClass* _tmp21_ = NULL;
+	ValaClass* _tmp22_ = NULL;
+	ValaSymbolAccessibility _tmp23_ = 0;
+	ValaParserModifierFlags _tmp24_ = 0;
+	gboolean _tmp26_ = FALSE;
+	ValaParserModifierFlags _tmp27_ = 0;
+	ValaClass* _tmp34_ = NULL;
+	ValaList* _tmp35_ = NULL;
+	ValaClass* _tmp62_ = NULL;
+	gboolean _tmp63_ = FALSE;
+	ValaScanner* _tmp64_ = NULL;
+	ValaSourceFile* _tmp65_ = NULL;
+	ValaSourceFile* _tmp66_ = NULL;
+	ValaSourceFileType _tmp67_ = 0;
+	ValaSourceFileType _tmp68_ = 0;
+	ValaSymbol* _result_ = NULL;
+	ValaClass* _tmp88_ = NULL;
+	ValaSymbol* _tmp89_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -15580,25 +15788,22 @@ static void vala_parser_parse_class_declaration (ValaParser* self, ValaSymbol* p
 	_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COLON);
 	if (_tmp7_) {
 		{
-			gboolean _tmp8_;
+			gboolean _tmp8_ = FALSE;
 			_tmp8_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp9_;
+				ValaDataType* _tmp10_ = NULL;
 				ValaDataType* _tmp11_ = NULL;
-				ValaDataType* _tmp12_;
-				ValaArrayList* _tmp13_;
-				ValaDataType* _tmp14_;
-				_tmp9_ = _tmp8_;
-				if (!_tmp9_) {
-					gboolean _tmp10_ = FALSE;
-					_tmp10_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp10_) {
+				ValaArrayList* _tmp12_ = NULL;
+				if (!_tmp8_) {
+					gboolean _tmp9_ = FALSE;
+					_tmp9_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp9_) {
 						break;
 					}
 				}
 				_tmp8_ = FALSE;
 				_tmp11_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				_tmp12_ = _tmp11_;
+				_tmp10_ = _tmp11_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -15615,150 +15820,148 @@ static void vala_parser_parse_class_declaration (ValaParser* self, ValaSymbol* p
 						return;
 					}
 				}
-				_tmp13_ = base_types;
-				_tmp14_ = _tmp12_;
-				vala_collection_add ((ValaCollection*) _tmp13_, _tmp14_);
-				_vala_code_node_unref0 (_tmp14_);
+				_tmp12_ = base_types;
+				vala_collection_add ((ValaCollection*) _tmp12_, _tmp10_);
+				_vala_code_node_unref0 (_tmp10_);
 			}
 		}
 	}
-	_tmp15_ = sym;
-	_tmp16_ = vala_symbol_get_name ((ValaSymbol*) _tmp15_);
-	_tmp17_ = _tmp16_;
-	_tmp18_ = begin;
-	_tmp19_ = vala_parser_get_src (self, &_tmp18_);
-	_tmp20_ = _tmp19_;
-	_tmp21_ = self->priv->comment;
-	_tmp22_ = vala_class_new (_tmp17_, _tmp20_, _tmp21_);
-	_tmp23_ = _tmp22_;
-	_vala_source_reference_unref0 (_tmp20_);
-	cl = _tmp23_;
-	_tmp24_ = cl;
-	_tmp25_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp24_, _tmp25_);
-	_tmp26_ = flags;
-	if ((_tmp26_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
-		ValaClass* _tmp27_;
-		_tmp27_ = cl;
-		vala_class_set_is_abstract (_tmp27_, TRUE);
+	_tmp13_ = sym;
+	_tmp14_ = vala_symbol_get_name ((ValaSymbol*) _tmp13_);
+	_tmp15_ = _tmp14_;
+	_tmp16_ = begin;
+	_tmp17_ = vala_parser_get_src (self, &_tmp16_);
+	_tmp18_ = _tmp17_;
+	_tmp19_ = self->priv->comment;
+	_tmp20_ = vala_class_new (_tmp15_, _tmp18_, _tmp19_);
+	_tmp21_ = _tmp20_;
+	_vala_source_reference_unref0 (_tmp18_);
+	cl = _tmp21_;
+	_tmp22_ = cl;
+	_tmp23_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp22_, _tmp23_);
+	_tmp24_ = flags;
+	if ((_tmp24_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
+		ValaClass* _tmp25_ = NULL;
+		_tmp25_ = cl;
+		vala_class_set_is_abstract (_tmp25_, TRUE);
 	}
-	_tmp29_ = flags;
-	if ((_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		_tmp28_ = TRUE;
+	_tmp27_ = flags;
+	if ((_tmp27_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		_tmp26_ = TRUE;
 	} else {
-		ValaScanner* _tmp30_;
-		ValaSourceFile* _tmp31_;
-		ValaSourceFile* _tmp32_;
-		ValaSourceFileType _tmp33_;
-		ValaSourceFileType _tmp34_;
-		_tmp30_ = self->priv->scanner;
-		_tmp31_ = vala_scanner_get_source_file (_tmp30_);
+		ValaScanner* _tmp28_ = NULL;
+		ValaSourceFile* _tmp29_ = NULL;
+		ValaSourceFile* _tmp30_ = NULL;
+		ValaSourceFileType _tmp31_ = 0;
+		ValaSourceFileType _tmp32_ = 0;
+		_tmp28_ = self->priv->scanner;
+		_tmp29_ = vala_scanner_get_source_file (_tmp28_);
+		_tmp30_ = _tmp29_;
+		_tmp31_ = vala_source_file_get_file_type (_tmp30_);
 		_tmp32_ = _tmp31_;
-		_tmp33_ = vala_source_file_get_file_type (_tmp32_);
-		_tmp34_ = _tmp33_;
-		_tmp28_ = _tmp34_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
+		_tmp26_ = _tmp32_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp35_ = _tmp28_;
-	if (_tmp35_) {
-		ValaClass* _tmp36_;
-		_tmp36_ = cl;
-		vala_symbol_set_external ((ValaSymbol*) _tmp36_, TRUE);
+	if (_tmp26_) {
+		ValaClass* _tmp33_ = NULL;
+		_tmp33_ = cl;
+		vala_symbol_set_external ((ValaSymbol*) _tmp33_, TRUE);
 	}
-	_tmp37_ = cl;
-	_tmp38_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp37_, _tmp38_);
+	_tmp34_ = cl;
+	_tmp35_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp34_, _tmp35_);
 	{
-		ValaList* _tmp39_;
-		ValaList* _tmp40_;
-		ValaList* _type_param_list;
-		ValaList* _tmp41_;
-		gint _tmp42_;
-		gint _tmp43_;
-		gint _type_param_size;
-		gint _type_param_index;
-		_tmp39_ = type_param_list;
-		_tmp40_ = _vala_iterable_ref0 (_tmp39_);
-		_type_param_list = _tmp40_;
-		_tmp41_ = _type_param_list;
-		_tmp42_ = vala_collection_get_size ((ValaCollection*) _tmp41_);
-		_tmp43_ = _tmp42_;
-		_type_param_size = _tmp43_;
+		ValaList* _type_param_list = NULL;
+		ValaList* _tmp36_ = NULL;
+		ValaList* _tmp37_ = NULL;
+		gint _type_param_size = 0;
+		ValaList* _tmp38_ = NULL;
+		gint _tmp39_ = 0;
+		gint _tmp40_ = 0;
+		gint _type_param_index = 0;
+		_tmp36_ = type_param_list;
+		_tmp37_ = _vala_iterable_ref0 (_tmp36_);
+		_type_param_list = _tmp37_;
+		_tmp38_ = _type_param_list;
+		_tmp39_ = vala_collection_get_size ((ValaCollection*) _tmp38_);
+		_tmp40_ = _tmp39_;
+		_type_param_size = _tmp40_;
 		_type_param_index = -1;
 		while (TRUE) {
-			gint _tmp44_;
-			gint _tmp45_;
-			gint _tmp46_;
-			ValaList* _tmp47_;
-			gint _tmp48_;
-			gpointer _tmp49_ = NULL;
-			ValaTypeParameter* type_param;
-			ValaClass* _tmp50_;
-			ValaTypeParameter* _tmp51_;
-			_tmp44_ = _type_param_index;
-			_type_param_index = _tmp44_ + 1;
-			_tmp45_ = _type_param_index;
-			_tmp46_ = _type_param_size;
-			if (!(_tmp45_ < _tmp46_)) {
+			gint _tmp41_ = 0;
+			gint _tmp42_ = 0;
+			gint _tmp43_ = 0;
+			ValaTypeParameter* type_param = NULL;
+			ValaList* _tmp44_ = NULL;
+			gint _tmp45_ = 0;
+			gpointer _tmp46_ = NULL;
+			ValaClass* _tmp47_ = NULL;
+			ValaTypeParameter* _tmp48_ = NULL;
+			_tmp41_ = _type_param_index;
+			_type_param_index = _tmp41_ + 1;
+			_tmp42_ = _type_param_index;
+			_tmp43_ = _type_param_size;
+			if (!(_tmp42_ < _tmp43_)) {
 				break;
 			}
-			_tmp47_ = _type_param_list;
-			_tmp48_ = _type_param_index;
-			_tmp49_ = vala_list_get (_tmp47_, _tmp48_);
-			type_param = (ValaTypeParameter*) _tmp49_;
-			_tmp50_ = cl;
-			_tmp51_ = type_param;
-			vala_object_type_symbol_add_type_parameter ((ValaObjectTypeSymbol*) _tmp50_, _tmp51_);
+			_tmp44_ = _type_param_list;
+			_tmp45_ = _type_param_index;
+			_tmp46_ = vala_list_get (_tmp44_, _tmp45_);
+			type_param = (ValaTypeParameter*) _tmp46_;
+			_tmp47_ = cl;
+			_tmp48_ = type_param;
+			vala_object_type_symbol_add_type_parameter ((ValaObjectTypeSymbol*) _tmp47_, _tmp48_);
 			_vala_code_node_unref0 (type_param);
 		}
 		_vala_iterable_unref0 (_type_param_list);
 	}
 	{
-		ValaArrayList* _tmp52_;
-		ValaArrayList* _tmp53_;
-		ValaArrayList* _base_type_list;
-		ValaArrayList* _tmp54_;
-		gint _tmp55_;
-		gint _tmp56_;
-		gint _base_type_size;
-		gint _base_type_index;
-		_tmp52_ = base_types;
-		_tmp53_ = _vala_iterable_ref0 (_tmp52_);
-		_base_type_list = _tmp53_;
-		_tmp54_ = _base_type_list;
-		_tmp55_ = vala_collection_get_size ((ValaCollection*) _tmp54_);
-		_tmp56_ = _tmp55_;
-		_base_type_size = _tmp56_;
+		ValaArrayList* _base_type_list = NULL;
+		ValaArrayList* _tmp49_ = NULL;
+		ValaArrayList* _tmp50_ = NULL;
+		gint _base_type_size = 0;
+		ValaArrayList* _tmp51_ = NULL;
+		gint _tmp52_ = 0;
+		gint _tmp53_ = 0;
+		gint _base_type_index = 0;
+		_tmp49_ = base_types;
+		_tmp50_ = _vala_iterable_ref0 (_tmp49_);
+		_base_type_list = _tmp50_;
+		_tmp51_ = _base_type_list;
+		_tmp52_ = vala_collection_get_size ((ValaCollection*) _tmp51_);
+		_tmp53_ = _tmp52_;
+		_base_type_size = _tmp53_;
 		_base_type_index = -1;
 		while (TRUE) {
-			gint _tmp57_;
-			gint _tmp58_;
-			gint _tmp59_;
-			ValaArrayList* _tmp60_;
-			gint _tmp61_;
-			gpointer _tmp62_ = NULL;
-			ValaDataType* base_type;
-			ValaClass* _tmp63_;
-			ValaDataType* _tmp64_;
-			_tmp57_ = _base_type_index;
-			_base_type_index = _tmp57_ + 1;
-			_tmp58_ = _base_type_index;
-			_tmp59_ = _base_type_size;
-			if (!(_tmp58_ < _tmp59_)) {
+			gint _tmp54_ = 0;
+			gint _tmp55_ = 0;
+			gint _tmp56_ = 0;
+			ValaDataType* base_type = NULL;
+			ValaArrayList* _tmp57_ = NULL;
+			gint _tmp58_ = 0;
+			gpointer _tmp59_ = NULL;
+			ValaClass* _tmp60_ = NULL;
+			ValaDataType* _tmp61_ = NULL;
+			_tmp54_ = _base_type_index;
+			_base_type_index = _tmp54_ + 1;
+			_tmp55_ = _base_type_index;
+			_tmp56_ = _base_type_size;
+			if (!(_tmp55_ < _tmp56_)) {
 				break;
 			}
-			_tmp60_ = _base_type_list;
-			_tmp61_ = _base_type_index;
-			_tmp62_ = vala_list_get ((ValaList*) _tmp60_, _tmp61_);
-			base_type = (ValaDataType*) _tmp62_;
-			_tmp63_ = cl;
-			_tmp64_ = base_type;
-			vala_class_add_base_type (_tmp63_, _tmp64_);
+			_tmp57_ = _base_type_list;
+			_tmp58_ = _base_type_index;
+			_tmp59_ = vala_list_get ((ValaList*) _tmp57_, _tmp58_);
+			base_type = (ValaDataType*) _tmp59_;
+			_tmp60_ = cl;
+			_tmp61_ = base_type;
+			vala_class_add_base_type (_tmp60_, _tmp61_);
 			_vala_code_node_unref0 (base_type);
 		}
 		_vala_iterable_unref0 (_base_type_list);
 	}
-	_tmp65_ = cl;
-	vala_parser_parse_declarations (self, (ValaSymbol*) _tmp65_, FALSE, &_inner_error_);
+	_tmp62_ = cl;
+	vala_parser_parse_declarations (self, (ValaSymbol*) _tmp62_, FALSE, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -15777,140 +15980,137 @@ static void vala_parser_parse_class_declaration (ValaParser* self, ValaSymbol* p
 			return;
 		}
 	}
-	_tmp67_ = self->priv->scanner;
-	_tmp68_ = vala_scanner_get_source_file (_tmp67_);
-	_tmp69_ = _tmp68_;
-	_tmp70_ = vala_source_file_get_file_type (_tmp69_);
-	_tmp71_ = _tmp70_;
-	if (_tmp71_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
-		ValaClass* _tmp72_;
-		ValaMethod* _tmp73_;
-		ValaMethod* _tmp74_;
-		_tmp72_ = cl;
-		_tmp73_ = vala_class_get_default_construction_method (_tmp72_);
-		_tmp74_ = _tmp73_;
-		_tmp66_ = _tmp74_ == NULL;
+	_tmp64_ = self->priv->scanner;
+	_tmp65_ = vala_scanner_get_source_file (_tmp64_);
+	_tmp66_ = _tmp65_;
+	_tmp67_ = vala_source_file_get_file_type (_tmp66_);
+	_tmp68_ = _tmp67_;
+	if (_tmp68_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
+		ValaClass* _tmp69_ = NULL;
+		ValaCreationMethod* _tmp70_ = NULL;
+		ValaCreationMethod* _tmp71_ = NULL;
+		_tmp69_ = cl;
+		_tmp70_ = vala_class_get_default_construction_method (_tmp69_);
+		_tmp71_ = _tmp70_;
+		_tmp63_ = _tmp71_ == NULL;
 	} else {
-		_tmp66_ = FALSE;
+		_tmp63_ = FALSE;
 	}
-	_tmp75_ = _tmp66_;
-	if (_tmp75_) {
-		ValaClass* _tmp76_;
-		const gchar* _tmp77_;
-		const gchar* _tmp78_;
-		ValaClass* _tmp79_;
-		ValaSourceReference* _tmp80_;
-		ValaSourceReference* _tmp81_;
-		ValaCreationMethod* _tmp82_;
-		ValaCreationMethod* m;
-		ValaCreationMethod* _tmp83_;
-		ValaCreationMethod* _tmp84_;
-		ValaClass* _tmp85_;
-		ValaSourceReference* _tmp86_;
-		ValaSourceReference* _tmp87_;
-		ValaBlock* _tmp88_;
-		ValaBlock* _tmp89_;
-		ValaClass* _tmp90_;
-		ValaCreationMethod* _tmp91_;
-		_tmp76_ = cl;
-		_tmp77_ = vala_symbol_get_name ((ValaSymbol*) _tmp76_);
-		_tmp78_ = _tmp77_;
-		_tmp79_ = cl;
-		_tmp80_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp79_);
-		_tmp81_ = _tmp80_;
-		_tmp82_ = vala_creation_method_new (_tmp78_, NULL, _tmp81_, NULL);
-		m = _tmp82_;
-		_tmp83_ = m;
-		vala_symbol_set_access ((ValaSymbol*) _tmp83_, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
-		_tmp84_ = m;
-		_tmp85_ = cl;
-		_tmp86_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp85_);
-		_tmp87_ = _tmp86_;
-		_tmp88_ = vala_block_new (_tmp87_);
-		_tmp89_ = _tmp88_;
-		vala_subroutine_set_body ((ValaSubroutine*) _tmp84_, _tmp89_);
-		_vala_code_node_unref0 (_tmp89_);
-		_tmp90_ = cl;
-		_tmp91_ = m;
-		vala_symbol_add_method ((ValaSymbol*) _tmp90_, (ValaMethod*) _tmp91_);
+	if (_tmp63_) {
+		ValaCreationMethod* m = NULL;
+		ValaClass* _tmp72_ = NULL;
+		const gchar* _tmp73_ = NULL;
+		const gchar* _tmp74_ = NULL;
+		ValaClass* _tmp75_ = NULL;
+		ValaSourceReference* _tmp76_ = NULL;
+		ValaSourceReference* _tmp77_ = NULL;
+		ValaCreationMethod* _tmp78_ = NULL;
+		ValaCreationMethod* _tmp79_ = NULL;
+		ValaCreationMethod* _tmp80_ = NULL;
+		ValaClass* _tmp81_ = NULL;
+		ValaSourceReference* _tmp82_ = NULL;
+		ValaSourceReference* _tmp83_ = NULL;
+		ValaBlock* _tmp84_ = NULL;
+		ValaBlock* _tmp85_ = NULL;
+		ValaClass* _tmp86_ = NULL;
+		ValaCreationMethod* _tmp87_ = NULL;
+		_tmp72_ = cl;
+		_tmp73_ = vala_symbol_get_name ((ValaSymbol*) _tmp72_);
+		_tmp74_ = _tmp73_;
+		_tmp75_ = cl;
+		_tmp76_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp75_);
+		_tmp77_ = _tmp76_;
+		_tmp78_ = vala_creation_method_new (_tmp74_, NULL, _tmp77_, NULL);
+		m = _tmp78_;
+		_tmp79_ = m;
+		vala_symbol_set_access ((ValaSymbol*) _tmp79_, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
+		_tmp80_ = m;
+		_tmp81_ = cl;
+		_tmp82_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp81_);
+		_tmp83_ = _tmp82_;
+		_tmp84_ = vala_block_new (_tmp83_);
+		_tmp85_ = _tmp84_;
+		vala_subroutine_set_body ((ValaSubroutine*) _tmp80_, _tmp85_);
+		_vala_code_node_unref0 (_tmp85_);
+		_tmp86_ = cl;
+		_tmp87_ = m;
+		vala_symbol_add_method ((ValaSymbol*) _tmp86_, (ValaMethod*) _tmp87_);
 		_vala_code_node_unref0 (m);
 	}
-	_tmp92_ = cl;
-	_tmp93_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp92_);
-	_result_ = _tmp93_;
+	_tmp88_ = cl;
+	_tmp89_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp88_);
+	_result_ = _tmp89_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp94_;
-		ValaUnresolvedSymbol* _tmp95_;
-		ValaUnresolvedSymbol* _tmp96_;
-		ValaUnresolvedSymbol* _tmp97_;
-		ValaUnresolvedSymbol* _tmp98_;
-		ValaSymbol* _tmp99_ = NULL;
-		ValaUnresolvedSymbol* _tmp100_;
-		ValaSymbol* _tmp110_;
-		ValaSymbol* _tmp111_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp112_;
-		ValaSymbol* _tmp117_;
-		ValaSymbol* _tmp118_;
-		_tmp94_ = sym;
-		if (!(_tmp94_ != NULL)) {
+		ValaUnresolvedSymbol* _tmp90_ = NULL;
+		ValaUnresolvedSymbol* _tmp91_ = NULL;
+		ValaUnresolvedSymbol* _tmp92_ = NULL;
+		ValaUnresolvedSymbol* _tmp93_ = NULL;
+		ValaUnresolvedSymbol* _tmp94_ = NULL;
+		ValaSymbol* _tmp95_ = NULL;
+		ValaUnresolvedSymbol* _tmp96_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp106_ = NULL;
+		ValaSymbol* _tmp107_ = NULL;
+		ValaSymbol* _tmp112_ = NULL;
+		ValaSymbol* _tmp113_ = NULL;
+		_tmp90_ = sym;
+		if (!(_tmp90_ != NULL)) {
 			break;
 		}
-		_tmp95_ = sym;
-		_tmp96_ = vala_unresolved_symbol_get_inner (_tmp95_);
-		_tmp97_ = _tmp96_;
-		_tmp98_ = _vala_code_node_ref0 (_tmp97_);
+		_tmp91_ = sym;
+		_tmp92_ = vala_unresolved_symbol_get_inner (_tmp91_);
+		_tmp93_ = _tmp92_;
+		_tmp94_ = _vala_code_node_ref0 (_tmp93_);
 		_vala_code_node_unref0 (sym);
-		sym = _tmp98_;
-		_tmp100_ = sym;
-		if (_tmp100_ != NULL) {
-			ValaUnresolvedSymbol* _tmp101_;
-			const gchar* _tmp102_;
-			const gchar* _tmp103_;
-			ValaClass* _tmp104_;
-			ValaSourceReference* _tmp105_;
-			ValaSourceReference* _tmp106_;
-			ValaNamespace* _tmp107_;
-			_tmp101_ = sym;
-			_tmp102_ = vala_symbol_get_name ((ValaSymbol*) _tmp101_);
-			_tmp103_ = _tmp102_;
-			_tmp104_ = cl;
-			_tmp105_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp104_);
-			_tmp106_ = _tmp105_;
-			_tmp107_ = vala_namespace_new (_tmp103_, _tmp106_);
-			_vala_code_node_unref0 (_tmp99_);
-			_tmp99_ = (ValaSymbol*) _tmp107_;
+		sym = _tmp94_;
+		_tmp96_ = sym;
+		if (_tmp96_ != NULL) {
+			ValaUnresolvedSymbol* _tmp97_ = NULL;
+			const gchar* _tmp98_ = NULL;
+			const gchar* _tmp99_ = NULL;
+			ValaClass* _tmp100_ = NULL;
+			ValaSourceReference* _tmp101_ = NULL;
+			ValaSourceReference* _tmp102_ = NULL;
+			ValaNamespace* _tmp103_ = NULL;
+			_tmp97_ = sym;
+			_tmp98_ = vala_symbol_get_name ((ValaSymbol*) _tmp97_);
+			_tmp99_ = _tmp98_;
+			_tmp100_ = cl;
+			_tmp101_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp100_);
+			_tmp102_ = _tmp101_;
+			_tmp103_ = vala_namespace_new (_tmp99_, _tmp102_);
+			_vala_code_node_unref0 (_tmp95_);
+			_tmp95_ = (ValaSymbol*) _tmp103_;
 		} else {
-			ValaSymbol* _tmp108_;
-			ValaSymbol* _tmp109_;
-			_tmp108_ = parent;
-			_tmp109_ = _vala_code_node_ref0 (_tmp108_);
-			_vala_code_node_unref0 (_tmp99_);
-			_tmp99_ = _tmp109_;
+			ValaSymbol* _tmp104_ = NULL;
+			ValaSymbol* _tmp105_ = NULL;
+			_tmp104_ = parent;
+			_tmp105_ = _vala_code_node_ref0 (_tmp104_);
+			_vala_code_node_unref0 (_tmp95_);
+			_tmp95_ = _tmp105_;
 		}
-		_tmp110_ = _tmp99_;
-		_tmp111_ = _vala_code_node_ref0 (_tmp110_);
-		next = _tmp111_;
-		_tmp112_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp112_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp113_;
-			ValaSymbol* _tmp114_;
-			_tmp113_ = next;
-			_tmp114_ = _result_;
-			vala_symbol_add_namespace (_tmp113_, G_TYPE_CHECK_INSTANCE_CAST (_tmp114_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp106_ = _vala_code_node_ref0 (_tmp95_);
+		next = _tmp106_;
+		_tmp107_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp107_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp108_ = NULL;
+			ValaSymbol* _tmp109_ = NULL;
+			_tmp108_ = next;
+			_tmp109_ = _result_;
+			vala_symbol_add_namespace (_tmp108_, G_TYPE_CHECK_INSTANCE_CAST (_tmp109_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp115_;
-			ValaSymbol* _tmp116_;
-			_tmp115_ = next;
-			_tmp116_ = _result_;
-			vala_symbol_add_class (_tmp115_, G_TYPE_CHECK_INSTANCE_CAST (_tmp116_, VALA_TYPE_CLASS, ValaClass));
+			ValaSymbol* _tmp110_ = NULL;
+			ValaSymbol* _tmp111_ = NULL;
+			_tmp110_ = next;
+			_tmp111_ = _result_;
+			vala_symbol_add_class (_tmp110_, G_TYPE_CHECK_INSTANCE_CAST (_tmp111_, VALA_TYPE_CLASS, ValaClass));
 		}
-		_tmp117_ = next;
-		_tmp118_ = _vala_code_node_ref0 (_tmp117_);
+		_tmp112_ = next;
+		_tmp113_ = _vala_code_node_ref0 (_tmp112_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp118_;
+		_result_ = _tmp113_;
 		_vala_code_node_unref0 (next);
-		_vala_code_node_unref0 (_tmp99_);
+		_vala_code_node_unref0 (_tmp95_);
 	}
 	_vala_code_node_unref0 (_result_);
 	_vala_code_node_unref0 (cl);
@@ -15921,45 +16121,45 @@ static void vala_parser_parse_class_declaration (ValaParser* self, ValaSymbol* p
 
 
 static void vala_parser_parse_constant_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
+	gchar* id = NULL;
 	gchar* _tmp4_ = NULL;
-	gchar* id;
-	ValaDataType* _tmp5_;
+	ValaDataType* _tmp5_ = NULL;
 	ValaDataType* _tmp6_ = NULL;
-	ValaDataType* _tmp7_;
-	ValaExpression* initializer;
-	gboolean _tmp8_ = FALSE;
-	ValaDataType* _tmp11_;
-	ValaArrayType* _tmp12_;
-	ValaArrayType* array_type;
-	ValaArrayType* _tmp13_;
-	const gchar* _tmp17_;
-	ValaDataType* _tmp18_;
-	ValaExpression* _tmp19_;
-	ValaSourceLocation _tmp20_;
-	ValaSourceReference* _tmp21_ = NULL;
-	ValaSourceReference* _tmp22_;
-	ValaComment* _tmp23_;
-	ValaConstant* _tmp24_;
-	ValaConstant* _tmp25_;
-	ValaConstant* c;
-	ValaConstant* _tmp26_;
-	ValaSymbolAccessibility _tmp27_;
-	gboolean _tmp28_ = FALSE;
-	ValaParserModifierFlags _tmp29_;
-	gboolean _tmp35_;
-	ValaParserModifierFlags _tmp37_;
-	ValaConstant* _tmp39_;
-	ValaList* _tmp40_;
-	ValaSymbol* _tmp41_;
-	ValaConstant* _tmp42_;
+	ValaDataType* _tmp7_ = NULL;
+	ValaDataType* _tmp8_ = NULL;
+	ValaExpression* initializer = NULL;
+	gboolean _tmp9_ = FALSE;
+	ValaArrayType* array_type = NULL;
+	ValaDataType* _tmp13_ = NULL;
+	ValaArrayType* _tmp14_ = NULL;
+	ValaArrayType* _tmp15_ = NULL;
+	ValaConstant* c = NULL;
+	const gchar* _tmp19_ = NULL;
+	ValaDataType* _tmp20_ = NULL;
+	ValaExpression* _tmp21_ = NULL;
+	ValaSourceLocation _tmp22_ = {0};
+	ValaSourceReference* _tmp23_ = NULL;
+	ValaSourceReference* _tmp24_ = NULL;
+	ValaComment* _tmp25_ = NULL;
+	ValaConstant* _tmp26_ = NULL;
+	ValaConstant* _tmp27_ = NULL;
+	ValaConstant* _tmp28_ = NULL;
+	ValaSymbolAccessibility _tmp29_ = 0;
+	gboolean _tmp30_ = FALSE;
+	ValaParserModifierFlags _tmp31_ = 0;
+	ValaParserModifierFlags _tmp38_ = 0;
+	ValaConstant* _tmp40_ = NULL;
+	ValaList* _tmp41_ = NULL;
+	ValaSymbol* _tmp42_ = NULL;
+	ValaConstant* _tmp43_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -16006,9 +16206,9 @@ static void vala_parser_parse_constant_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp5_ = type;
-	_tmp6_ = vala_parser_parse_inline_array_type (self, _tmp5_, &_inner_error_);
-	_tmp7_ = _tmp6_;
+	_tmp6_ = type;
+	_tmp7_ = vala_parser_parse_inline_array_type (self, _tmp6_, &_inner_error_);
+	_tmp5_ = _tmp7_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -16023,24 +16223,29 @@ static void vala_parser_parse_constant_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
+	_tmp8_ = _tmp5_;
+	_tmp5_ = NULL;
 	_vala_code_node_unref0 (type);
-	type = _tmp7_;
+	type = _tmp8_;
 	initializer = NULL;
-	_tmp8_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
-	if (_tmp8_) {
-		ValaExpression* _tmp9_ = NULL;
-		ValaExpression* _tmp10_;
-		_tmp9_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp10_ = _tmp9_;
+	_tmp9_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
+	if (_tmp9_) {
+		ValaExpression* _tmp10_ = NULL;
+		ValaExpression* _tmp11_ = NULL;
+		ValaExpression* _tmp12_ = NULL;
+		_tmp11_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp10_ = _tmp11_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				_vala_code_node_unref0 (initializer);
+				_vala_code_node_unref0 (_tmp5_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				return;
 			} else {
 				_vala_code_node_unref0 (initializer);
+				_vala_code_node_unref0 (_tmp5_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -16048,19 +16253,24 @@ static void vala_parser_parse_constant_declaration (ValaParser* self, ValaSymbol
 				return;
 			}
 		}
+		_tmp12_ = _tmp10_;
+		_tmp10_ = NULL;
 		_vala_code_node_unref0 (initializer);
-		initializer = _tmp10_;
+		initializer = _tmp12_;
+		_vala_code_node_unref0 (_tmp10_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
 			_vala_code_node_unref0 (initializer);
+			_vala_code_node_unref0 (_tmp5_);
 			_g_free0 (id);
 			_vala_code_node_unref0 (type);
 			return;
 		} else {
 			_vala_code_node_unref0 (initializer);
+			_vala_code_node_unref0 (_tmp5_);
 			_g_free0 (id);
 			_vala_code_node_unref0 (type);
 			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -16068,115 +16278,113 @@ static void vala_parser_parse_constant_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp11_ = type;
-	_tmp12_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp11_, VALA_TYPE_ARRAY_TYPE) ? ((ValaArrayType*) _tmp11_) : NULL);
-	array_type = _tmp12_;
-	_tmp13_ = array_type;
-	if (_tmp13_ != NULL) {
-		ValaArrayType* _tmp14_;
-		ValaDataType* _tmp15_;
-		ValaDataType* _tmp16_;
-		_tmp14_ = array_type;
-		_tmp15_ = vala_array_type_get_element_type (_tmp14_);
-		_tmp16_ = _tmp15_;
-		vala_data_type_set_value_owned (_tmp16_, FALSE);
+	_tmp13_ = type;
+	_tmp14_ = _vala_code_node_ref0 (G_TYPE_CHECK_INSTANCE_TYPE (_tmp13_, VALA_TYPE_ARRAY_TYPE) ? ((ValaArrayType*) _tmp13_) : NULL);
+	array_type = _tmp14_;
+	_tmp15_ = array_type;
+	if (_tmp15_ != NULL) {
+		ValaArrayType* _tmp16_ = NULL;
+		ValaDataType* _tmp17_ = NULL;
+		ValaDataType* _tmp18_ = NULL;
+		_tmp16_ = array_type;
+		_tmp17_ = vala_array_type_get_element_type (_tmp16_);
+		_tmp18_ = _tmp17_;
+		vala_data_type_set_value_owned (_tmp18_, FALSE);
 	}
-	_tmp17_ = id;
-	_tmp18_ = type;
-	_tmp19_ = initializer;
-	_tmp20_ = begin;
-	_tmp21_ = vala_parser_get_src (self, &_tmp20_);
-	_tmp22_ = _tmp21_;
-	_tmp23_ = self->priv->comment;
-	_tmp24_ = vala_constant_new (_tmp17_, _tmp18_, _tmp19_, _tmp22_, _tmp23_);
-	_tmp25_ = _tmp24_;
-	_vala_source_reference_unref0 (_tmp22_);
-	c = _tmp25_;
-	_tmp26_ = c;
-	_tmp27_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp26_, _tmp27_);
-	_tmp29_ = flags;
-	if ((_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		_tmp28_ = TRUE;
+	_tmp19_ = id;
+	_tmp20_ = type;
+	_tmp21_ = initializer;
+	_tmp22_ = begin;
+	_tmp23_ = vala_parser_get_src (self, &_tmp22_);
+	_tmp24_ = _tmp23_;
+	_tmp25_ = self->priv->comment;
+	_tmp26_ = vala_constant_new (_tmp19_, _tmp20_, _tmp21_, _tmp24_, _tmp25_);
+	_tmp27_ = _tmp26_;
+	_vala_source_reference_unref0 (_tmp24_);
+	c = _tmp27_;
+	_tmp28_ = c;
+	_tmp29_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp28_, _tmp29_);
+	_tmp31_ = flags;
+	if ((_tmp31_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		_tmp30_ = TRUE;
 	} else {
-		ValaScanner* _tmp30_;
-		ValaSourceFile* _tmp31_;
-		ValaSourceFile* _tmp32_;
-		ValaSourceFileType _tmp33_;
-		ValaSourceFileType _tmp34_;
-		_tmp30_ = self->priv->scanner;
-		_tmp31_ = vala_scanner_get_source_file (_tmp30_);
-		_tmp32_ = _tmp31_;
-		_tmp33_ = vala_source_file_get_file_type (_tmp32_);
+		ValaScanner* _tmp32_ = NULL;
+		ValaSourceFile* _tmp33_ = NULL;
+		ValaSourceFile* _tmp34_ = NULL;
+		ValaSourceFileType _tmp35_ = 0;
+		ValaSourceFileType _tmp36_ = 0;
+		_tmp32_ = self->priv->scanner;
+		_tmp33_ = vala_scanner_get_source_file (_tmp32_);
 		_tmp34_ = _tmp33_;
-		_tmp28_ = _tmp34_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
+		_tmp35_ = vala_source_file_get_file_type (_tmp34_);
+		_tmp36_ = _tmp35_;
+		_tmp30_ = _tmp36_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp35_ = _tmp28_;
-	if (_tmp35_) {
-		ValaConstant* _tmp36_;
-		_tmp36_ = c;
-		vala_symbol_set_external ((ValaSymbol*) _tmp36_, TRUE);
+	if (_tmp30_) {
+		ValaConstant* _tmp37_ = NULL;
+		_tmp37_ = c;
+		vala_symbol_set_external ((ValaSymbol*) _tmp37_, TRUE);
 	}
-	_tmp37_ = flags;
-	if ((_tmp37_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
-		ValaConstant* _tmp38_;
-		_tmp38_ = c;
-		vala_symbol_set_hides ((ValaSymbol*) _tmp38_, TRUE);
+	_tmp38_ = flags;
+	if ((_tmp38_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
+		ValaConstant* _tmp39_ = NULL;
+		_tmp39_ = c;
+		vala_symbol_set_hides ((ValaSymbol*) _tmp39_, TRUE);
 	}
-	_tmp39_ = c;
-	_tmp40_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp39_, _tmp40_);
-	_tmp41_ = parent;
-	_tmp42_ = c;
-	vala_symbol_add_constant (_tmp41_, _tmp42_);
+	_tmp40_ = c;
+	_tmp41_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp40_, _tmp41_);
+	_tmp42_ = parent;
+	_tmp43_ = c;
+	vala_symbol_add_constant (_tmp42_, _tmp43_);
 	_vala_code_node_unref0 (c);
 	_vala_code_node_unref0 (array_type);
 	_vala_code_node_unref0 (initializer);
+	_vala_code_node_unref0 (_tmp5_);
 	_g_free0 (id);
 	_vala_code_node_unref0 (type);
 }
 
 
 static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
+	gchar* id = NULL;
 	gchar* _tmp4_ = NULL;
-	gchar* id;
-	ValaDataType* _tmp5_;
+	ValaDataType* _tmp5_ = NULL;
 	ValaDataType* _tmp6_ = NULL;
-	ValaDataType* _tmp7_;
-	const gchar* _tmp8_;
-	ValaDataType* _tmp9_;
-	ValaSourceLocation _tmp10_;
-	ValaSourceReference* _tmp11_ = NULL;
-	ValaSourceReference* _tmp12_;
-	ValaComment* _tmp13_;
-	ValaField* _tmp14_;
-	ValaField* _tmp15_;
-	ValaField* f;
-	ValaField* _tmp16_;
-	ValaSymbolAccessibility _tmp17_;
-	ValaField* _tmp18_;
-	ValaList* _tmp19_;
-	ValaParserModifierFlags _tmp20_;
-	gboolean _tmp24_ = FALSE;
+	ValaDataType* _tmp7_ = NULL;
+	ValaDataType* _tmp8_ = NULL;
+	ValaField* f = NULL;
+	const gchar* _tmp9_ = NULL;
+	ValaDataType* _tmp10_ = NULL;
+	ValaSourceLocation _tmp11_ = {0};
+	ValaSourceReference* _tmp12_ = NULL;
+	ValaSourceReference* _tmp13_ = NULL;
+	ValaComment* _tmp14_ = NULL;
+	ValaField* _tmp15_ = NULL;
+	ValaField* _tmp16_ = NULL;
+	ValaField* _tmp17_ = NULL;
+	ValaSymbolAccessibility _tmp18_ = 0;
+	ValaField* _tmp19_ = NULL;
+	ValaList* _tmp20_ = NULL;
+	ValaParserModifierFlags _tmp21_ = 0;
 	gboolean _tmp25_ = FALSE;
-	ValaParserModifierFlags _tmp26_;
-	gboolean _tmp28_;
-	gboolean _tmp30_;
-	gboolean _tmp34_ = FALSE;
-	ValaParserModifierFlags _tmp35_;
-	gboolean _tmp41_;
-	ValaParserModifierFlags _tmp43_;
-	gboolean _tmp45_ = FALSE;
-	ValaSymbol* _tmp50_;
-	ValaField* _tmp51_;
+	gboolean _tmp26_ = FALSE;
+	ValaParserModifierFlags _tmp27_ = 0;
+	gboolean _tmp33_ = FALSE;
+	ValaParserModifierFlags _tmp34_ = 0;
+	ValaParserModifierFlags _tmp41_ = 0;
+	gboolean _tmp43_ = FALSE;
+	ValaSymbol* _tmp47_ = NULL;
+	ValaField* _tmp48_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -16212,9 +16420,9 @@ static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* p
 			return;
 		}
 	}
-	_tmp5_ = type;
-	_tmp6_ = vala_parser_parse_inline_array_type (self, _tmp5_, &_inner_error_);
-	_tmp7_ = _tmp6_;
+	_tmp6_ = type;
+	_tmp7_ = vala_parser_parse_inline_array_type (self, _tmp6_, &_inner_error_);
+	_tmp5_ = _tmp7_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -16229,109 +16437,109 @@ static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* p
 			return;
 		}
 	}
+	_tmp8_ = _tmp5_;
+	_tmp5_ = NULL;
 	_vala_code_node_unref0 (type);
-	type = _tmp7_;
-	_tmp8_ = id;
-	_tmp9_ = type;
-	_tmp10_ = begin;
-	_tmp11_ = vala_parser_get_src (self, &_tmp10_);
-	_tmp12_ = _tmp11_;
-	_tmp13_ = self->priv->comment;
-	_tmp14_ = vala_field_new (_tmp8_, _tmp9_, NULL, _tmp12_, _tmp13_);
-	_tmp15_ = _tmp14_;
-	_vala_source_reference_unref0 (_tmp12_);
-	f = _tmp15_;
-	_tmp16_ = f;
-	_tmp17_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp16_, _tmp17_);
-	_tmp18_ = f;
-	_tmp19_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp18_, _tmp19_);
-	_tmp20_ = flags;
-	if ((_tmp20_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaField* _tmp21_;
-		_tmp21_ = f;
-		vala_field_set_binding (_tmp21_, VALA_MEMBER_BINDING_STATIC);
+	type = _tmp8_;
+	_tmp9_ = id;
+	_tmp10_ = type;
+	_tmp11_ = begin;
+	_tmp12_ = vala_parser_get_src (self, &_tmp11_);
+	_tmp13_ = _tmp12_;
+	_tmp14_ = self->priv->comment;
+	_tmp15_ = vala_field_new (_tmp9_, _tmp10_, NULL, _tmp13_, _tmp14_);
+	_tmp16_ = _tmp15_;
+	_vala_source_reference_unref0 (_tmp13_);
+	f = _tmp16_;
+	_tmp17_ = f;
+	_tmp18_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp17_, _tmp18_);
+	_tmp19_ = f;
+	_tmp20_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp19_, _tmp20_);
+	_tmp21_ = flags;
+	if ((_tmp21_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
+		ValaField* _tmp22_ = NULL;
+		_tmp22_ = f;
+		vala_field_set_binding (_tmp22_, VALA_MEMBER_BINDING_STATIC);
 	} else {
-		ValaParserModifierFlags _tmp22_;
-		_tmp22_ = flags;
-		if ((_tmp22_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
-			ValaField* _tmp23_;
-			_tmp23_ = f;
-			vala_field_set_binding (_tmp23_, VALA_MEMBER_BINDING_CLASS);
+		ValaParserModifierFlags _tmp23_ = 0;
+		_tmp23_ = flags;
+		if ((_tmp23_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
+			ValaField* _tmp24_ = NULL;
+			_tmp24_ = f;
+			vala_field_set_binding (_tmp24_, VALA_MEMBER_BINDING_CLASS);
 		}
 	}
-	_tmp26_ = flags;
-	if ((_tmp26_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
+	_tmp27_ = flags;
+	if ((_tmp27_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
+		_tmp26_ = TRUE;
+	} else {
+		ValaParserModifierFlags _tmp28_ = 0;
+		_tmp28_ = flags;
+		_tmp26_ = (_tmp28_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
+	}
+	if (_tmp26_) {
 		_tmp25_ = TRUE;
 	} else {
-		ValaParserModifierFlags _tmp27_;
-		_tmp27_ = flags;
-		_tmp25_ = (_tmp27_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
-	}
-	_tmp28_ = _tmp25_;
-	if (_tmp28_) {
-		_tmp24_ = TRUE;
-	} else {
-		ValaParserModifierFlags _tmp29_;
+		ValaParserModifierFlags _tmp29_ = 0;
 		_tmp29_ = flags;
-		_tmp24_ = (_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
+		_tmp25_ = (_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
 	}
-	_tmp30_ = _tmp24_;
-	if (_tmp30_) {
-		ValaField* _tmp31_;
-		ValaSourceReference* _tmp32_;
-		ValaSourceReference* _tmp33_;
-		_tmp31_ = f;
-		_tmp32_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp31_);
-		_tmp33_ = _tmp32_;
-		vala_report_error (_tmp33_, "abstract, virtual, and override modifiers are not applicable to fields");
+	if (_tmp25_) {
+		ValaField* _tmp30_ = NULL;
+		ValaSourceReference* _tmp31_ = NULL;
+		ValaSourceReference* _tmp32_ = NULL;
+		_tmp30_ = f;
+		_tmp31_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp30_);
+		_tmp32_ = _tmp31_;
+		vala_report_error (_tmp32_, "abstract, virtual, and override modifiers are not applicable to fields");
 	}
-	_tmp35_ = flags;
-	if ((_tmp35_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		_tmp34_ = TRUE;
+	_tmp34_ = flags;
+	if ((_tmp34_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		_tmp33_ = TRUE;
 	} else {
-		ValaScanner* _tmp36_;
-		ValaSourceFile* _tmp37_;
-		ValaSourceFile* _tmp38_;
-		ValaSourceFileType _tmp39_;
-		ValaSourceFileType _tmp40_;
-		_tmp36_ = self->priv->scanner;
-		_tmp37_ = vala_scanner_get_source_file (_tmp36_);
-		_tmp38_ = _tmp37_;
-		_tmp39_ = vala_source_file_get_file_type (_tmp38_);
-		_tmp40_ = _tmp39_;
-		_tmp34_ = _tmp40_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
+		ValaScanner* _tmp35_ = NULL;
+		ValaSourceFile* _tmp36_ = NULL;
+		ValaSourceFile* _tmp37_ = NULL;
+		ValaSourceFileType _tmp38_ = 0;
+		ValaSourceFileType _tmp39_ = 0;
+		_tmp35_ = self->priv->scanner;
+		_tmp36_ = vala_scanner_get_source_file (_tmp35_);
+		_tmp37_ = _tmp36_;
+		_tmp38_ = vala_source_file_get_file_type (_tmp37_);
+		_tmp39_ = _tmp38_;
+		_tmp33_ = _tmp39_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp41_ = _tmp34_;
-	if (_tmp41_) {
-		ValaField* _tmp42_;
+	if (_tmp33_) {
+		ValaField* _tmp40_ = NULL;
+		_tmp40_ = f;
+		vala_symbol_set_external ((ValaSymbol*) _tmp40_, TRUE);
+	}
+	_tmp41_ = flags;
+	if ((_tmp41_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
+		ValaField* _tmp42_ = NULL;
 		_tmp42_ = f;
-		vala_symbol_set_external ((ValaSymbol*) _tmp42_, TRUE);
+		vala_symbol_set_hides ((ValaSymbol*) _tmp42_, TRUE);
 	}
-	_tmp43_ = flags;
-	if ((_tmp43_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
-		ValaField* _tmp44_;
-		_tmp44_ = f;
-		vala_symbol_set_hides ((ValaSymbol*) _tmp44_, TRUE);
-	}
-	_tmp45_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
-	if (_tmp45_) {
-		ValaExpression* _tmp46_ = NULL;
-		ValaExpression* _tmp47_;
-		ValaField* _tmp48_;
-		ValaExpression* _tmp49_;
-		_tmp46_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp47_ = _tmp46_;
+	_tmp43_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
+	if (_tmp43_) {
+		ValaExpression* _tmp44_ = NULL;
+		ValaExpression* _tmp45_ = NULL;
+		ValaField* _tmp46_ = NULL;
+		_tmp45_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp44_ = _tmp45_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				_vala_code_node_unref0 (f);
+				_vala_code_node_unref0 (_tmp5_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				return;
 			} else {
 				_vala_code_node_unref0 (f);
+				_vala_code_node_unref0 (_tmp5_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -16339,21 +16547,22 @@ static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* p
 				return;
 			}
 		}
-		_tmp48_ = f;
-		_tmp49_ = _tmp47_;
-		vala_variable_set_initializer ((ValaVariable*) _tmp48_, _tmp49_);
-		_vala_code_node_unref0 (_tmp49_);
+		_tmp46_ = f;
+		vala_variable_set_initializer ((ValaVariable*) _tmp46_, _tmp44_);
+		_vala_code_node_unref0 (_tmp44_);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
 			_vala_code_node_unref0 (f);
+			_vala_code_node_unref0 (_tmp5_);
 			_g_free0 (id);
 			_vala_code_node_unref0 (type);
 			return;
 		} else {
 			_vala_code_node_unref0 (f);
+			_vala_code_node_unref0 (_tmp5_);
 			_g_free0 (id);
 			_vala_code_node_unref0 (type);
 			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -16361,10 +16570,11 @@ static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* p
 			return;
 		}
 	}
-	_tmp50_ = parent;
-	_tmp51_ = f;
-	vala_symbol_add_field (_tmp50_, _tmp51_);
+	_tmp47_ = parent;
+	_tmp48_ = f;
+	vala_symbol_add_field (_tmp47_, _tmp48_);
 	_vala_code_node_unref0 (f);
+	_vala_code_node_unref0 (_tmp5_);
 	_g_free0 (id);
 	_vala_code_node_unref0 (type);
 }
@@ -16372,14 +16582,14 @@ static void vala_parser_parse_field_declaration (ValaParser* self, ValaSymbol* p
 
 static ValaInitializerList* vala_parser_parse_initializer (ValaParser* self, GError** error) {
 	ValaInitializerList* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaSourceLocation _tmp1_;
+	ValaInitializerList* initializer = NULL;
+	ValaSourceLocation _tmp1_ = {0};
 	ValaSourceReference* _tmp2_ = NULL;
-	ValaSourceReference* _tmp3_;
-	ValaInitializerList* _tmp4_;
-	ValaInitializerList* _tmp5_;
-	ValaInitializerList* initializer;
+	ValaSourceReference* _tmp3_ = NULL;
+	ValaInitializerList* _tmp4_ = NULL;
+	ValaInitializerList* _tmp5_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -16404,10 +16614,10 @@ static ValaInitializerList* vala_parser_parse_initializer (ValaParser* self, GEr
 	initializer = _tmp5_;
 	while (TRUE) {
 		ValaTokenType _tmp6_ = 0;
+		ValaExpression* init = NULL;
 		ValaExpression* _tmp7_ = NULL;
-		ValaExpression* init;
-		ValaInitializerList* _tmp8_;
-		ValaExpression* _tmp9_;
+		ValaInitializerList* _tmp8_ = NULL;
+		ValaExpression* _tmp9_ = NULL;
 		gboolean _tmp10_ = FALSE;
 		_tmp6_ = vala_parser_current (self);
 		if (!(_tmp6_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
@@ -16456,44 +16666,44 @@ static ValaInitializerList* vala_parser_parse_initializer (ValaParser* self, GEr
 
 
 static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
+	gchar* id = NULL;
 	gchar* _tmp4_ = NULL;
-	gchar* id;
+	ValaList* type_param_list = NULL;
 	ValaList* _tmp5_ = NULL;
-	ValaList* type_param_list;
-	const gchar* _tmp6_;
-	ValaDataType* _tmp7_;
-	ValaSourceLocation _tmp8_;
+	ValaMethod* method = NULL;
+	const gchar* _tmp6_ = NULL;
+	ValaDataType* _tmp7_ = NULL;
+	ValaSourceLocation _tmp8_ = {0};
 	ValaSourceReference* _tmp9_ = NULL;
-	ValaSourceReference* _tmp10_;
-	ValaComment* _tmp11_;
-	ValaMethod* _tmp12_;
-	ValaMethod* _tmp13_;
-	ValaMethod* method;
-	ValaMethod* _tmp14_;
-	ValaSymbolAccessibility _tmp15_;
-	ValaMethod* _tmp16_;
-	ValaList* _tmp17_;
-	ValaParserModifierFlags _tmp31_;
-	ValaParserModifierFlags _tmp35_;
-	ValaParserModifierFlags _tmp37_;
-	ValaMethod* _tmp39_;
-	ValaMemberBinding _tmp40_;
-	ValaMemberBinding _tmp41_;
-	ValaParserModifierFlags _tmp91_;
-	ValaParserModifierFlags _tmp93_;
-	ValaTokenType _tmp95_ = 0;
-	gboolean _tmp102_ = FALSE;
-	gboolean _tmp120_ = FALSE;
-	ValaSymbol* _tmp131_;
-	ValaMethod* _tmp132_;
+	ValaSourceReference* _tmp10_ = NULL;
+	ValaComment* _tmp11_ = NULL;
+	ValaMethod* _tmp12_ = NULL;
+	ValaMethod* _tmp13_ = NULL;
+	ValaMethod* _tmp14_ = NULL;
+	ValaSymbolAccessibility _tmp15_ = 0;
+	ValaMethod* _tmp16_ = NULL;
+	ValaList* _tmp17_ = NULL;
+	ValaParserModifierFlags _tmp31_ = 0;
+	ValaParserModifierFlags _tmp35_ = 0;
+	ValaParserModifierFlags _tmp37_ = 0;
+	ValaMethod* _tmp39_ = NULL;
+	ValaMemberBinding _tmp40_ = 0;
+	ValaMemberBinding _tmp41_ = 0;
+	ValaParserModifierFlags _tmp84_ = 0;
+	ValaParserModifierFlags _tmp86_ = 0;
+	ValaTokenType _tmp88_ = 0;
+	gboolean _tmp94_ = FALSE;
+	gboolean _tmp108_ = FALSE;
+	ValaSymbol* _tmp118_ = NULL;
+	ValaMethod* _tmp119_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -16562,14 +16772,14 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 	_tmp17_ = attrs;
 	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp16_, _tmp17_);
 	{
-		ValaList* _tmp18_;
-		ValaList* _tmp19_;
-		ValaList* _type_param_list;
-		ValaList* _tmp20_;
-		gint _tmp21_;
-		gint _tmp22_;
-		gint _type_param_size;
-		gint _type_param_index;
+		ValaList* _type_param_list = NULL;
+		ValaList* _tmp18_ = NULL;
+		ValaList* _tmp19_ = NULL;
+		gint _type_param_size = 0;
+		ValaList* _tmp20_ = NULL;
+		gint _tmp21_ = 0;
+		gint _tmp22_ = 0;
+		gint _type_param_index = 0;
 		_tmp18_ = type_param_list;
 		_tmp19_ = _vala_iterable_ref0 (_tmp18_);
 		_type_param_list = _tmp19_;
@@ -16579,15 +16789,15 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 		_type_param_size = _tmp22_;
 		_type_param_index = -1;
 		while (TRUE) {
-			gint _tmp23_;
-			gint _tmp24_;
-			gint _tmp25_;
-			ValaList* _tmp26_;
-			gint _tmp27_;
+			gint _tmp23_ = 0;
+			gint _tmp24_ = 0;
+			gint _tmp25_ = 0;
+			ValaTypeParameter* type_param = NULL;
+			ValaList* _tmp26_ = NULL;
+			gint _tmp27_ = 0;
 			gpointer _tmp28_ = NULL;
-			ValaTypeParameter* type_param;
-			ValaMethod* _tmp29_;
-			ValaTypeParameter* _tmp30_;
+			ValaMethod* _tmp29_ = NULL;
+			ValaTypeParameter* _tmp30_ = NULL;
 			_tmp23_ = _type_param_index;
 			_type_param_index = _tmp23_ + 1;
 			_tmp24_ = _type_param_index;
@@ -16608,27 +16818,27 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 	}
 	_tmp31_ = flags;
 	if ((_tmp31_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaMethod* _tmp32_;
+		ValaMethod* _tmp32_ = NULL;
 		_tmp32_ = method;
 		vala_method_set_binding (_tmp32_, VALA_MEMBER_BINDING_STATIC);
 	} else {
-		ValaParserModifierFlags _tmp33_;
+		ValaParserModifierFlags _tmp33_ = 0;
 		_tmp33_ = flags;
 		if ((_tmp33_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
-			ValaMethod* _tmp34_;
+			ValaMethod* _tmp34_ = NULL;
 			_tmp34_ = method;
 			vala_method_set_binding (_tmp34_, VALA_MEMBER_BINDING_CLASS);
 		}
 	}
 	_tmp35_ = flags;
 	if ((_tmp35_ & VALA_PARSER_MODIFIER_FLAGS_ASYNC) == VALA_PARSER_MODIFIER_FLAGS_ASYNC) {
-		ValaMethod* _tmp36_;
+		ValaMethod* _tmp36_ = NULL;
 		_tmp36_ = method;
 		vala_method_set_coroutine (_tmp36_, TRUE);
 	}
 	_tmp37_ = flags;
 	if ((_tmp37_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
-		ValaMethod* _tmp38_;
+		ValaMethod* _tmp38_ = NULL;
 		_tmp38_ = method;
 		vala_symbol_set_hides ((ValaSymbol*) _tmp38_, TRUE);
 	}
@@ -16636,33 +16846,30 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 	_tmp40_ = vala_method_get_binding (_tmp39_);
 	_tmp41_ = _tmp40_;
 	if (_tmp41_ == VALA_MEMBER_BINDING_INSTANCE) {
-		ValaParserModifierFlags _tmp42_;
-		ValaParserModifierFlags _tmp44_;
-		ValaParserModifierFlags _tmp46_;
+		ValaParserModifierFlags _tmp42_ = 0;
+		ValaParserModifierFlags _tmp44_ = 0;
+		ValaParserModifierFlags _tmp46_ = 0;
 		gboolean _tmp48_ = FALSE;
 		gboolean _tmp49_ = FALSE;
 		gboolean _tmp50_ = FALSE;
-		ValaMethod* _tmp51_;
-		gboolean _tmp52_;
-		gboolean _tmp53_;
-		gboolean _tmp57_;
-		gboolean _tmp66_;
-		gboolean _tmp75_;
+		ValaMethod* _tmp51_ = NULL;
+		gboolean _tmp52_ = FALSE;
+		gboolean _tmp53_ = FALSE;
 		_tmp42_ = flags;
 		if ((_tmp42_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
-			ValaMethod* _tmp43_;
+			ValaMethod* _tmp43_ = NULL;
 			_tmp43_ = method;
 			vala_method_set_is_abstract (_tmp43_, TRUE);
 		}
 		_tmp44_ = flags;
 		if ((_tmp44_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) {
-			ValaMethod* _tmp45_;
+			ValaMethod* _tmp45_ = NULL;
 			_tmp45_ = method;
 			vala_method_set_is_virtual (_tmp45_, TRUE);
 		}
 		_tmp46_ = flags;
 		if ((_tmp46_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) {
-			ValaMethod* _tmp47_;
+			ValaMethod* _tmp47_ = NULL;
 			_tmp47_ = method;
 			vala_method_set_overrides (_tmp47_, TRUE);
 		}
@@ -16670,9 +16877,9 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 		_tmp52_ = vala_method_get_is_abstract (_tmp51_);
 		_tmp53_ = _tmp52_;
 		if (_tmp53_) {
-			ValaMethod* _tmp54_;
-			gboolean _tmp55_;
-			gboolean _tmp56_;
+			ValaMethod* _tmp54_ = NULL;
+			gboolean _tmp55_ = FALSE;
+			gboolean _tmp56_ = FALSE;
 			_tmp54_ = method;
 			_tmp55_ = vala_method_get_is_virtual (_tmp54_);
 			_tmp56_ = _tmp55_;
@@ -16680,70 +16887,63 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 		} else {
 			_tmp50_ = FALSE;
 		}
-		_tmp57_ = _tmp50_;
-		if (_tmp57_) {
+		if (_tmp50_) {
 			_tmp49_ = TRUE;
 		} else {
-			gboolean _tmp58_ = FALSE;
-			ValaMethod* _tmp59_;
-			gboolean _tmp60_;
-			gboolean _tmp61_;
-			gboolean _tmp65_;
-			_tmp59_ = method;
-			_tmp60_ = vala_method_get_is_abstract (_tmp59_);
-			_tmp61_ = _tmp60_;
-			if (_tmp61_) {
-				ValaMethod* _tmp62_;
-				gboolean _tmp63_;
-				gboolean _tmp64_;
-				_tmp62_ = method;
-				_tmp63_ = vala_method_get_overrides (_tmp62_);
-				_tmp64_ = _tmp63_;
-				_tmp58_ = _tmp64_;
+			gboolean _tmp57_ = FALSE;
+			ValaMethod* _tmp58_ = NULL;
+			gboolean _tmp59_ = FALSE;
+			gboolean _tmp60_ = FALSE;
+			_tmp58_ = method;
+			_tmp59_ = vala_method_get_is_abstract (_tmp58_);
+			_tmp60_ = _tmp59_;
+			if (_tmp60_) {
+				ValaMethod* _tmp61_ = NULL;
+				gboolean _tmp62_ = FALSE;
+				gboolean _tmp63_ = FALSE;
+				_tmp61_ = method;
+				_tmp62_ = vala_method_get_overrides (_tmp61_);
+				_tmp63_ = _tmp62_;
+				_tmp57_ = _tmp63_;
 			} else {
-				_tmp58_ = FALSE;
+				_tmp57_ = FALSE;
 			}
-			_tmp65_ = _tmp58_;
-			_tmp49_ = _tmp65_;
+			_tmp49_ = _tmp57_;
 		}
-		_tmp66_ = _tmp49_;
-		if (_tmp66_) {
+		if (_tmp49_) {
 			_tmp48_ = TRUE;
 		} else {
+			gboolean _tmp64_ = FALSE;
+			ValaMethod* _tmp65_ = NULL;
+			gboolean _tmp66_ = FALSE;
 			gboolean _tmp67_ = FALSE;
-			ValaMethod* _tmp68_;
-			gboolean _tmp69_;
-			gboolean _tmp70_;
-			gboolean _tmp74_;
-			_tmp68_ = method;
-			_tmp69_ = vala_method_get_is_virtual (_tmp68_);
-			_tmp70_ = _tmp69_;
-			if (_tmp70_) {
-				ValaMethod* _tmp71_;
-				gboolean _tmp72_;
-				gboolean _tmp73_;
-				_tmp71_ = method;
-				_tmp72_ = vala_method_get_overrides (_tmp71_);
-				_tmp73_ = _tmp72_;
-				_tmp67_ = _tmp73_;
+			_tmp65_ = method;
+			_tmp66_ = vala_method_get_is_virtual (_tmp65_);
+			_tmp67_ = _tmp66_;
+			if (_tmp67_) {
+				ValaMethod* _tmp68_ = NULL;
+				gboolean _tmp69_ = FALSE;
+				gboolean _tmp70_ = FALSE;
+				_tmp68_ = method;
+				_tmp69_ = vala_method_get_overrides (_tmp68_);
+				_tmp70_ = _tmp69_;
+				_tmp64_ = _tmp70_;
 			} else {
-				_tmp67_ = FALSE;
+				_tmp64_ = FALSE;
 			}
-			_tmp74_ = _tmp67_;
-			_tmp48_ = _tmp74_;
+			_tmp48_ = _tmp64_;
 		}
-		_tmp75_ = _tmp48_;
-		if (_tmp75_) {
-			gchar* _tmp76_ = NULL;
-			gchar* _tmp77_;
-			GError* _tmp78_;
-			GError* _tmp79_;
-			_tmp76_ = vala_parser_get_error (self, "only one of `abstract', `virtual', or `override' may be specified");
-			_tmp77_ = _tmp76_;
-			_tmp78_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp77_);
-			_tmp79_ = _tmp78_;
-			_g_free0 (_tmp77_);
-			_inner_error_ = _tmp79_;
+		if (_tmp48_) {
+			gchar* _tmp71_ = NULL;
+			gchar* _tmp72_ = NULL;
+			GError* _tmp73_ = NULL;
+			GError* _tmp74_ = NULL;
+			_tmp71_ = vala_parser_get_error (self, "only one of `abstract', `virtual', or `override' may be specified");
+			_tmp72_ = _tmp71_;
+			_tmp73_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp72_);
+			_tmp74_ = _tmp73_;
+			_g_free0 (_tmp72_);
+			_inner_error_ = _tmp74_;
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				_vala_code_node_unref0 (method);
@@ -16762,40 +16962,36 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 			}
 		}
 	} else {
-		gboolean _tmp80_ = FALSE;
-		gboolean _tmp81_ = FALSE;
-		ValaParserModifierFlags _tmp82_;
-		gboolean _tmp84_;
-		gboolean _tmp86_;
-		_tmp82_ = flags;
-		if ((_tmp82_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
-			_tmp81_ = TRUE;
+		gboolean _tmp75_ = FALSE;
+		gboolean _tmp76_ = FALSE;
+		ValaParserModifierFlags _tmp77_ = 0;
+		_tmp77_ = flags;
+		if ((_tmp77_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
+			_tmp76_ = TRUE;
 		} else {
-			ValaParserModifierFlags _tmp83_;
-			_tmp83_ = flags;
-			_tmp81_ = (_tmp83_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
+			ValaParserModifierFlags _tmp78_ = 0;
+			_tmp78_ = flags;
+			_tmp76_ = (_tmp78_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
 		}
-		_tmp84_ = _tmp81_;
-		if (_tmp84_) {
-			_tmp80_ = TRUE;
+		if (_tmp76_) {
+			_tmp75_ = TRUE;
 		} else {
-			ValaParserModifierFlags _tmp85_;
-			_tmp85_ = flags;
-			_tmp80_ = (_tmp85_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
+			ValaParserModifierFlags _tmp79_ = 0;
+			_tmp79_ = flags;
+			_tmp75_ = (_tmp79_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
 		}
-		_tmp86_ = _tmp80_;
-		if (_tmp86_) {
-			gchar* _tmp87_ = NULL;
-			gchar* _tmp88_;
-			GError* _tmp89_;
-			GError* _tmp90_;
-			_tmp87_ = vala_parser_get_error (self, "the modifiers `abstract', `virtual', and `override' are not valid for " \
+		if (_tmp75_) {
+			gchar* _tmp80_ = NULL;
+			gchar* _tmp81_ = NULL;
+			GError* _tmp82_ = NULL;
+			GError* _tmp83_ = NULL;
+			_tmp80_ = vala_parser_get_error (self, "the modifiers `abstract', `virtual', and `override' are not valid for " \
 "static methods");
-			_tmp88_ = _tmp87_;
-			_tmp89_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp88_);
-			_tmp90_ = _tmp89_;
-			_g_free0 (_tmp88_);
-			_inner_error_ = _tmp90_;
+			_tmp81_ = _tmp80_;
+			_tmp82_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp81_);
+			_tmp83_ = _tmp82_;
+			_g_free0 (_tmp81_);
+			_inner_error_ = _tmp83_;
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				_vala_code_node_unref0 (method);
@@ -16814,17 +17010,17 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 			}
 		}
 	}
-	_tmp91_ = flags;
-	if ((_tmp91_ & VALA_PARSER_MODIFIER_FLAGS_INLINE) == VALA_PARSER_MODIFIER_FLAGS_INLINE) {
-		ValaMethod* _tmp92_;
-		_tmp92_ = method;
-		vala_method_set_is_inline (_tmp92_, TRUE);
+	_tmp84_ = flags;
+	if ((_tmp84_ & VALA_PARSER_MODIFIER_FLAGS_INLINE) == VALA_PARSER_MODIFIER_FLAGS_INLINE) {
+		ValaMethod* _tmp85_ = NULL;
+		_tmp85_ = method;
+		vala_method_set_is_inline (_tmp85_, TRUE);
 	}
-	_tmp93_ = flags;
-	if ((_tmp93_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		ValaMethod* _tmp94_;
-		_tmp94_ = method;
-		vala_symbol_set_external ((ValaSymbol*) _tmp94_, TRUE);
+	_tmp86_ = flags;
+	if ((_tmp86_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		ValaMethod* _tmp87_ = NULL;
+		_tmp87_ = method;
+		vala_symbol_set_external ((ValaSymbol*) _tmp87_, TRUE);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -16845,28 +17041,26 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 			return;
 		}
 	}
-	_tmp95_ = vala_parser_current (self);
-	if (_tmp95_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+	_tmp88_ = vala_parser_current (self);
+	if (_tmp88_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp96_;
-			_tmp96_ = TRUE;
+			gboolean _tmp89_ = FALSE;
+			_tmp89_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp97_;
-				ValaParameter* _tmp99_ = NULL;
-				ValaParameter* param;
-				ValaMethod* _tmp100_;
-				ValaParameter* _tmp101_;
-				_tmp97_ = _tmp96_;
-				if (!_tmp97_) {
-					gboolean _tmp98_ = FALSE;
-					_tmp98_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp98_) {
+				ValaParameter* param = NULL;
+				ValaParameter* _tmp91_ = NULL;
+				ValaMethod* _tmp92_ = NULL;
+				ValaParameter* _tmp93_ = NULL;
+				if (!_tmp89_) {
+					gboolean _tmp90_ = FALSE;
+					_tmp90_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp90_) {
 						break;
 					}
 				}
-				_tmp96_ = FALSE;
-				_tmp99_ = vala_parser_parse_parameter (self, &_inner_error_);
-				param = _tmp99_;
+				_tmp89_ = FALSE;
+				_tmp91_ = vala_parser_parse_parameter (self, &_inner_error_);
+				param = _tmp91_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -16885,9 +17079,9 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 						return;
 					}
 				}
-				_tmp100_ = method;
-				_tmp101_ = param;
-				vala_method_add_parameter (_tmp100_, _tmp101_);
+				_tmp92_ = method;
+				_tmp93_ = param;
+				vala_method_add_parameter (_tmp92_, _tmp93_);
 				_vala_code_node_unref0 (param);
 			}
 		}
@@ -16911,28 +17105,25 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 			return;
 		}
 	}
-	_tmp102_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
-	if (_tmp102_) {
+	_tmp94_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
+	if (_tmp94_) {
 		{
-			gboolean _tmp103_;
-			_tmp103_ = TRUE;
+			gboolean _tmp95_ = FALSE;
+			_tmp95_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp104_;
-				ValaDataType* _tmp106_ = NULL;
-				ValaDataType* _tmp107_;
-				ValaMethod* _tmp108_;
-				ValaDataType* _tmp109_;
-				_tmp104_ = _tmp103_;
-				if (!_tmp104_) {
-					gboolean _tmp105_ = FALSE;
-					_tmp105_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp105_) {
+				ValaDataType* _tmp97_ = NULL;
+				ValaDataType* _tmp98_ = NULL;
+				ValaMethod* _tmp99_ = NULL;
+				if (!_tmp95_) {
+					gboolean _tmp96_ = FALSE;
+					_tmp96_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp96_) {
 						break;
 					}
 				}
-				_tmp103_ = FALSE;
-				_tmp106_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				_tmp107_ = _tmp106_;
+				_tmp95_ = FALSE;
+				_tmp98_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+				_tmp97_ = _tmp98_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -16951,21 +17142,19 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 						return;
 					}
 				}
-				_tmp108_ = method;
-				_tmp109_ = _tmp107_;
-				vala_code_node_add_error_type ((ValaCodeNode*) _tmp108_, _tmp109_);
-				_vala_code_node_unref0 (_tmp109_);
+				_tmp99_ = method;
+				vala_code_node_add_error_type ((ValaCodeNode*) _tmp99_, _tmp97_);
+				_vala_code_node_unref0 (_tmp97_);
 			}
 		}
 	}
 	while (TRUE) {
-		gboolean _tmp110_ = FALSE;
-		ValaExpression* _tmp111_ = NULL;
-		ValaExpression* _tmp112_;
-		ValaMethod* _tmp113_;
-		ValaExpression* _tmp114_;
-		_tmp110_ = vala_parser_accept (self, VALA_TOKEN_TYPE_REQUIRES);
-		if (!_tmp110_) {
+		gboolean _tmp100_ = FALSE;
+		ValaExpression* _tmp101_ = NULL;
+		ValaExpression* _tmp102_ = NULL;
+		ValaMethod* _tmp103_ = NULL;
+		_tmp100_ = vala_parser_accept (self, VALA_TOKEN_TYPE_REQUIRES);
+		if (!_tmp100_) {
 			break;
 		}
 		vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
@@ -16987,8 +17176,8 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp111_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp112_ = _tmp111_;
+		_tmp102_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp101_ = _tmp102_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -17007,20 +17196,20 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp113_ = method;
-		_tmp114_ = _tmp112_;
-		vala_method_add_precondition (_tmp113_, _tmp114_);
-		_vala_code_node_unref0 (_tmp114_);
+		_tmp103_ = method;
+		vala_method_add_precondition (_tmp103_, _tmp101_);
 		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp101_);
 				_vala_code_node_unref0 (method);
 				_vala_iterable_unref0 (type_param_list);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				return;
 			} else {
+				_vala_code_node_unref0 (_tmp101_);
 				_vala_code_node_unref0 (method);
 				_vala_iterable_unref0 (type_param_list);
 				_g_free0 (id);
@@ -17030,15 +17219,15 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
+		_vala_code_node_unref0 (_tmp101_);
 	}
 	while (TRUE) {
-		gboolean _tmp115_ = FALSE;
-		ValaExpression* _tmp116_ = NULL;
-		ValaExpression* _tmp117_;
-		ValaMethod* _tmp118_;
-		ValaExpression* _tmp119_;
-		_tmp115_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ENSURES);
-		if (!_tmp115_) {
+		gboolean _tmp104_ = FALSE;
+		ValaExpression* _tmp105_ = NULL;
+		ValaExpression* _tmp106_ = NULL;
+		ValaMethod* _tmp107_ = NULL;
+		_tmp104_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ENSURES);
+		if (!_tmp104_) {
 			break;
 		}
 		vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
@@ -17060,8 +17249,8 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp116_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp117_ = _tmp116_;
+		_tmp106_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp105_ = _tmp106_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -17080,20 +17269,20 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp118_ = method;
-		_tmp119_ = _tmp117_;
-		vala_method_add_postcondition (_tmp118_, _tmp119_);
-		_vala_code_node_unref0 (_tmp119_);
+		_tmp107_ = method;
+		vala_method_add_postcondition (_tmp107_, _tmp105_);
 		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp105_);
 				_vala_code_node_unref0 (method);
 				_vala_iterable_unref0 (type_param_list);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				return;
 			} else {
+				_vala_code_node_unref0 (_tmp105_);
 				_vala_code_node_unref0 (method);
 				_vala_iterable_unref0 (type_param_list);
 				_g_free0 (id);
@@ -17103,15 +17292,15 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
+		_vala_code_node_unref0 (_tmp105_);
 	}
-	_tmp120_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-	if (!_tmp120_) {
-		ValaBlock* _tmp121_ = NULL;
-		ValaBlock* _tmp122_;
-		ValaMethod* _tmp123_;
-		ValaBlock* _tmp124_;
-		_tmp121_ = vala_parser_parse_block (self, &_inner_error_);
-		_tmp122_ = _tmp121_;
+	_tmp108_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+	if (!_tmp108_) {
+		ValaBlock* _tmp109_ = NULL;
+		ValaBlock* _tmp110_ = NULL;
+		ValaMethod* _tmp111_ = NULL;
+		_tmp110_ = vala_parser_parse_block (self, &_inner_error_);
+		_tmp109_ = _tmp110_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -17130,30 +17319,29 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp123_ = method;
-		_tmp124_ = _tmp122_;
-		vala_subroutine_set_body ((ValaSubroutine*) _tmp123_, _tmp124_);
-		_vala_code_node_unref0 (_tmp124_);
+		_tmp111_ = method;
+		vala_subroutine_set_body ((ValaSubroutine*) _tmp111_, _tmp109_);
+		_vala_code_node_unref0 (_tmp109_);
 	} else {
-		ValaScanner* _tmp125_;
-		ValaSourceFile* _tmp126_;
-		ValaSourceFile* _tmp127_;
-		ValaSourceFileType _tmp128_;
-		ValaSourceFileType _tmp129_;
-		_tmp125_ = self->priv->scanner;
-		_tmp126_ = vala_scanner_get_source_file (_tmp125_);
-		_tmp127_ = _tmp126_;
-		_tmp128_ = vala_source_file_get_file_type (_tmp127_);
-		_tmp129_ = _tmp128_;
-		if (_tmp129_ == VALA_SOURCE_FILE_TYPE_PACKAGE) {
-			ValaMethod* _tmp130_;
-			_tmp130_ = method;
-			vala_symbol_set_external ((ValaSymbol*) _tmp130_, TRUE);
+		ValaScanner* _tmp112_ = NULL;
+		ValaSourceFile* _tmp113_ = NULL;
+		ValaSourceFile* _tmp114_ = NULL;
+		ValaSourceFileType _tmp115_ = 0;
+		ValaSourceFileType _tmp116_ = 0;
+		_tmp112_ = self->priv->scanner;
+		_tmp113_ = vala_scanner_get_source_file (_tmp112_);
+		_tmp114_ = _tmp113_;
+		_tmp115_ = vala_source_file_get_file_type (_tmp114_);
+		_tmp116_ = _tmp115_;
+		if (_tmp116_ == VALA_SOURCE_FILE_TYPE_PACKAGE) {
+			ValaMethod* _tmp117_ = NULL;
+			_tmp117_ = method;
+			vala_symbol_set_external ((ValaSymbol*) _tmp117_, TRUE);
 		}
 	}
-	_tmp131_ = parent;
-	_tmp132_ = method;
-	vala_symbol_add_method (_tmp131_, _tmp132_);
+	_tmp118_ = parent;
+	_tmp119_ = method;
+	vala_symbol_add_method (_tmp118_, _tmp119_);
 	_vala_code_node_unref0 (method);
 	_vala_iterable_unref0 (type_param_list);
 	_g_free0 (id);
@@ -17162,48 +17350,52 @@ static void vala_parser_parse_method_declaration (ValaParser* self, ValaSymbol* 
 
 
 static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
-	gboolean getter_owned;
+	gboolean getter_owned = FALSE;
 	gboolean _tmp4_ = FALSE;
+	gchar* id = NULL;
 	gchar* _tmp10_ = NULL;
-	gchar* id;
-	const gchar* _tmp11_;
-	ValaDataType* _tmp12_;
-	ValaSourceLocation _tmp13_;
+	ValaProperty* prop = NULL;
+	const gchar* _tmp11_ = NULL;
+	ValaDataType* _tmp12_ = NULL;
+	ValaSourceLocation _tmp13_ = {0};
 	ValaSourceReference* _tmp14_ = NULL;
-	ValaSourceReference* _tmp15_;
-	ValaComment* _tmp16_;
-	ValaProperty* _tmp17_;
-	ValaProperty* _tmp18_;
-	ValaProperty* prop;
-	ValaProperty* _tmp19_;
-	ValaSymbolAccessibility _tmp20_;
-	ValaProperty* _tmp21_;
-	ValaList* _tmp22_;
-	ValaParserModifierFlags _tmp23_;
-	ValaParserModifierFlags _tmp27_;
-	ValaParserModifierFlags _tmp29_;
-	ValaParserModifierFlags _tmp31_;
-	ValaParserModifierFlags _tmp33_;
-	ValaParserModifierFlags _tmp35_;
+	ValaSourceReference* _tmp15_ = NULL;
+	ValaComment* _tmp16_ = NULL;
+	ValaProperty* _tmp17_ = NULL;
+	ValaProperty* _tmp18_ = NULL;
+	ValaProperty* _tmp19_ = NULL;
+	ValaSymbolAccessibility _tmp20_ = 0;
+	ValaProperty* _tmp21_ = NULL;
+	ValaList* _tmp22_ = NULL;
+	ValaParserModifierFlags _tmp23_ = 0;
+	ValaParserModifierFlags _tmp27_ = 0;
+	ValaParserModifierFlags _tmp29_ = 0;
+	ValaParserModifierFlags _tmp31_ = 0;
+	ValaParserModifierFlags _tmp33_ = 0;
+	ValaParserModifierFlags _tmp35_ = 0;
 	gboolean _tmp39_ = FALSE;
-	ValaParserModifierFlags _tmp40_;
-	gboolean _tmp46_;
+	ValaParserModifierFlags _tmp40_ = 0;
+	gboolean _tmp47_ = FALSE;
 	gboolean _tmp48_ = FALSE;
-	gboolean _tmp150_ = FALSE;
-	ValaProperty* _tmp151_;
-	gboolean _tmp152_;
-	gboolean _tmp153_;
-	gboolean _tmp157_;
-	ValaSymbol* _tmp221_;
-	ValaProperty* _tmp222_;
+	gboolean _tmp49_ = FALSE;
+	ValaProperty* _tmp50_ = NULL;
+	gboolean _tmp51_ = FALSE;
+	gboolean _tmp52_ = FALSE;
+	gboolean _tmp74_ = FALSE;
+	gboolean _tmp175_ = FALSE;
+	ValaProperty* _tmp176_ = NULL;
+	gboolean _tmp177_ = FALSE;
+	gboolean _tmp178_ = FALSE;
+	ValaSymbol* _tmp242_ = NULL;
+	ValaProperty* _tmp243_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -17228,15 +17420,15 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 	getter_owned = FALSE;
 	_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_HASH);
 	if (_tmp4_) {
-		ValaCodeContext* _tmp5_;
-		gboolean _tmp6_;
-		gboolean _tmp7_;
+		ValaCodeContext* _tmp5_ = NULL;
+		gboolean _tmp6_ = FALSE;
+		gboolean _tmp7_ = FALSE;
 		_tmp5_ = self->priv->context;
 		_tmp6_ = vala_code_context_get_deprecated (_tmp5_);
 		_tmp7_ = _tmp6_;
 		if (!_tmp7_) {
 			ValaSourceReference* _tmp8_ = NULL;
-			ValaSourceReference* _tmp9_;
+			ValaSourceReference* _tmp9_ = NULL;
 			_tmp8_ = vala_parser_get_last_src (self);
 			_tmp9_ = _tmp8_;
 			vala_report_warning (_tmp9_, "deprecated syntax, use `owned` modifier before `get'");
@@ -17276,47 +17468,47 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp21_, _tmp22_);
 	_tmp23_ = flags;
 	if ((_tmp23_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaProperty* _tmp24_;
+		ValaProperty* _tmp24_ = NULL;
 		_tmp24_ = prop;
 		vala_property_set_binding (_tmp24_, VALA_MEMBER_BINDING_STATIC);
 	} else {
-		ValaParserModifierFlags _tmp25_;
+		ValaParserModifierFlags _tmp25_ = 0;
 		_tmp25_ = flags;
 		if ((_tmp25_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
-			ValaProperty* _tmp26_;
+			ValaProperty* _tmp26_ = NULL;
 			_tmp26_ = prop;
 			vala_property_set_binding (_tmp26_, VALA_MEMBER_BINDING_CLASS);
 		}
 	}
 	_tmp27_ = flags;
 	if ((_tmp27_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
-		ValaProperty* _tmp28_;
+		ValaProperty* _tmp28_ = NULL;
 		_tmp28_ = prop;
 		vala_property_set_is_abstract (_tmp28_, TRUE);
 	}
 	_tmp29_ = flags;
 	if ((_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) {
-		ValaProperty* _tmp30_;
+		ValaProperty* _tmp30_ = NULL;
 		_tmp30_ = prop;
 		vala_property_set_is_virtual (_tmp30_, TRUE);
 	}
 	_tmp31_ = flags;
 	if ((_tmp31_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) {
-		ValaProperty* _tmp32_;
+		ValaProperty* _tmp32_ = NULL;
 		_tmp32_ = prop;
 		vala_property_set_overrides (_tmp32_, TRUE);
 	}
 	_tmp33_ = flags;
 	if ((_tmp33_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
-		ValaProperty* _tmp34_;
+		ValaProperty* _tmp34_ = NULL;
 		_tmp34_ = prop;
 		vala_symbol_set_hides ((ValaSymbol*) _tmp34_, TRUE);
 	}
 	_tmp35_ = flags;
 	if ((_tmp35_ & VALA_PARSER_MODIFIER_FLAGS_ASYNC) == VALA_PARSER_MODIFIER_FLAGS_ASYNC) {
-		ValaProperty* _tmp36_;
-		ValaSourceReference* _tmp37_;
-		ValaSourceReference* _tmp38_;
+		ValaProperty* _tmp36_ = NULL;
+		ValaSourceReference* _tmp37_ = NULL;
+		ValaSourceReference* _tmp38_ = NULL;
 		_tmp36_ = prop;
 		_tmp37_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp36_);
 		_tmp38_ = _tmp37_;
@@ -17326,11 +17518,11 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 	if ((_tmp40_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
 		_tmp39_ = TRUE;
 	} else {
-		ValaScanner* _tmp41_;
-		ValaSourceFile* _tmp42_;
-		ValaSourceFile* _tmp43_;
-		ValaSourceFileType _tmp44_;
-		ValaSourceFileType _tmp45_;
+		ValaScanner* _tmp41_ = NULL;
+		ValaSourceFile* _tmp42_ = NULL;
+		ValaSourceFile* _tmp43_ = NULL;
+		ValaSourceFileType _tmp44_ = 0;
+		ValaSourceFileType _tmp45_ = 0;
 		_tmp41_ = self->priv->scanner;
 		_tmp42_ = vala_scanner_get_source_file (_tmp41_);
 		_tmp43_ = _tmp42_;
@@ -17338,37 +17530,119 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 		_tmp45_ = _tmp44_;
 		_tmp39_ = _tmp45_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp46_ = _tmp39_;
-	if (_tmp46_) {
-		ValaProperty* _tmp47_;
-		_tmp47_ = prop;
-		vala_symbol_set_external ((ValaSymbol*) _tmp47_, TRUE);
+	if (_tmp39_) {
+		ValaProperty* _tmp46_ = NULL;
+		_tmp46_ = prop;
+		vala_symbol_set_external ((ValaSymbol*) _tmp46_, TRUE);
 	}
-	_tmp48_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
+	_tmp50_ = prop;
+	_tmp51_ = vala_property_get_is_abstract (_tmp50_);
+	_tmp52_ = _tmp51_;
+	if (_tmp52_) {
+		ValaProperty* _tmp53_ = NULL;
+		gboolean _tmp54_ = FALSE;
+		gboolean _tmp55_ = FALSE;
+		_tmp53_ = prop;
+		_tmp54_ = vala_property_get_is_virtual (_tmp53_);
+		_tmp55_ = _tmp54_;
+		_tmp49_ = _tmp55_;
+	} else {
+		_tmp49_ = FALSE;
+	}
+	if (_tmp49_) {
+		_tmp48_ = TRUE;
+	} else {
+		gboolean _tmp56_ = FALSE;
+		ValaProperty* _tmp57_ = NULL;
+		gboolean _tmp58_ = FALSE;
+		gboolean _tmp59_ = FALSE;
+		_tmp57_ = prop;
+		_tmp58_ = vala_property_get_is_abstract (_tmp57_);
+		_tmp59_ = _tmp58_;
+		if (_tmp59_) {
+			ValaProperty* _tmp60_ = NULL;
+			gboolean _tmp61_ = FALSE;
+			gboolean _tmp62_ = FALSE;
+			_tmp60_ = prop;
+			_tmp61_ = vala_property_get_overrides (_tmp60_);
+			_tmp62_ = _tmp61_;
+			_tmp56_ = _tmp62_;
+		} else {
+			_tmp56_ = FALSE;
+		}
+		_tmp48_ = _tmp56_;
+	}
 	if (_tmp48_) {
-		ValaProperty* _tmp56_;
-		ValaSourceReference* _tmp57_;
-		ValaSourceReference* _tmp58_;
+		_tmp47_ = TRUE;
+	} else {
+		gboolean _tmp63_ = FALSE;
+		ValaProperty* _tmp64_ = NULL;
+		gboolean _tmp65_ = FALSE;
+		gboolean _tmp66_ = FALSE;
+		_tmp64_ = prop;
+		_tmp65_ = vala_property_get_is_virtual (_tmp64_);
+		_tmp66_ = _tmp65_;
+		if (_tmp66_) {
+			ValaProperty* _tmp67_ = NULL;
+			gboolean _tmp68_ = FALSE;
+			gboolean _tmp69_ = FALSE;
+			_tmp67_ = prop;
+			_tmp68_ = vala_property_get_overrides (_tmp67_);
+			_tmp69_ = _tmp68_;
+			_tmp63_ = _tmp69_;
+		} else {
+			_tmp63_ = FALSE;
+		}
+		_tmp47_ = _tmp63_;
+	}
+	if (_tmp47_) {
+		gchar* _tmp70_ = NULL;
+		gchar* _tmp71_ = NULL;
+		GError* _tmp72_ = NULL;
+		GError* _tmp73_ = NULL;
+		_tmp70_ = vala_parser_get_error (self, "only one of `abstract', `virtual', or `override' may be specified");
+		_tmp71_ = _tmp70_;
+		_tmp72_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp71_);
+		_tmp73_ = _tmp72_;
+		_g_free0 (_tmp71_);
+		_inner_error_ = _tmp73_;
+		if (_inner_error_->domain == VALA_PARSE_ERROR) {
+			g_propagate_error (error, _inner_error_);
+			_vala_code_node_unref0 (prop);
+			_g_free0 (id);
+			_vala_code_node_unref0 (type);
+			return;
+		} else {
+			_vala_code_node_unref0 (prop);
+			_g_free0 (id);
+			_vala_code_node_unref0 (type);
+			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return;
+		}
+	}
+	_tmp74_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
+	if (_tmp74_) {
+		ValaProperty* _tmp80_ = NULL;
+		ValaSourceReference* _tmp81_ = NULL;
+		ValaSourceReference* _tmp82_ = NULL;
 		{
-			gboolean _tmp49_;
-			_tmp49_ = TRUE;
+			gboolean _tmp75_ = FALSE;
+			_tmp75_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp50_;
-				ValaDataType* _tmp52_ = NULL;
-				ValaDataType* _tmp53_;
-				ValaProperty* _tmp54_;
-				ValaDataType* _tmp55_;
-				_tmp50_ = _tmp49_;
-				if (!_tmp50_) {
-					gboolean _tmp51_ = FALSE;
-					_tmp51_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp51_) {
+				ValaDataType* _tmp77_ = NULL;
+				ValaDataType* _tmp78_ = NULL;
+				ValaProperty* _tmp79_ = NULL;
+				if (!_tmp75_) {
+					gboolean _tmp76_ = FALSE;
+					_tmp76_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp76_) {
 						break;
 					}
 				}
-				_tmp49_ = FALSE;
-				_tmp52_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				_tmp53_ = _tmp52_;
+				_tmp75_ = FALSE;
+				_tmp78_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+				_tmp77_ = _tmp78_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -17385,16 +17659,15 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 						return;
 					}
 				}
-				_tmp54_ = prop;
-				_tmp55_ = _tmp53_;
-				vala_code_node_add_error_type ((ValaCodeNode*) _tmp54_, _tmp55_);
-				_vala_code_node_unref0 (_tmp55_);
+				_tmp79_ = prop;
+				vala_code_node_add_error_type ((ValaCodeNode*) _tmp79_, _tmp77_);
+				_vala_code_node_unref0 (_tmp77_);
 			}
 		}
-		_tmp56_ = prop;
-		_tmp57_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp56_);
-		_tmp58_ = _tmp57_;
-		vala_report_error (_tmp58_, "properties throwing errors are not supported yet");
+		_tmp80_ = prop;
+		_tmp81_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp80_);
+		_tmp82_ = _tmp81_;
+		vala_report_error (_tmp82_, "properties throwing errors are not supported yet");
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_BRACE, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -17414,35 +17687,34 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 		}
 	}
 	while (TRUE) {
-		ValaTokenType _tmp59_ = 0;
-		gboolean _tmp60_ = FALSE;
-		_tmp59_ = vala_parser_current (self);
-		if (!(_tmp59_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
+		ValaTokenType _tmp83_ = 0;
+		gboolean _tmp84_ = FALSE;
+		_tmp83_ = vala_parser_current (self);
+		if (!(_tmp83_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
 			break;
 		}
-		_tmp60_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DEFAULT);
-		if (_tmp60_) {
-			ValaProperty* _tmp61_;
-			ValaExpression* _tmp62_;
-			ValaExpression* _tmp63_;
-			ValaExpression* _tmp68_ = NULL;
-			ValaExpression* _tmp69_;
-			ValaProperty* _tmp70_;
-			ValaExpression* _tmp71_;
-			_tmp61_ = prop;
-			_tmp62_ = vala_property_get_initializer (_tmp61_);
-			_tmp63_ = _tmp62_;
-			if (_tmp63_ != NULL) {
-				gchar* _tmp64_ = NULL;
-				gchar* _tmp65_;
-				GError* _tmp66_;
-				GError* _tmp67_;
-				_tmp64_ = vala_parser_get_error (self, "property default value already defined");
-				_tmp65_ = _tmp64_;
-				_tmp66_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp65_);
-				_tmp67_ = _tmp66_;
-				_g_free0 (_tmp65_);
-				_inner_error_ = _tmp67_;
+		_tmp84_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DEFAULT);
+		if (_tmp84_) {
+			ValaProperty* _tmp85_ = NULL;
+			ValaExpression* _tmp86_ = NULL;
+			ValaExpression* _tmp87_ = NULL;
+			ValaExpression* _tmp92_ = NULL;
+			ValaExpression* _tmp93_ = NULL;
+			ValaProperty* _tmp94_ = NULL;
+			_tmp85_ = prop;
+			_tmp86_ = vala_property_get_initializer (_tmp85_);
+			_tmp87_ = _tmp86_;
+			if (_tmp87_ != NULL) {
+				gchar* _tmp88_ = NULL;
+				gchar* _tmp89_ = NULL;
+				GError* _tmp90_ = NULL;
+				GError* _tmp91_ = NULL;
+				_tmp88_ = vala_parser_get_error (self, "property default value already defined");
+				_tmp89_ = _tmp88_;
+				_tmp90_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp89_);
+				_tmp91_ = _tmp90_;
+				_g_free0 (_tmp89_);
+				_inner_error_ = _tmp91_;
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
 					_vala_code_node_unref0 (prop);
@@ -17475,8 +17747,8 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 					return;
 				}
 			}
-			_tmp68_ = vala_parser_parse_expression (self, &_inner_error_);
-			_tmp69_ = _tmp68_;
+			_tmp93_ = vala_parser_parse_expression (self, &_inner_error_);
+			_tmp92_ = _tmp93_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -17493,19 +17765,19 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 					return;
 				}
 			}
-			_tmp70_ = prop;
-			_tmp71_ = _tmp69_;
-			vala_property_set_initializer (_tmp70_, _tmp71_);
-			_vala_code_node_unref0 (_tmp71_);
+			_tmp94_ = prop;
+			vala_property_set_initializer (_tmp94_, _tmp92_);
 			vala_parser_expect (self, VALA_TOKEN_TYPE_SEMICOLON, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
+					_vala_code_node_unref0 (_tmp92_);
 					_vala_code_node_unref0 (prop);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
 					return;
 				} else {
+					_vala_code_node_unref0 (_tmp92_);
 					_vala_code_node_unref0 (prop);
 					_g_free0 (id);
 					_vala_code_node_unref0 (type);
@@ -17514,29 +17786,30 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 					return;
 				}
 			}
+			_vala_code_node_unref0 (_tmp92_);
 		} else {
-			ValaScanner* _tmp72_;
-			ValaComment* _tmp73_ = NULL;
-			ValaSourceLocation _tmp74_ = {0};
-			ValaSourceLocation accessor_begin;
-			ValaList* _tmp75_ = NULL;
-			ValaList* accessor_attrs;
-			ValaSymbolAccessibility _tmp76_ = 0;
-			ValaSymbolAccessibility accessor_access;
-			ValaDataType* _tmp77_;
-			ValaDataType* _tmp78_ = NULL;
-			ValaDataType* value_type;
-			ValaDataType* _tmp79_;
-			gboolean _tmp80_ = FALSE;
-			gboolean _tmp81_ = FALSE;
-			_tmp72_ = self->priv->scanner;
-			_tmp73_ = vala_scanner_pop_comment (_tmp72_);
+			ValaScanner* _tmp95_ = NULL;
+			ValaComment* _tmp96_ = NULL;
+			ValaSourceLocation accessor_begin = {0};
+			ValaSourceLocation _tmp97_ = {0};
+			ValaList* accessor_attrs = NULL;
+			ValaList* _tmp98_ = NULL;
+			ValaSymbolAccessibility accessor_access = 0;
+			ValaSymbolAccessibility _tmp99_ = 0;
+			ValaDataType* value_type = NULL;
+			ValaDataType* _tmp100_ = NULL;
+			ValaDataType* _tmp101_ = NULL;
+			ValaDataType* _tmp102_ = NULL;
+			gboolean _tmp103_ = FALSE;
+			gboolean _tmp104_ = FALSE;
+			_tmp95_ = self->priv->scanner;
+			_tmp96_ = vala_scanner_pop_comment (_tmp95_);
 			_vala_comment_unref0 (self->priv->comment);
-			self->priv->comment = _tmp73_;
-			vala_parser_get_location (self, &_tmp74_);
-			accessor_begin = _tmp74_;
-			_tmp75_ = vala_parser_parse_attributes (self, &_inner_error_);
-			accessor_attrs = _tmp75_;
+			self->priv->comment = _tmp96_;
+			vala_parser_get_location (self, &_tmp97_);
+			accessor_begin = _tmp97_;
+			_tmp98_ = vala_parser_parse_attributes (self, &_inner_error_);
+			accessor_attrs = _tmp98_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -17553,53 +17826,53 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 					return;
 				}
 			}
-			_tmp76_ = vala_parser_parse_access_modifier (self, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
-			accessor_access = _tmp76_;
-			_tmp77_ = type;
-			_tmp78_ = vala_data_type_copy (_tmp77_);
-			value_type = _tmp78_;
-			_tmp79_ = value_type;
-			_tmp80_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OWNED);
-			vala_data_type_set_value_owned (_tmp79_, _tmp80_);
-			_tmp81_ = vala_parser_accept (self, VALA_TOKEN_TYPE_GET);
-			if (_tmp81_) {
-				ValaProperty* _tmp82_;
-				ValaPropertyAccessor* _tmp83_;
-				ValaPropertyAccessor* _tmp84_;
-				gboolean _tmp89_;
-				ValaBlock* block;
-				gboolean _tmp91_ = FALSE;
-				ValaProperty* _tmp95_;
-				ValaDataType* _tmp96_;
-				ValaBlock* _tmp97_;
-				ValaSourceLocation _tmp98_;
-				ValaSourceReference* _tmp99_ = NULL;
-				ValaSourceReference* _tmp100_;
-				ValaComment* _tmp101_;
-				ValaPropertyAccessor* _tmp102_;
-				ValaPropertyAccessor* _tmp103_;
-				ValaProperty* _tmp104_;
-				ValaPropertyAccessor* _tmp105_;
-				ValaPropertyAccessor* _tmp106_;
-				ValaList* _tmp107_;
-				ValaProperty* _tmp108_;
-				ValaPropertyAccessor* _tmp109_;
-				ValaPropertyAccessor* _tmp110_;
-				ValaSymbolAccessibility _tmp111_;
-				_tmp82_ = prop;
-				_tmp83_ = vala_property_get_get_accessor (_tmp82_);
-				_tmp84_ = _tmp83_;
-				if (_tmp84_ != NULL) {
-					gchar* _tmp85_ = NULL;
-					gchar* _tmp86_;
-					GError* _tmp87_;
-					GError* _tmp88_;
-					_tmp85_ = vala_parser_get_error (self, "property get accessor already defined");
-					_tmp86_ = _tmp85_;
-					_tmp87_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp86_);
-					_tmp88_ = _tmp87_;
-					_g_free0 (_tmp86_);
-					_inner_error_ = _tmp88_;
+			_tmp99_ = vala_parser_parse_access_modifier (self, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
+			accessor_access = _tmp99_;
+			_tmp100_ = type;
+			_tmp101_ = vala_data_type_copy (_tmp100_);
+			value_type = _tmp101_;
+			_tmp102_ = value_type;
+			_tmp103_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OWNED);
+			vala_data_type_set_value_owned (_tmp102_, _tmp103_);
+			_tmp104_ = vala_parser_accept (self, VALA_TOKEN_TYPE_GET);
+			if (_tmp104_) {
+				ValaProperty* _tmp105_ = NULL;
+				ValaPropertyAccessor* _tmp106_ = NULL;
+				ValaPropertyAccessor* _tmp107_ = NULL;
+				gboolean _tmp112_ = FALSE;
+				ValaBlock* block = NULL;
+				gboolean _tmp114_ = FALSE;
+				ValaProperty* _tmp119_ = NULL;
+				ValaDataType* _tmp120_ = NULL;
+				ValaBlock* _tmp121_ = NULL;
+				ValaSourceLocation _tmp122_ = {0};
+				ValaSourceReference* _tmp123_ = NULL;
+				ValaSourceReference* _tmp124_ = NULL;
+				ValaComment* _tmp125_ = NULL;
+				ValaPropertyAccessor* _tmp126_ = NULL;
+				ValaPropertyAccessor* _tmp127_ = NULL;
+				ValaProperty* _tmp128_ = NULL;
+				ValaPropertyAccessor* _tmp129_ = NULL;
+				ValaPropertyAccessor* _tmp130_ = NULL;
+				ValaList* _tmp131_ = NULL;
+				ValaProperty* _tmp132_ = NULL;
+				ValaPropertyAccessor* _tmp133_ = NULL;
+				ValaPropertyAccessor* _tmp134_ = NULL;
+				ValaSymbolAccessibility _tmp135_ = 0;
+				_tmp105_ = prop;
+				_tmp106_ = vala_property_get_get_accessor (_tmp105_);
+				_tmp107_ = _tmp106_;
+				if (_tmp107_ != NULL) {
+					gchar* _tmp108_ = NULL;
+					gchar* _tmp109_ = NULL;
+					GError* _tmp110_ = NULL;
+					GError* _tmp111_ = NULL;
+					_tmp108_ = vala_parser_get_error (self, "property get accessor already defined");
+					_tmp109_ = _tmp108_;
+					_tmp110_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp109_);
+					_tmp111_ = _tmp110_;
+					_g_free0 (_tmp109_);
+					_inner_error_ = _tmp111_;
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
 						_vala_code_node_unref0 (value_type);
@@ -17619,20 +17892,21 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 						return;
 					}
 				}
-				_tmp89_ = getter_owned;
-				if (_tmp89_) {
-					ValaDataType* _tmp90_;
-					_tmp90_ = value_type;
-					vala_data_type_set_value_owned (_tmp90_, TRUE);
+				_tmp112_ = getter_owned;
+				if (_tmp112_) {
+					ValaDataType* _tmp113_ = NULL;
+					_tmp113_ = value_type;
+					vala_data_type_set_value_owned (_tmp113_, TRUE);
 				}
 				block = NULL;
-				_tmp91_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-				if (!_tmp91_) {
-					ValaBlock* _tmp92_ = NULL;
-					ValaBlock* _tmp93_;
-					ValaProperty* _tmp94_;
-					_tmp92_ = vala_parser_parse_block (self, &_inner_error_);
-					_tmp93_ = _tmp92_;
+				_tmp114_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+				if (!_tmp114_) {
+					ValaBlock* _tmp115_ = NULL;
+					ValaBlock* _tmp116_ = NULL;
+					ValaBlock* _tmp117_ = NULL;
+					ValaProperty* _tmp118_ = NULL;
+					_tmp116_ = vala_parser_parse_block (self, &_inner_error_);
+					_tmp115_ = _tmp116_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -17655,87 +17929,90 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 							return;
 						}
 					}
+					_tmp117_ = _tmp115_;
+					_tmp115_ = NULL;
 					_vala_code_node_unref0 (block);
-					block = _tmp93_;
-					_tmp94_ = prop;
-					vala_symbol_set_external ((ValaSymbol*) _tmp94_, FALSE);
+					block = _tmp117_;
+					_tmp118_ = prop;
+					vala_symbol_set_external ((ValaSymbol*) _tmp118_, FALSE);
+					_vala_code_node_unref0 (_tmp115_);
 				}
-				_tmp95_ = prop;
-				_tmp96_ = value_type;
-				_tmp97_ = block;
-				_tmp98_ = accessor_begin;
-				_tmp99_ = vala_parser_get_src (self, &_tmp98_);
-				_tmp100_ = _tmp99_;
-				_tmp101_ = self->priv->comment;
-				_tmp102_ = vala_property_accessor_new (TRUE, FALSE, FALSE, _tmp96_, _tmp97_, _tmp100_, _tmp101_);
-				_tmp103_ = _tmp102_;
-				vala_property_set_get_accessor (_tmp95_, _tmp103_);
-				_vala_code_node_unref0 (_tmp103_);
-				_vala_source_reference_unref0 (_tmp100_);
-				_tmp104_ = prop;
-				_tmp105_ = vala_property_get_get_accessor (_tmp104_);
-				_tmp106_ = _tmp105_;
-				_tmp107_ = accessor_attrs;
-				vala_parser_set_attributes (self, (ValaCodeNode*) _tmp106_, _tmp107_);
-				_tmp108_ = prop;
-				_tmp109_ = vala_property_get_get_accessor (_tmp108_);
-				_tmp110_ = _tmp109_;
-				_tmp111_ = accessor_access;
-				vala_symbol_set_access ((ValaSymbol*) _tmp110_, _tmp111_);
+				_tmp119_ = prop;
+				_tmp120_ = value_type;
+				_tmp121_ = block;
+				_tmp122_ = accessor_begin;
+				_tmp123_ = vala_parser_get_src (self, &_tmp122_);
+				_tmp124_ = _tmp123_;
+				_tmp125_ = self->priv->comment;
+				_tmp126_ = vala_property_accessor_new (TRUE, FALSE, FALSE, _tmp120_, _tmp121_, _tmp124_, _tmp125_);
+				_tmp127_ = _tmp126_;
+				vala_property_set_get_accessor (_tmp119_, _tmp127_);
+				_vala_code_node_unref0 (_tmp127_);
+				_vala_source_reference_unref0 (_tmp124_);
+				_tmp128_ = prop;
+				_tmp129_ = vala_property_get_get_accessor (_tmp128_);
+				_tmp130_ = _tmp129_;
+				_tmp131_ = accessor_attrs;
+				vala_parser_set_attributes (self, (ValaCodeNode*) _tmp130_, _tmp131_);
+				_tmp132_ = prop;
+				_tmp133_ = vala_property_get_get_accessor (_tmp132_);
+				_tmp134_ = _tmp133_;
+				_tmp135_ = accessor_access;
+				vala_symbol_set_access ((ValaSymbol*) _tmp134_, _tmp135_);
 				_vala_code_node_unref0 (block);
 			} else {
 				gboolean writable = FALSE;
 				gboolean _construct = FALSE;
-				gboolean _tmp112_ = FALSE;
-				ValaProperty* _tmp120_;
-				ValaPropertyAccessor* _tmp121_;
-				ValaPropertyAccessor* _tmp122_;
-				ValaBlock* block;
-				gboolean _tmp127_ = FALSE;
-				ValaProperty* _tmp131_;
-				gboolean _tmp132_;
-				gboolean _tmp133_;
-				ValaDataType* _tmp134_;
-				ValaBlock* _tmp135_;
-				ValaSourceLocation _tmp136_;
-				ValaSourceReference* _tmp137_ = NULL;
-				ValaSourceReference* _tmp138_;
-				ValaComment* _tmp139_;
-				ValaPropertyAccessor* _tmp140_;
-				ValaPropertyAccessor* _tmp141_;
-				ValaProperty* _tmp142_;
-				ValaPropertyAccessor* _tmp143_;
-				ValaPropertyAccessor* _tmp144_;
-				ValaList* _tmp145_;
-				ValaProperty* _tmp146_;
-				ValaPropertyAccessor* _tmp147_;
-				ValaPropertyAccessor* _tmp148_;
-				ValaSymbolAccessibility _tmp149_;
-				_tmp112_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SET);
-				if (_tmp112_) {
-					gboolean _tmp113_ = FALSE;
+				gboolean _tmp136_ = FALSE;
+				ValaProperty* _tmp144_ = NULL;
+				ValaPropertyAccessor* _tmp145_ = NULL;
+				ValaPropertyAccessor* _tmp146_ = NULL;
+				ValaBlock* block = NULL;
+				gboolean _tmp151_ = FALSE;
+				ValaProperty* _tmp156_ = NULL;
+				gboolean _tmp157_ = FALSE;
+				gboolean _tmp158_ = FALSE;
+				ValaDataType* _tmp159_ = NULL;
+				ValaBlock* _tmp160_ = NULL;
+				ValaSourceLocation _tmp161_ = {0};
+				ValaSourceReference* _tmp162_ = NULL;
+				ValaSourceReference* _tmp163_ = NULL;
+				ValaComment* _tmp164_ = NULL;
+				ValaPropertyAccessor* _tmp165_ = NULL;
+				ValaPropertyAccessor* _tmp166_ = NULL;
+				ValaProperty* _tmp167_ = NULL;
+				ValaPropertyAccessor* _tmp168_ = NULL;
+				ValaPropertyAccessor* _tmp169_ = NULL;
+				ValaList* _tmp170_ = NULL;
+				ValaProperty* _tmp171_ = NULL;
+				ValaPropertyAccessor* _tmp172_ = NULL;
+				ValaPropertyAccessor* _tmp173_ = NULL;
+				ValaSymbolAccessibility _tmp174_ = 0;
+				_tmp136_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SET);
+				if (_tmp136_) {
+					gboolean _tmp137_ = FALSE;
 					writable = TRUE;
-					_tmp113_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CONSTRUCT);
-					_construct = _tmp113_;
+					_tmp137_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CONSTRUCT);
+					_construct = _tmp137_;
 				} else {
-					gboolean _tmp114_ = FALSE;
-					_tmp114_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CONSTRUCT);
-					if (_tmp114_) {
-						gboolean _tmp115_ = FALSE;
+					gboolean _tmp138_ = FALSE;
+					_tmp138_ = vala_parser_accept (self, VALA_TOKEN_TYPE_CONSTRUCT);
+					if (_tmp138_) {
+						gboolean _tmp139_ = FALSE;
 						_construct = TRUE;
-						_tmp115_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SET);
-						writable = _tmp115_;
+						_tmp139_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SET);
+						writable = _tmp139_;
 					} else {
-						gchar* _tmp116_ = NULL;
-						gchar* _tmp117_;
-						GError* _tmp118_;
-						GError* _tmp119_;
-						_tmp116_ = vala_parser_get_error (self, "expected get, set, or construct");
-						_tmp117_ = _tmp116_;
-						_tmp118_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp117_);
-						_tmp119_ = _tmp118_;
-						_g_free0 (_tmp117_);
-						_inner_error_ = _tmp119_;
+						gchar* _tmp140_ = NULL;
+						gchar* _tmp141_ = NULL;
+						GError* _tmp142_ = NULL;
+						GError* _tmp143_ = NULL;
+						_tmp140_ = vala_parser_get_error (self, "expected get, set, or construct");
+						_tmp141_ = _tmp140_;
+						_tmp142_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp141_);
+						_tmp143_ = _tmp142_;
+						_g_free0 (_tmp141_);
+						_inner_error_ = _tmp143_;
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
 							_vala_code_node_unref0 (value_type);
@@ -17756,20 +18033,20 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 						}
 					}
 				}
-				_tmp120_ = prop;
-				_tmp121_ = vala_property_get_set_accessor (_tmp120_);
-				_tmp122_ = _tmp121_;
-				if (_tmp122_ != NULL) {
-					gchar* _tmp123_ = NULL;
-					gchar* _tmp124_;
-					GError* _tmp125_;
-					GError* _tmp126_;
-					_tmp123_ = vala_parser_get_error (self, "property set accessor already defined");
-					_tmp124_ = _tmp123_;
-					_tmp125_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp124_);
-					_tmp126_ = _tmp125_;
-					_g_free0 (_tmp124_);
-					_inner_error_ = _tmp126_;
+				_tmp144_ = prop;
+				_tmp145_ = vala_property_get_set_accessor (_tmp144_);
+				_tmp146_ = _tmp145_;
+				if (_tmp146_ != NULL) {
+					gchar* _tmp147_ = NULL;
+					gchar* _tmp148_ = NULL;
+					GError* _tmp149_ = NULL;
+					GError* _tmp150_ = NULL;
+					_tmp147_ = vala_parser_get_error (self, "property set accessor already defined");
+					_tmp148_ = _tmp147_;
+					_tmp149_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp148_);
+					_tmp150_ = _tmp149_;
+					_g_free0 (_tmp148_);
+					_inner_error_ = _tmp150_;
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
 						_vala_code_node_unref0 (value_type);
@@ -17790,13 +18067,14 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 					}
 				}
 				block = NULL;
-				_tmp127_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-				if (!_tmp127_) {
-					ValaBlock* _tmp128_ = NULL;
-					ValaBlock* _tmp129_;
-					ValaProperty* _tmp130_;
-					_tmp128_ = vala_parser_parse_block (self, &_inner_error_);
-					_tmp129_ = _tmp128_;
+				_tmp151_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+				if (!_tmp151_) {
+					ValaBlock* _tmp152_ = NULL;
+					ValaBlock* _tmp153_ = NULL;
+					ValaBlock* _tmp154_ = NULL;
+					ValaProperty* _tmp155_ = NULL;
+					_tmp153_ = vala_parser_parse_block (self, &_inner_error_);
+					_tmp152_ = _tmp153_;
 					if (_inner_error_ != NULL) {
 						if (_inner_error_->domain == VALA_PARSE_ERROR) {
 							g_propagate_error (error, _inner_error_);
@@ -17819,35 +18097,38 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 							return;
 						}
 					}
+					_tmp154_ = _tmp152_;
+					_tmp152_ = NULL;
 					_vala_code_node_unref0 (block);
-					block = _tmp129_;
-					_tmp130_ = prop;
-					vala_symbol_set_external ((ValaSymbol*) _tmp130_, FALSE);
+					block = _tmp154_;
+					_tmp155_ = prop;
+					vala_symbol_set_external ((ValaSymbol*) _tmp155_, FALSE);
+					_vala_code_node_unref0 (_tmp152_);
 				}
-				_tmp131_ = prop;
-				_tmp132_ = writable;
-				_tmp133_ = _construct;
-				_tmp134_ = value_type;
-				_tmp135_ = block;
-				_tmp136_ = accessor_begin;
-				_tmp137_ = vala_parser_get_src (self, &_tmp136_);
-				_tmp138_ = _tmp137_;
-				_tmp139_ = self->priv->comment;
-				_tmp140_ = vala_property_accessor_new (FALSE, _tmp132_, _tmp133_, _tmp134_, _tmp135_, _tmp138_, _tmp139_);
-				_tmp141_ = _tmp140_;
-				vala_property_set_set_accessor (_tmp131_, _tmp141_);
-				_vala_code_node_unref0 (_tmp141_);
-				_vala_source_reference_unref0 (_tmp138_);
-				_tmp142_ = prop;
-				_tmp143_ = vala_property_get_set_accessor (_tmp142_);
-				_tmp144_ = _tmp143_;
-				_tmp145_ = accessor_attrs;
-				vala_parser_set_attributes (self, (ValaCodeNode*) _tmp144_, _tmp145_);
-				_tmp146_ = prop;
-				_tmp147_ = vala_property_get_set_accessor (_tmp146_);
-				_tmp148_ = _tmp147_;
-				_tmp149_ = accessor_access;
-				vala_symbol_set_access ((ValaSymbol*) _tmp148_, _tmp149_);
+				_tmp156_ = prop;
+				_tmp157_ = writable;
+				_tmp158_ = _construct;
+				_tmp159_ = value_type;
+				_tmp160_ = block;
+				_tmp161_ = accessor_begin;
+				_tmp162_ = vala_parser_get_src (self, &_tmp161_);
+				_tmp163_ = _tmp162_;
+				_tmp164_ = self->priv->comment;
+				_tmp165_ = vala_property_accessor_new (FALSE, _tmp157_, _tmp158_, _tmp159_, _tmp160_, _tmp163_, _tmp164_);
+				_tmp166_ = _tmp165_;
+				vala_property_set_set_accessor (_tmp156_, _tmp166_);
+				_vala_code_node_unref0 (_tmp166_);
+				_vala_source_reference_unref0 (_tmp163_);
+				_tmp167_ = prop;
+				_tmp168_ = vala_property_get_set_accessor (_tmp167_);
+				_tmp169_ = _tmp168_;
+				_tmp170_ = accessor_attrs;
+				vala_parser_set_attributes (self, (ValaCodeNode*) _tmp169_, _tmp170_);
+				_tmp171_ = prop;
+				_tmp172_ = vala_property_get_set_accessor (_tmp171_);
+				_tmp173_ = _tmp172_;
+				_tmp174_ = accessor_access;
+				vala_symbol_set_access ((ValaSymbol*) _tmp173_, _tmp174_);
 				_vala_code_node_unref0 (block);
 			}
 			_vala_code_node_unref0 (value_type);
@@ -17871,188 +18152,181 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp151_ = prop;
-	_tmp152_ = vala_property_get_is_abstract (_tmp151_);
-	_tmp153_ = _tmp152_;
-	if (!_tmp153_) {
-		ValaProperty* _tmp154_;
-		ValaSourceFileType _tmp155_;
-		ValaSourceFileType _tmp156_;
-		_tmp154_ = prop;
-		_tmp155_ = vala_symbol_get_source_type ((ValaSymbol*) _tmp154_);
-		_tmp156_ = _tmp155_;
-		_tmp150_ = _tmp156_ == VALA_SOURCE_FILE_TYPE_SOURCE;
+	_tmp176_ = prop;
+	_tmp177_ = vala_property_get_is_abstract (_tmp176_);
+	_tmp178_ = _tmp177_;
+	if (!_tmp178_) {
+		ValaProperty* _tmp179_ = NULL;
+		ValaSourceFileType _tmp180_ = 0;
+		ValaSourceFileType _tmp181_ = 0;
+		_tmp179_ = prop;
+		_tmp180_ = vala_symbol_get_source_type ((ValaSymbol*) _tmp179_);
+		_tmp181_ = _tmp180_;
+		_tmp175_ = _tmp181_ == VALA_SOURCE_FILE_TYPE_SOURCE;
 	} else {
-		_tmp150_ = FALSE;
+		_tmp175_ = FALSE;
 	}
-	_tmp157_ = _tmp150_;
-	if (_tmp157_) {
-		gboolean _tmp158_ = FALSE;
-		ValaProperty* _tmp159_;
-		ValaPropertyAccessor* _tmp160_;
-		ValaPropertyAccessor* _tmp161_;
-		gboolean _tmp167_;
-		gboolean empty_get;
-		gboolean _tmp168_ = FALSE;
-		ValaProperty* _tmp169_;
-		ValaPropertyAccessor* _tmp170_;
-		ValaPropertyAccessor* _tmp171_;
-		gboolean _tmp177_;
-		gboolean empty_set;
-		gboolean _tmp178_;
-		gboolean _tmp179_;
-		gboolean _tmp189_ = FALSE;
-		gboolean _tmp190_;
-		gboolean _tmp192_;
-		_tmp159_ = prop;
-		_tmp160_ = vala_property_get_get_accessor (_tmp159_);
-		_tmp161_ = _tmp160_;
-		if (_tmp161_ != NULL) {
-			ValaProperty* _tmp162_;
-			ValaPropertyAccessor* _tmp163_;
-			ValaPropertyAccessor* _tmp164_;
-			ValaBlock* _tmp165_;
-			ValaBlock* _tmp166_;
-			_tmp162_ = prop;
-			_tmp163_ = vala_property_get_get_accessor (_tmp162_);
-			_tmp164_ = _tmp163_;
-			_tmp165_ = vala_subroutine_get_body ((ValaSubroutine*) _tmp164_);
-			_tmp166_ = _tmp165_;
-			_tmp158_ = _tmp166_ == NULL;
+	if (_tmp175_) {
+		gboolean _tmp182_ = FALSE;
+		ValaProperty* _tmp183_ = NULL;
+		ValaPropertyAccessor* _tmp184_ = NULL;
+		ValaPropertyAccessor* _tmp185_ = NULL;
+		gboolean empty_get = FALSE;
+		gboolean _tmp191_ = FALSE;
+		ValaProperty* _tmp192_ = NULL;
+		ValaPropertyAccessor* _tmp193_ = NULL;
+		ValaPropertyAccessor* _tmp194_ = NULL;
+		gboolean empty_set = FALSE;
+		gboolean _tmp200_ = FALSE;
+		gboolean _tmp201_ = FALSE;
+		gboolean _tmp211_ = FALSE;
+		gboolean _tmp212_ = FALSE;
+		_tmp183_ = prop;
+		_tmp184_ = vala_property_get_get_accessor (_tmp183_);
+		_tmp185_ = _tmp184_;
+		if (_tmp185_ != NULL) {
+			ValaProperty* _tmp186_ = NULL;
+			ValaPropertyAccessor* _tmp187_ = NULL;
+			ValaPropertyAccessor* _tmp188_ = NULL;
+			ValaBlock* _tmp189_ = NULL;
+			ValaBlock* _tmp190_ = NULL;
+			_tmp186_ = prop;
+			_tmp187_ = vala_property_get_get_accessor (_tmp186_);
+			_tmp188_ = _tmp187_;
+			_tmp189_ = vala_subroutine_get_body ((ValaSubroutine*) _tmp188_);
+			_tmp190_ = _tmp189_;
+			_tmp182_ = _tmp190_ == NULL;
 		} else {
-			_tmp158_ = FALSE;
+			_tmp182_ = FALSE;
 		}
-		_tmp167_ = _tmp158_;
-		empty_get = _tmp167_;
-		_tmp169_ = prop;
-		_tmp170_ = vala_property_get_set_accessor (_tmp169_);
-		_tmp171_ = _tmp170_;
-		if (_tmp171_ != NULL) {
-			ValaProperty* _tmp172_;
-			ValaPropertyAccessor* _tmp173_;
-			ValaPropertyAccessor* _tmp174_;
-			ValaBlock* _tmp175_;
-			ValaBlock* _tmp176_;
-			_tmp172_ = prop;
-			_tmp173_ = vala_property_get_set_accessor (_tmp172_);
-			_tmp174_ = _tmp173_;
-			_tmp175_ = vala_subroutine_get_body ((ValaSubroutine*) _tmp174_);
-			_tmp176_ = _tmp175_;
-			_tmp168_ = _tmp176_ == NULL;
+		empty_get = _tmp182_;
+		_tmp192_ = prop;
+		_tmp193_ = vala_property_get_set_accessor (_tmp192_);
+		_tmp194_ = _tmp193_;
+		if (_tmp194_ != NULL) {
+			ValaProperty* _tmp195_ = NULL;
+			ValaPropertyAccessor* _tmp196_ = NULL;
+			ValaPropertyAccessor* _tmp197_ = NULL;
+			ValaBlock* _tmp198_ = NULL;
+			ValaBlock* _tmp199_ = NULL;
+			_tmp195_ = prop;
+			_tmp196_ = vala_property_get_set_accessor (_tmp195_);
+			_tmp197_ = _tmp196_;
+			_tmp198_ = vala_subroutine_get_body ((ValaSubroutine*) _tmp197_);
+			_tmp199_ = _tmp198_;
+			_tmp191_ = _tmp199_ == NULL;
 		} else {
-			_tmp168_ = FALSE;
+			_tmp191_ = FALSE;
 		}
-		_tmp177_ = _tmp168_;
-		empty_set = _tmp177_;
-		_tmp178_ = empty_get;
-		_tmp179_ = empty_set;
-		if (_tmp178_ != _tmp179_) {
-			gboolean _tmp180_;
-			ValaProperty* _tmp188_;
-			_tmp180_ = empty_get;
-			if (_tmp180_) {
-				ValaProperty* _tmp181_;
-				ValaSourceReference* _tmp182_;
-				ValaSourceReference* _tmp183_;
-				_tmp181_ = prop;
-				_tmp182_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp181_);
-				_tmp183_ = _tmp182_;
-				vala_report_error (_tmp183_, "property getter must have a body");
+		empty_set = _tmp191_;
+		_tmp200_ = empty_get;
+		_tmp201_ = empty_set;
+		if (_tmp200_ != _tmp201_) {
+			gboolean _tmp202_ = FALSE;
+			ValaProperty* _tmp210_ = NULL;
+			_tmp202_ = empty_get;
+			if (_tmp202_) {
+				ValaProperty* _tmp203_ = NULL;
+				ValaSourceReference* _tmp204_ = NULL;
+				ValaSourceReference* _tmp205_ = NULL;
+				_tmp203_ = prop;
+				_tmp204_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp203_);
+				_tmp205_ = _tmp204_;
+				vala_report_error (_tmp205_, "property getter must have a body");
 			} else {
-				gboolean _tmp184_;
-				_tmp184_ = empty_set;
-				if (_tmp184_) {
-					ValaProperty* _tmp185_;
-					ValaSourceReference* _tmp186_;
-					ValaSourceReference* _tmp187_;
-					_tmp185_ = prop;
-					_tmp186_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp185_);
-					_tmp187_ = _tmp186_;
-					vala_report_error (_tmp187_, "property setter must have a body");
+				gboolean _tmp206_ = FALSE;
+				_tmp206_ = empty_set;
+				if (_tmp206_) {
+					ValaProperty* _tmp207_ = NULL;
+					ValaSourceReference* _tmp208_ = NULL;
+					ValaSourceReference* _tmp209_ = NULL;
+					_tmp207_ = prop;
+					_tmp208_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp207_);
+					_tmp209_ = _tmp208_;
+					vala_report_error (_tmp209_, "property setter must have a body");
 				}
 			}
-			_tmp188_ = prop;
-			vala_code_node_set_error ((ValaCodeNode*) _tmp188_, TRUE);
+			_tmp210_ = prop;
+			vala_code_node_set_error ((ValaCodeNode*) _tmp210_, TRUE);
 		}
-		_tmp190_ = empty_get;
-		if (_tmp190_) {
-			gboolean _tmp191_;
-			_tmp191_ = empty_set;
-			_tmp189_ = _tmp191_;
+		_tmp212_ = empty_get;
+		if (_tmp212_) {
+			gboolean _tmp213_ = FALSE;
+			_tmp213_ = empty_set;
+			_tmp211_ = _tmp213_;
 		} else {
-			_tmp189_ = FALSE;
+			_tmp211_ = FALSE;
 		}
-		_tmp192_ = _tmp189_;
-		if (_tmp192_) {
-			ValaProperty* _tmp193_;
-			ValaDataType* _tmp194_;
-			ValaDataType* _tmp195_;
-			ValaDataType* _tmp196_ = NULL;
-			ValaDataType* variable_type;
-			ValaProperty* _tmp197_;
-			ValaProperty* _tmp198_;
-			const gchar* _tmp199_;
-			const gchar* _tmp200_;
-			gchar* _tmp201_ = NULL;
-			gchar* _tmp202_;
-			ValaDataType* _tmp203_;
-			ValaProperty* _tmp204_;
-			ValaExpression* _tmp205_;
-			ValaExpression* _tmp206_;
-			ValaProperty* _tmp207_;
-			ValaSourceReference* _tmp208_;
-			ValaSourceReference* _tmp209_;
-			ValaField* _tmp210_;
-			ValaField* _tmp211_;
-			ValaProperty* _tmp212_;
-			ValaField* _tmp213_;
-			ValaField* _tmp214_;
-			ValaProperty* _tmp215_;
-			ValaField* _tmp216_;
-			ValaField* _tmp217_;
-			ValaProperty* _tmp218_;
-			ValaMemberBinding _tmp219_;
-			ValaMemberBinding _tmp220_;
-			_tmp193_ = prop;
-			_tmp194_ = vala_property_get_property_type (_tmp193_);
-			_tmp195_ = _tmp194_;
-			_tmp196_ = vala_data_type_copy (_tmp195_);
-			variable_type = _tmp196_;
-			_tmp197_ = prop;
-			_tmp198_ = prop;
-			_tmp199_ = vala_symbol_get_name ((ValaSymbol*) _tmp198_);
-			_tmp200_ = _tmp199_;
-			_tmp201_ = g_strdup_printf ("_%s", _tmp200_);
-			_tmp202_ = _tmp201_;
-			_tmp203_ = variable_type;
-			_tmp204_ = prop;
-			_tmp205_ = vala_property_get_initializer (_tmp204_);
-			_tmp206_ = _tmp205_;
-			_tmp207_ = prop;
-			_tmp208_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp207_);
-			_tmp209_ = _tmp208_;
-			_tmp210_ = vala_field_new (_tmp202_, _tmp203_, _tmp206_, _tmp209_, NULL);
-			_tmp211_ = _tmp210_;
-			vala_property_set_field (_tmp197_, _tmp211_);
-			_vala_code_node_unref0 (_tmp211_);
-			_g_free0 (_tmp202_);
-			_tmp212_ = prop;
-			_tmp213_ = vala_property_get_field (_tmp212_);
-			_tmp214_ = _tmp213_;
-			vala_symbol_set_access ((ValaSymbol*) _tmp214_, VALA_SYMBOL_ACCESSIBILITY_PRIVATE);
-			_tmp215_ = prop;
-			_tmp216_ = vala_property_get_field (_tmp215_);
-			_tmp217_ = _tmp216_;
+		if (_tmp211_) {
+			ValaDataType* variable_type = NULL;
+			ValaProperty* _tmp214_ = NULL;
+			ValaDataType* _tmp215_ = NULL;
+			ValaDataType* _tmp216_ = NULL;
+			ValaDataType* _tmp217_ = NULL;
+			ValaProperty* _tmp218_ = NULL;
+			ValaProperty* _tmp219_ = NULL;
+			const gchar* _tmp220_ = NULL;
+			const gchar* _tmp221_ = NULL;
+			gchar* _tmp222_ = NULL;
+			gchar* _tmp223_ = NULL;
+			ValaDataType* _tmp224_ = NULL;
+			ValaProperty* _tmp225_ = NULL;
+			ValaExpression* _tmp226_ = NULL;
+			ValaExpression* _tmp227_ = NULL;
+			ValaProperty* _tmp228_ = NULL;
+			ValaSourceReference* _tmp229_ = NULL;
+			ValaSourceReference* _tmp230_ = NULL;
+			ValaField* _tmp231_ = NULL;
+			ValaField* _tmp232_ = NULL;
+			ValaProperty* _tmp233_ = NULL;
+			ValaField* _tmp234_ = NULL;
+			ValaField* _tmp235_ = NULL;
+			ValaProperty* _tmp236_ = NULL;
+			ValaField* _tmp237_ = NULL;
+			ValaField* _tmp238_ = NULL;
+			ValaProperty* _tmp239_ = NULL;
+			ValaMemberBinding _tmp240_ = 0;
+			ValaMemberBinding _tmp241_ = 0;
+			_tmp214_ = prop;
+			_tmp215_ = vala_property_get_property_type (_tmp214_);
+			_tmp216_ = _tmp215_;
+			_tmp217_ = vala_data_type_copy (_tmp216_);
+			variable_type = _tmp217_;
 			_tmp218_ = prop;
-			_tmp219_ = vala_property_get_binding (_tmp218_);
-			_tmp220_ = _tmp219_;
-			vala_field_set_binding (_tmp217_, _tmp220_);
+			_tmp219_ = prop;
+			_tmp220_ = vala_symbol_get_name ((ValaSymbol*) _tmp219_);
+			_tmp221_ = _tmp220_;
+			_tmp222_ = g_strdup_printf ("_%s", _tmp221_);
+			_tmp223_ = _tmp222_;
+			_tmp224_ = variable_type;
+			_tmp225_ = prop;
+			_tmp226_ = vala_property_get_initializer (_tmp225_);
+			_tmp227_ = _tmp226_;
+			_tmp228_ = prop;
+			_tmp229_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp228_);
+			_tmp230_ = _tmp229_;
+			_tmp231_ = vala_field_new (_tmp223_, _tmp224_, _tmp227_, _tmp230_, NULL);
+			_tmp232_ = _tmp231_;
+			vala_property_set_field (_tmp218_, _tmp232_);
+			_vala_code_node_unref0 (_tmp232_);
+			_g_free0 (_tmp223_);
+			_tmp233_ = prop;
+			_tmp234_ = vala_property_get_field (_tmp233_);
+			_tmp235_ = _tmp234_;
+			vala_symbol_set_access ((ValaSymbol*) _tmp235_, VALA_SYMBOL_ACCESSIBILITY_PRIVATE);
+			_tmp236_ = prop;
+			_tmp237_ = vala_property_get_field (_tmp236_);
+			_tmp238_ = _tmp237_;
+			_tmp239_ = prop;
+			_tmp240_ = vala_property_get_binding (_tmp239_);
+			_tmp241_ = _tmp240_;
+			vala_field_set_binding (_tmp238_, _tmp241_);
 			_vala_code_node_unref0 (variable_type);
 		}
 	}
-	_tmp221_ = parent;
-	_tmp222_ = prop;
-	vala_symbol_add_property (_tmp221_, _tmp222_);
+	_tmp242_ = parent;
+	_tmp243_ = prop;
+	vala_symbol_add_property (_tmp242_, _tmp243_);
 	_vala_code_node_unref0 (prop);
 	_g_free0 (id);
 	_vala_code_node_unref0 (type);
@@ -18060,36 +18334,36 @@ static void vala_parser_parse_property_declaration (ValaParser* self, ValaSymbol
 
 
 static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp3_ = NULL;
-	ValaDataType* type;
+	gchar* id = NULL;
 	gchar* _tmp4_ = NULL;
-	gchar* id;
-	const gchar* _tmp5_;
-	ValaDataType* _tmp6_;
-	ValaSourceLocation _tmp7_;
+	ValaSignal* sig = NULL;
+	const gchar* _tmp5_ = NULL;
+	ValaDataType* _tmp6_ = NULL;
+	ValaSourceLocation _tmp7_ = {0};
 	ValaSourceReference* _tmp8_ = NULL;
-	ValaSourceReference* _tmp9_;
-	ValaComment* _tmp10_;
-	ValaSignal* _tmp11_;
-	ValaSignal* _tmp12_;
-	ValaSignal* sig;
-	ValaSignal* _tmp13_;
-	ValaSymbolAccessibility _tmp14_;
-	ValaSignal* _tmp15_;
-	ValaList* _tmp16_;
-	ValaParserModifierFlags _tmp17_;
-	ValaParserModifierFlags _tmp27_;
-	ValaParserModifierFlags _tmp29_;
+	ValaSourceReference* _tmp9_ = NULL;
+	ValaComment* _tmp10_ = NULL;
+	ValaSignal* _tmp11_ = NULL;
+	ValaSignal* _tmp12_ = NULL;
+	ValaSignal* _tmp13_ = NULL;
+	ValaSymbolAccessibility _tmp14_ = 0;
+	ValaSignal* _tmp15_ = NULL;
+	ValaList* _tmp16_ = NULL;
+	ValaParserModifierFlags _tmp17_ = 0;
+	ValaParserModifierFlags _tmp27_ = 0;
+	ValaParserModifierFlags _tmp29_ = 0;
 	ValaTokenType _tmp31_ = 0;
-	gboolean _tmp38_ = FALSE;
-	ValaSymbol* _tmp43_;
-	ValaSignal* _tmp44_;
+	gboolean _tmp37_ = FALSE;
+	ValaSymbol* _tmp41_ = NULL;
+	ValaSignal* _tmp42_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -18155,9 +18429,9 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 	_tmp17_ = flags;
 	if ((_tmp17_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
 		gchar* _tmp18_ = NULL;
-		gchar* _tmp19_;
-		GError* _tmp20_;
-		GError* _tmp21_;
+		gchar* _tmp19_ = NULL;
+		GError* _tmp20_ = NULL;
+		GError* _tmp21_ = NULL;
 		_tmp18_ = vala_parser_get_error (self, "`static' modifier not allowed on signals");
 		_tmp19_ = _tmp18_;
 		_tmp20_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp19_);
@@ -18179,13 +18453,13 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 			return;
 		}
 	} else {
-		ValaParserModifierFlags _tmp22_;
+		ValaParserModifierFlags _tmp22_ = 0;
 		_tmp22_ = flags;
 		if ((_tmp22_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
 			gchar* _tmp23_ = NULL;
-			gchar* _tmp24_;
-			GError* _tmp25_;
-			GError* _tmp26_;
+			gchar* _tmp24_ = NULL;
+			GError* _tmp25_ = NULL;
+			GError* _tmp26_ = NULL;
 			_tmp23_ = vala_parser_get_error (self, "`class' modifier not allowed on signals");
 			_tmp24_ = _tmp23_;
 			_tmp25_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp24_);
@@ -18210,13 +18484,13 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 	}
 	_tmp27_ = flags;
 	if ((_tmp27_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) {
-		ValaSignal* _tmp28_;
+		ValaSignal* _tmp28_ = NULL;
 		_tmp28_ = sig;
 		vala_signal_set_is_virtual (_tmp28_, TRUE);
 	}
 	_tmp29_ = flags;
 	if ((_tmp29_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
-		ValaSignal* _tmp30_;
+		ValaSignal* _tmp30_ = NULL;
 		_tmp30_ = sig;
 		vala_symbol_set_hides ((ValaSymbol*) _tmp30_, TRUE);
 	}
@@ -18240,25 +18514,23 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 	_tmp31_ = vala_parser_current (self);
 	if (_tmp31_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp32_;
+			gboolean _tmp32_ = FALSE;
 			_tmp32_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp33_;
-				ValaParameter* _tmp35_ = NULL;
-				ValaParameter* param;
-				ValaSignal* _tmp36_;
-				ValaParameter* _tmp37_;
-				_tmp33_ = _tmp32_;
-				if (!_tmp33_) {
-					gboolean _tmp34_ = FALSE;
-					_tmp34_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp34_) {
+				ValaParameter* param = NULL;
+				ValaParameter* _tmp34_ = NULL;
+				ValaSignal* _tmp35_ = NULL;
+				ValaParameter* _tmp36_ = NULL;
+				if (!_tmp32_) {
+					gboolean _tmp33_ = FALSE;
+					_tmp33_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp33_) {
 						break;
 					}
 				}
 				_tmp32_ = FALSE;
-				_tmp35_ = vala_parser_parse_parameter (self, &_inner_error_);
-				param = _tmp35_;
+				_tmp34_ = vala_parser_parse_parameter (self, &_inner_error_);
+				param = _tmp34_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -18275,9 +18547,9 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 						return;
 					}
 				}
-				_tmp36_ = sig;
-				_tmp37_ = param;
-				vala_signal_add_parameter (_tmp36_, _tmp37_);
+				_tmp35_ = sig;
+				_tmp36_ = param;
+				vala_signal_add_parameter (_tmp35_, _tmp36_);
 				_vala_code_node_unref0 (param);
 			}
 		}
@@ -18299,14 +18571,13 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 			return;
 		}
 	}
-	_tmp38_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-	if (!_tmp38_) {
+	_tmp37_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+	if (!_tmp37_) {
+		ValaBlock* _tmp38_ = NULL;
 		ValaBlock* _tmp39_ = NULL;
-		ValaBlock* _tmp40_;
-		ValaSignal* _tmp41_;
-		ValaBlock* _tmp42_;
+		ValaSignal* _tmp40_ = NULL;
 		_tmp39_ = vala_parser_parse_block (self, &_inner_error_);
-		_tmp40_ = _tmp39_;
+		_tmp38_ = _tmp39_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -18323,14 +18594,13 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
-		_tmp41_ = sig;
-		_tmp42_ = _tmp40_;
-		vala_signal_set_body (_tmp41_, _tmp42_);
-		_vala_code_node_unref0 (_tmp42_);
+		_tmp40_ = sig;
+		vala_signal_set_body (_tmp40_, _tmp38_);
+		_vala_code_node_unref0 (_tmp38_);
 	}
-	_tmp43_ = parent;
-	_tmp44_ = sig;
-	vala_symbol_add_signal (_tmp43_, _tmp44_);
+	_tmp41_ = parent;
+	_tmp42_ = sig;
+	vala_symbol_add_signal (_tmp41_, _tmp42_);
 	_vala_code_node_unref0 (sig);
 	_g_free0 (id);
 	_vala_code_node_unref0 (type);
@@ -18338,24 +18608,23 @@ static void vala_parser_parse_signal_declaration (ValaParser* self, ValaSymbol* 
 
 
 static void vala_parser_parse_constructor_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp1_ = 0;
-	ValaParserModifierFlags flags;
-	ValaParserModifierFlags _tmp2_;
-	ValaSourceLocation _tmp7_;
+	ValaParserModifierFlags _tmp2_ = 0;
+	ValaConstructor* c = NULL;
+	ValaSourceLocation _tmp7_ = {0};
 	ValaSourceReference* _tmp8_ = NULL;
-	ValaSourceReference* _tmp9_;
-	ValaConstructor* _tmp10_;
-	ValaConstructor* _tmp11_;
-	ValaConstructor* c;
-	ValaParserModifierFlags _tmp12_;
+	ValaSourceReference* _tmp9_ = NULL;
+	ValaConstructor* _tmp10_ = NULL;
+	ValaConstructor* _tmp11_ = NULL;
+	ValaParserModifierFlags _tmp12_ = 0;
 	ValaBlock* _tmp16_ = NULL;
-	ValaBlock* _tmp17_;
-	ValaConstructor* _tmp18_;
-	ValaBlock* _tmp19_;
-	ValaSymbol* _tmp20_;
-	ValaConstructor* _tmp21_;
+	ValaBlock* _tmp17_ = NULL;
+	ValaConstructor* _tmp18_ = NULL;
+	ValaSymbol* _tmp19_ = NULL;
+	ValaConstructor* _tmp20_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -18377,9 +18646,9 @@ static void vala_parser_parse_constructor_declaration (ValaParser* self, ValaSym
 	_tmp2_ = flags;
 	if ((_tmp2_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
 		gchar* _tmp3_ = NULL;
-		gchar* _tmp4_;
-		GError* _tmp5_;
-		GError* _tmp6_;
+		gchar* _tmp4_ = NULL;
+		GError* _tmp5_ = NULL;
+		GError* _tmp6_ = NULL;
 		_tmp3_ = vala_parser_get_error (self, "`new' modifier not allowed on constructor");
 		_tmp4_ = _tmp3_;
 		_tmp5_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp4_);
@@ -18404,20 +18673,20 @@ static void vala_parser_parse_constructor_declaration (ValaParser* self, ValaSym
 	c = _tmp11_;
 	_tmp12_ = flags;
 	if ((_tmp12_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaConstructor* _tmp13_;
+		ValaConstructor* _tmp13_ = NULL;
 		_tmp13_ = c;
 		vala_constructor_set_binding (_tmp13_, VALA_MEMBER_BINDING_STATIC);
 	} else {
-		ValaParserModifierFlags _tmp14_;
+		ValaParserModifierFlags _tmp14_ = 0;
 		_tmp14_ = flags;
 		if ((_tmp14_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
-			ValaConstructor* _tmp15_;
+			ValaConstructor* _tmp15_ = NULL;
 			_tmp15_ = c;
 			vala_constructor_set_binding (_tmp15_, VALA_MEMBER_BINDING_CLASS);
 		}
 	}
-	_tmp16_ = vala_parser_parse_block (self, &_inner_error_);
-	_tmp17_ = _tmp16_;
+	_tmp17_ = vala_parser_parse_block (self, &_inner_error_);
+	_tmp16_ = _tmp17_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -18431,37 +18700,35 @@ static void vala_parser_parse_constructor_declaration (ValaParser* self, ValaSym
 		}
 	}
 	_tmp18_ = c;
-	_tmp19_ = _tmp17_;
-	vala_subroutine_set_body ((ValaSubroutine*) _tmp18_, _tmp19_);
-	_vala_code_node_unref0 (_tmp19_);
-	_tmp20_ = parent;
-	_tmp21_ = c;
-	vala_symbol_add_constructor (_tmp20_, _tmp21_);
+	vala_subroutine_set_body ((ValaSubroutine*) _tmp18_, _tmp16_);
+	_tmp19_ = parent;
+	_tmp20_ = c;
+	vala_symbol_add_constructor (_tmp19_, _tmp20_);
+	_vala_code_node_unref0 (_tmp16_);
 	_vala_code_node_unref0 (c);
 }
 
 
 static void vala_parser_parse_destructor_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp1_ = 0;
-	ValaParserModifierFlags flags;
 	gchar* _tmp2_ = NULL;
-	gchar* _tmp3_;
-	ValaParserModifierFlags _tmp4_;
-	ValaSourceLocation _tmp9_;
+	gchar* _tmp3_ = NULL;
+	ValaParserModifierFlags _tmp4_ = 0;
+	ValaDestructor* d = NULL;
+	ValaSourceLocation _tmp9_ = {0};
 	ValaSourceReference* _tmp10_ = NULL;
-	ValaSourceReference* _tmp11_;
-	ValaDestructor* _tmp12_;
-	ValaDestructor* _tmp13_;
-	ValaDestructor* d;
-	ValaParserModifierFlags _tmp14_;
+	ValaSourceReference* _tmp11_ = NULL;
+	ValaDestructor* _tmp12_ = NULL;
+	ValaDestructor* _tmp13_ = NULL;
+	ValaParserModifierFlags _tmp14_ = 0;
 	ValaBlock* _tmp18_ = NULL;
-	ValaBlock* _tmp19_;
-	ValaDestructor* _tmp20_;
-	ValaBlock* _tmp21_;
-	ValaSymbol* _tmp22_;
-	ValaDestructor* _tmp23_;
+	ValaBlock* _tmp19_ = NULL;
+	ValaDestructor* _tmp20_ = NULL;
+	ValaSymbol* _tmp21_ = NULL;
+	ValaDestructor* _tmp22_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -18518,9 +18785,9 @@ static void vala_parser_parse_destructor_declaration (ValaParser* self, ValaSymb
 	_tmp4_ = flags;
 	if ((_tmp4_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
 		gchar* _tmp5_ = NULL;
-		gchar* _tmp6_;
-		GError* _tmp7_;
-		GError* _tmp8_;
+		gchar* _tmp6_ = NULL;
+		GError* _tmp7_ = NULL;
+		GError* _tmp8_ = NULL;
 		_tmp5_ = vala_parser_get_error (self, "`new' modifier not allowed on destructor");
 		_tmp6_ = _tmp5_;
 		_tmp7_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp6_);
@@ -18545,20 +18812,20 @@ static void vala_parser_parse_destructor_declaration (ValaParser* self, ValaSymb
 	d = _tmp13_;
 	_tmp14_ = flags;
 	if ((_tmp14_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaDestructor* _tmp15_;
+		ValaDestructor* _tmp15_ = NULL;
 		_tmp15_ = d;
 		vala_destructor_set_binding (_tmp15_, VALA_MEMBER_BINDING_STATIC);
 	} else {
-		ValaParserModifierFlags _tmp16_;
+		ValaParserModifierFlags _tmp16_ = 0;
 		_tmp16_ = flags;
 		if ((_tmp16_ & VALA_PARSER_MODIFIER_FLAGS_CLASS) == VALA_PARSER_MODIFIER_FLAGS_CLASS) {
-			ValaDestructor* _tmp17_;
+			ValaDestructor* _tmp17_ = NULL;
 			_tmp17_ = d;
 			vala_destructor_set_binding (_tmp17_, VALA_MEMBER_BINDING_CLASS);
 		}
 	}
-	_tmp18_ = vala_parser_parse_block (self, &_inner_error_);
-	_tmp19_ = _tmp18_;
+	_tmp19_ = vala_parser_parse_block (self, &_inner_error_);
+	_tmp18_ = _tmp19_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -18572,51 +18839,49 @@ static void vala_parser_parse_destructor_declaration (ValaParser* self, ValaSymb
 		}
 	}
 	_tmp20_ = d;
-	_tmp21_ = _tmp19_;
-	vala_subroutine_set_body ((ValaSubroutine*) _tmp20_, _tmp21_);
-	_vala_code_node_unref0 (_tmp21_);
-	_tmp22_ = parent;
-	_tmp23_ = d;
-	vala_symbol_add_destructor (_tmp22_, _tmp23_);
+	vala_subroutine_set_body ((ValaSubroutine*) _tmp20_, _tmp18_);
+	_tmp21_ = parent;
+	_tmp22_ = d;
+	vala_symbol_add_destructor (_tmp21_, _tmp22_);
+	_vala_code_node_unref0 (_tmp18_);
 	_vala_code_node_unref0 (d);
 }
 
 
 static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
+	ValaList* type_param_list = NULL;
 	ValaList* _tmp4_ = NULL;
-	ValaList* type_param_list;
-	ValaDataType* base_type;
+	ValaDataType* base_type = NULL;
 	gboolean _tmp5_ = FALSE;
-	ValaUnresolvedSymbol* _tmp8_;
-	const gchar* _tmp9_;
-	const gchar* _tmp10_;
-	ValaSourceLocation _tmp11_;
-	ValaSourceReference* _tmp12_ = NULL;
-	ValaSourceReference* _tmp13_;
-	ValaComment* _tmp14_;
-	ValaStruct* _tmp15_;
-	ValaStruct* _tmp16_;
-	ValaStruct* st;
-	ValaStruct* _tmp17_;
-	ValaSymbolAccessibility _tmp18_;
-	gboolean _tmp19_ = FALSE;
-	ValaParserModifierFlags _tmp20_;
-	gboolean _tmp26_;
-	ValaStruct* _tmp28_;
-	ValaList* _tmp29_;
-	ValaDataType* _tmp43_;
-	ValaStruct* _tmp46_;
-	ValaStruct* _tmp47_;
-	ValaSymbol* _tmp48_;
-	ValaSymbol* _result_;
+	ValaStruct* st = NULL;
+	ValaUnresolvedSymbol* _tmp9_ = NULL;
+	const gchar* _tmp10_ = NULL;
+	const gchar* _tmp11_ = NULL;
+	ValaSourceLocation _tmp12_ = {0};
+	ValaSourceReference* _tmp13_ = NULL;
+	ValaSourceReference* _tmp14_ = NULL;
+	ValaComment* _tmp15_ = NULL;
+	ValaStruct* _tmp16_ = NULL;
+	ValaStruct* _tmp17_ = NULL;
+	ValaStruct* _tmp18_ = NULL;
+	ValaSymbolAccessibility _tmp19_ = 0;
+	gboolean _tmp20_ = FALSE;
+	ValaParserModifierFlags _tmp21_ = 0;
+	ValaStruct* _tmp28_ = NULL;
+	ValaList* _tmp29_ = NULL;
+	ValaDataType* _tmp43_ = NULL;
+	ValaStruct* _tmp46_ = NULL;
+	ValaSymbol* _result_ = NULL;
+	ValaStruct* _tmp47_ = NULL;
+	ValaSymbol* _tmp48_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -18667,9 +18932,10 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 	_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COLON);
 	if (_tmp5_) {
 		ValaDataType* _tmp6_ = NULL;
-		ValaDataType* _tmp7_;
-		_tmp6_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-		_tmp7_ = _tmp6_;
+		ValaDataType* _tmp7_ = NULL;
+		ValaDataType* _tmp8_ = NULL;
+		_tmp7_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+		_tmp6_ = _tmp7_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -18686,42 +18952,44 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 				return;
 			}
 		}
+		_tmp8_ = _tmp6_;
+		_tmp6_ = NULL;
 		_vala_code_node_unref0 (base_type);
-		base_type = _tmp7_;
+		base_type = _tmp8_;
+		_vala_code_node_unref0 (_tmp6_);
 	}
-	_tmp8_ = sym;
-	_tmp9_ = vala_symbol_get_name ((ValaSymbol*) _tmp8_);
-	_tmp10_ = _tmp9_;
-	_tmp11_ = begin;
-	_tmp12_ = vala_parser_get_src (self, &_tmp11_);
-	_tmp13_ = _tmp12_;
-	_tmp14_ = self->priv->comment;
-	_tmp15_ = vala_struct_new (_tmp10_, _tmp13_, _tmp14_);
-	_tmp16_ = _tmp15_;
-	_vala_source_reference_unref0 (_tmp13_);
-	st = _tmp16_;
-	_tmp17_ = st;
-	_tmp18_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp17_, _tmp18_);
-	_tmp20_ = flags;
-	if ((_tmp20_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		_tmp19_ = TRUE;
+	_tmp9_ = sym;
+	_tmp10_ = vala_symbol_get_name ((ValaSymbol*) _tmp9_);
+	_tmp11_ = _tmp10_;
+	_tmp12_ = begin;
+	_tmp13_ = vala_parser_get_src (self, &_tmp12_);
+	_tmp14_ = _tmp13_;
+	_tmp15_ = self->priv->comment;
+	_tmp16_ = vala_struct_new (_tmp11_, _tmp14_, _tmp15_);
+	_tmp17_ = _tmp16_;
+	_vala_source_reference_unref0 (_tmp14_);
+	st = _tmp17_;
+	_tmp18_ = st;
+	_tmp19_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp18_, _tmp19_);
+	_tmp21_ = flags;
+	if ((_tmp21_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		_tmp20_ = TRUE;
 	} else {
-		ValaScanner* _tmp21_;
-		ValaSourceFile* _tmp22_;
-		ValaSourceFile* _tmp23_;
-		ValaSourceFileType _tmp24_;
-		ValaSourceFileType _tmp25_;
-		_tmp21_ = self->priv->scanner;
-		_tmp22_ = vala_scanner_get_source_file (_tmp21_);
-		_tmp23_ = _tmp22_;
-		_tmp24_ = vala_source_file_get_file_type (_tmp23_);
-		_tmp25_ = _tmp24_;
-		_tmp19_ = _tmp25_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
+		ValaScanner* _tmp22_ = NULL;
+		ValaSourceFile* _tmp23_ = NULL;
+		ValaSourceFile* _tmp24_ = NULL;
+		ValaSourceFileType _tmp25_ = 0;
+		ValaSourceFileType _tmp26_ = 0;
+		_tmp22_ = self->priv->scanner;
+		_tmp23_ = vala_scanner_get_source_file (_tmp22_);
+		_tmp24_ = _tmp23_;
+		_tmp25_ = vala_source_file_get_file_type (_tmp24_);
+		_tmp26_ = _tmp25_;
+		_tmp20_ = _tmp26_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp26_ = _tmp19_;
-	if (_tmp26_) {
-		ValaStruct* _tmp27_;
+	if (_tmp20_) {
+		ValaStruct* _tmp27_ = NULL;
 		_tmp27_ = st;
 		vala_symbol_set_external ((ValaSymbol*) _tmp27_, TRUE);
 	}
@@ -18729,14 +18997,14 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 	_tmp29_ = attrs;
 	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp28_, _tmp29_);
 	{
-		ValaList* _tmp30_;
-		ValaList* _tmp31_;
-		ValaList* _type_param_list;
-		ValaList* _tmp32_;
-		gint _tmp33_;
-		gint _tmp34_;
-		gint _type_param_size;
-		gint _type_param_index;
+		ValaList* _type_param_list = NULL;
+		ValaList* _tmp30_ = NULL;
+		ValaList* _tmp31_ = NULL;
+		gint _type_param_size = 0;
+		ValaList* _tmp32_ = NULL;
+		gint _tmp33_ = 0;
+		gint _tmp34_ = 0;
+		gint _type_param_index = 0;
 		_tmp30_ = type_param_list;
 		_tmp31_ = _vala_iterable_ref0 (_tmp30_);
 		_type_param_list = _tmp31_;
@@ -18746,15 +19014,15 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 		_type_param_size = _tmp34_;
 		_type_param_index = -1;
 		while (TRUE) {
-			gint _tmp35_;
-			gint _tmp36_;
-			gint _tmp37_;
-			ValaList* _tmp38_;
-			gint _tmp39_;
+			gint _tmp35_ = 0;
+			gint _tmp36_ = 0;
+			gint _tmp37_ = 0;
+			ValaTypeParameter* type_param = NULL;
+			ValaList* _tmp38_ = NULL;
+			gint _tmp39_ = 0;
 			gpointer _tmp40_ = NULL;
-			ValaTypeParameter* type_param;
-			ValaStruct* _tmp41_;
-			ValaTypeParameter* _tmp42_;
+			ValaStruct* _tmp41_ = NULL;
+			ValaTypeParameter* _tmp42_ = NULL;
 			_tmp35_ = _type_param_index;
 			_type_param_index = _tmp35_ + 1;
 			_tmp36_ = _type_param_index;
@@ -18775,8 +19043,8 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 	}
 	_tmp43_ = base_type;
 	if (_tmp43_ != NULL) {
-		ValaStruct* _tmp44_;
-		ValaDataType* _tmp45_;
+		ValaStruct* _tmp44_ = NULL;
+		ValaDataType* _tmp45_ = NULL;
 		_tmp44_ = st;
 		_tmp45_ = base_type;
 		vala_struct_set_base_type (_tmp44_, _tmp45_);
@@ -18805,19 +19073,18 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 	_tmp48_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp47_);
 	_result_ = _tmp48_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp49_;
-		ValaUnresolvedSymbol* _tmp50_;
-		ValaUnresolvedSymbol* _tmp51_;
-		ValaUnresolvedSymbol* _tmp52_;
-		ValaUnresolvedSymbol* _tmp53_;
+		ValaUnresolvedSymbol* _tmp49_ = NULL;
+		ValaUnresolvedSymbol* _tmp50_ = NULL;
+		ValaUnresolvedSymbol* _tmp51_ = NULL;
+		ValaUnresolvedSymbol* _tmp52_ = NULL;
+		ValaUnresolvedSymbol* _tmp53_ = NULL;
 		ValaSymbol* _tmp54_ = NULL;
-		ValaUnresolvedSymbol* _tmp55_;
-		ValaSymbol* _tmp65_;
-		ValaSymbol* _tmp66_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp67_;
-		ValaSymbol* _tmp72_;
-		ValaSymbol* _tmp73_;
+		ValaUnresolvedSymbol* _tmp55_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp65_ = NULL;
+		ValaSymbol* _tmp66_ = NULL;
+		ValaSymbol* _tmp71_ = NULL;
+		ValaSymbol* _tmp72_ = NULL;
 		_tmp49_ = sym;
 		if (!(_tmp49_ != NULL)) {
 			break;
@@ -18830,13 +19097,13 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 		sym = _tmp53_;
 		_tmp55_ = sym;
 		if (_tmp55_ != NULL) {
-			ValaUnresolvedSymbol* _tmp56_;
-			const gchar* _tmp57_;
-			const gchar* _tmp58_;
-			ValaStruct* _tmp59_;
-			ValaSourceReference* _tmp60_;
-			ValaSourceReference* _tmp61_;
-			ValaNamespace* _tmp62_;
+			ValaUnresolvedSymbol* _tmp56_ = NULL;
+			const gchar* _tmp57_ = NULL;
+			const gchar* _tmp58_ = NULL;
+			ValaStruct* _tmp59_ = NULL;
+			ValaSourceReference* _tmp60_ = NULL;
+			ValaSourceReference* _tmp61_ = NULL;
+			ValaNamespace* _tmp62_ = NULL;
 			_tmp56_ = sym;
 			_tmp57_ = vala_symbol_get_name ((ValaSymbol*) _tmp56_);
 			_tmp58_ = _tmp57_;
@@ -18847,34 +19114,33 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 			_vala_code_node_unref0 (_tmp54_);
 			_tmp54_ = (ValaSymbol*) _tmp62_;
 		} else {
-			ValaSymbol* _tmp63_;
-			ValaSymbol* _tmp64_;
+			ValaSymbol* _tmp63_ = NULL;
+			ValaSymbol* _tmp64_ = NULL;
 			_tmp63_ = parent;
 			_tmp64_ = _vala_code_node_ref0 (_tmp63_);
 			_vala_code_node_unref0 (_tmp54_);
 			_tmp54_ = _tmp64_;
 		}
-		_tmp65_ = _tmp54_;
-		_tmp66_ = _vala_code_node_ref0 (_tmp65_);
-		next = _tmp66_;
-		_tmp67_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp67_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp68_;
-			ValaSymbol* _tmp69_;
-			_tmp68_ = next;
-			_tmp69_ = _result_;
-			vala_symbol_add_namespace (_tmp68_, G_TYPE_CHECK_INSTANCE_CAST (_tmp69_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp65_ = _vala_code_node_ref0 (_tmp54_);
+		next = _tmp65_;
+		_tmp66_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp66_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp67_ = NULL;
+			ValaSymbol* _tmp68_ = NULL;
+			_tmp67_ = next;
+			_tmp68_ = _result_;
+			vala_symbol_add_namespace (_tmp67_, G_TYPE_CHECK_INSTANCE_CAST (_tmp68_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp70_;
-			ValaSymbol* _tmp71_;
-			_tmp70_ = next;
-			_tmp71_ = _result_;
-			vala_symbol_add_struct (_tmp70_, G_TYPE_CHECK_INSTANCE_CAST (_tmp71_, VALA_TYPE_STRUCT, ValaStruct));
+			ValaSymbol* _tmp69_ = NULL;
+			ValaSymbol* _tmp70_ = NULL;
+			_tmp69_ = next;
+			_tmp70_ = _result_;
+			vala_symbol_add_struct (_tmp69_, G_TYPE_CHECK_INSTANCE_CAST (_tmp70_, VALA_TYPE_STRUCT, ValaStruct));
 		}
-		_tmp72_ = next;
-		_tmp73_ = _vala_code_node_ref0 (_tmp72_);
+		_tmp71_ = next;
+		_tmp72_ = _vala_code_node_ref0 (_tmp71_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp73_;
+		_result_ = _tmp72_;
 		_vala_code_node_unref0 (next);
 		_vala_code_node_unref0 (_tmp54_);
 	}
@@ -18887,41 +19153,40 @@ static void vala_parser_parse_struct_declaration (ValaParser* self, ValaSymbol* 
 
 
 static void vala_parser_parse_interface_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
+	ValaList* type_param_list = NULL;
 	ValaList* _tmp4_ = NULL;
-	ValaList* type_param_list;
-	GEqualFunc _tmp5_;
-	ValaArrayList* _tmp6_;
-	ValaArrayList* base_types;
+	ValaArrayList* base_types = NULL;
+	GEqualFunc _tmp5_ = NULL;
+	ValaArrayList* _tmp6_ = NULL;
 	gboolean _tmp7_ = FALSE;
-	ValaUnresolvedSymbol* _tmp14_;
-	const gchar* _tmp15_;
-	const gchar* _tmp16_;
-	ValaSourceLocation _tmp17_;
+	ValaInterface* iface = NULL;
+	ValaUnresolvedSymbol* _tmp13_ = NULL;
+	const gchar* _tmp14_ = NULL;
+	const gchar* _tmp15_ = NULL;
+	ValaSourceLocation _tmp16_ = {0};
+	ValaSourceReference* _tmp17_ = NULL;
 	ValaSourceReference* _tmp18_ = NULL;
-	ValaSourceReference* _tmp19_;
-	ValaComment* _tmp20_;
-	ValaInterface* _tmp21_;
-	ValaInterface* _tmp22_;
-	ValaInterface* iface;
-	ValaInterface* _tmp23_;
-	ValaSymbolAccessibility _tmp24_;
-	gboolean _tmp25_ = FALSE;
-	ValaParserModifierFlags _tmp26_;
-	gboolean _tmp32_;
-	ValaInterface* _tmp34_;
-	ValaList* _tmp35_;
-	ValaInterface* _tmp62_;
-	ValaInterface* _tmp63_;
-	ValaSymbol* _tmp64_;
-	ValaSymbol* _result_;
+	ValaComment* _tmp19_ = NULL;
+	ValaInterface* _tmp20_ = NULL;
+	ValaInterface* _tmp21_ = NULL;
+	ValaInterface* _tmp22_ = NULL;
+	ValaSymbolAccessibility _tmp23_ = 0;
+	gboolean _tmp24_ = FALSE;
+	ValaParserModifierFlags _tmp25_ = 0;
+	ValaInterface* _tmp32_ = NULL;
+	ValaList* _tmp33_ = NULL;
+	ValaInterface* _tmp60_ = NULL;
+	ValaSymbol* _result_ = NULL;
+	ValaInterface* _tmp61_ = NULL;
+	ValaSymbol* _tmp62_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -18974,25 +19239,23 @@ static void vala_parser_parse_interface_declaration (ValaParser* self, ValaSymbo
 	_tmp7_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COLON);
 	if (_tmp7_) {
 		{
-			gboolean _tmp8_;
+			gboolean _tmp8_ = FALSE;
 			_tmp8_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp9_;
-				ValaDataType* _tmp11_ = NULL;
-				ValaDataType* type;
-				ValaArrayList* _tmp12_;
-				ValaDataType* _tmp13_;
-				_tmp9_ = _tmp8_;
-				if (!_tmp9_) {
-					gboolean _tmp10_ = FALSE;
-					_tmp10_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp10_) {
+				ValaDataType* type = NULL;
+				ValaDataType* _tmp10_ = NULL;
+				ValaArrayList* _tmp11_ = NULL;
+				ValaDataType* _tmp12_ = NULL;
+				if (!_tmp8_) {
+					gboolean _tmp9_ = FALSE;
+					_tmp9_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp9_) {
 						break;
 					}
 				}
 				_tmp8_ = FALSE;
-				_tmp11_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				type = _tmp11_;
+				_tmp10_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+				type = _tmp10_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -19009,144 +19272,143 @@ static void vala_parser_parse_interface_declaration (ValaParser* self, ValaSymbo
 						return;
 					}
 				}
-				_tmp12_ = base_types;
-				_tmp13_ = type;
-				vala_collection_add ((ValaCollection*) _tmp12_, _tmp13_);
+				_tmp11_ = base_types;
+				_tmp12_ = type;
+				vala_collection_add ((ValaCollection*) _tmp11_, _tmp12_);
 				_vala_code_node_unref0 (type);
 			}
 		}
 	}
-	_tmp14_ = sym;
-	_tmp15_ = vala_symbol_get_name ((ValaSymbol*) _tmp14_);
-	_tmp16_ = _tmp15_;
-	_tmp17_ = begin;
-	_tmp18_ = vala_parser_get_src (self, &_tmp17_);
-	_tmp19_ = _tmp18_;
-	_tmp20_ = self->priv->comment;
-	_tmp21_ = vala_interface_new (_tmp16_, _tmp19_, _tmp20_);
-	_tmp22_ = _tmp21_;
-	_vala_source_reference_unref0 (_tmp19_);
-	iface = _tmp22_;
-	_tmp23_ = iface;
-	_tmp24_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp23_, _tmp24_);
-	_tmp26_ = flags;
-	if ((_tmp26_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		_tmp25_ = TRUE;
+	_tmp13_ = sym;
+	_tmp14_ = vala_symbol_get_name ((ValaSymbol*) _tmp13_);
+	_tmp15_ = _tmp14_;
+	_tmp16_ = begin;
+	_tmp17_ = vala_parser_get_src (self, &_tmp16_);
+	_tmp18_ = _tmp17_;
+	_tmp19_ = self->priv->comment;
+	_tmp20_ = vala_interface_new (_tmp15_, _tmp18_, _tmp19_);
+	_tmp21_ = _tmp20_;
+	_vala_source_reference_unref0 (_tmp18_);
+	iface = _tmp21_;
+	_tmp22_ = iface;
+	_tmp23_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp22_, _tmp23_);
+	_tmp25_ = flags;
+	if ((_tmp25_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
+		_tmp24_ = TRUE;
 	} else {
-		ValaScanner* _tmp27_;
-		ValaSourceFile* _tmp28_;
-		ValaSourceFile* _tmp29_;
-		ValaSourceFileType _tmp30_;
-		ValaSourceFileType _tmp31_;
-		_tmp27_ = self->priv->scanner;
-		_tmp28_ = vala_scanner_get_source_file (_tmp27_);
-		_tmp29_ = _tmp28_;
-		_tmp30_ = vala_source_file_get_file_type (_tmp29_);
-		_tmp31_ = _tmp30_;
-		_tmp25_ = _tmp31_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
+		ValaScanner* _tmp26_ = NULL;
+		ValaSourceFile* _tmp27_ = NULL;
+		ValaSourceFile* _tmp28_ = NULL;
+		ValaSourceFileType _tmp29_ = 0;
+		ValaSourceFileType _tmp30_ = 0;
+		_tmp26_ = self->priv->scanner;
+		_tmp27_ = vala_scanner_get_source_file (_tmp26_);
+		_tmp28_ = _tmp27_;
+		_tmp29_ = vala_source_file_get_file_type (_tmp28_);
+		_tmp30_ = _tmp29_;
+		_tmp24_ = _tmp30_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp32_ = _tmp25_;
-	if (_tmp32_) {
-		ValaInterface* _tmp33_;
-		_tmp33_ = iface;
-		vala_symbol_set_external ((ValaSymbol*) _tmp33_, TRUE);
+	if (_tmp24_) {
+		ValaInterface* _tmp31_ = NULL;
+		_tmp31_ = iface;
+		vala_symbol_set_external ((ValaSymbol*) _tmp31_, TRUE);
 	}
-	_tmp34_ = iface;
-	_tmp35_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp34_, _tmp35_);
+	_tmp32_ = iface;
+	_tmp33_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp32_, _tmp33_);
 	{
-		ValaList* _tmp36_;
-		ValaList* _tmp37_;
-		ValaList* _type_param_list;
-		ValaList* _tmp38_;
-		gint _tmp39_;
-		gint _tmp40_;
-		gint _type_param_size;
-		gint _type_param_index;
-		_tmp36_ = type_param_list;
-		_tmp37_ = _vala_iterable_ref0 (_tmp36_);
-		_type_param_list = _tmp37_;
-		_tmp38_ = _type_param_list;
-		_tmp39_ = vala_collection_get_size ((ValaCollection*) _tmp38_);
-		_tmp40_ = _tmp39_;
-		_type_param_size = _tmp40_;
+		ValaList* _type_param_list = NULL;
+		ValaList* _tmp34_ = NULL;
+		ValaList* _tmp35_ = NULL;
+		gint _type_param_size = 0;
+		ValaList* _tmp36_ = NULL;
+		gint _tmp37_ = 0;
+		gint _tmp38_ = 0;
+		gint _type_param_index = 0;
+		_tmp34_ = type_param_list;
+		_tmp35_ = _vala_iterable_ref0 (_tmp34_);
+		_type_param_list = _tmp35_;
+		_tmp36_ = _type_param_list;
+		_tmp37_ = vala_collection_get_size ((ValaCollection*) _tmp36_);
+		_tmp38_ = _tmp37_;
+		_type_param_size = _tmp38_;
 		_type_param_index = -1;
 		while (TRUE) {
-			gint _tmp41_;
-			gint _tmp42_;
-			gint _tmp43_;
-			ValaList* _tmp44_;
-			gint _tmp45_;
-			gpointer _tmp46_ = NULL;
-			ValaTypeParameter* type_param;
-			ValaInterface* _tmp47_;
-			ValaTypeParameter* _tmp48_;
-			_tmp41_ = _type_param_index;
-			_type_param_index = _tmp41_ + 1;
-			_tmp42_ = _type_param_index;
-			_tmp43_ = _type_param_size;
-			if (!(_tmp42_ < _tmp43_)) {
+			gint _tmp39_ = 0;
+			gint _tmp40_ = 0;
+			gint _tmp41_ = 0;
+			ValaTypeParameter* type_param = NULL;
+			ValaList* _tmp42_ = NULL;
+			gint _tmp43_ = 0;
+			gpointer _tmp44_ = NULL;
+			ValaInterface* _tmp45_ = NULL;
+			ValaTypeParameter* _tmp46_ = NULL;
+			_tmp39_ = _type_param_index;
+			_type_param_index = _tmp39_ + 1;
+			_tmp40_ = _type_param_index;
+			_tmp41_ = _type_param_size;
+			if (!(_tmp40_ < _tmp41_)) {
 				break;
 			}
-			_tmp44_ = _type_param_list;
-			_tmp45_ = _type_param_index;
-			_tmp46_ = vala_list_get (_tmp44_, _tmp45_);
-			type_param = (ValaTypeParameter*) _tmp46_;
-			_tmp47_ = iface;
-			_tmp48_ = type_param;
-			vala_object_type_symbol_add_type_parameter ((ValaObjectTypeSymbol*) _tmp47_, _tmp48_);
+			_tmp42_ = _type_param_list;
+			_tmp43_ = _type_param_index;
+			_tmp44_ = vala_list_get (_tmp42_, _tmp43_);
+			type_param = (ValaTypeParameter*) _tmp44_;
+			_tmp45_ = iface;
+			_tmp46_ = type_param;
+			vala_object_type_symbol_add_type_parameter ((ValaObjectTypeSymbol*) _tmp45_, _tmp46_);
 			_vala_code_node_unref0 (type_param);
 		}
 		_vala_iterable_unref0 (_type_param_list);
 	}
 	{
-		ValaArrayList* _tmp49_;
-		ValaArrayList* _tmp50_;
-		ValaArrayList* _base_type_list;
-		ValaArrayList* _tmp51_;
-		gint _tmp52_;
-		gint _tmp53_;
-		gint _base_type_size;
-		gint _base_type_index;
-		_tmp49_ = base_types;
-		_tmp50_ = _vala_iterable_ref0 (_tmp49_);
-		_base_type_list = _tmp50_;
-		_tmp51_ = _base_type_list;
-		_tmp52_ = vala_collection_get_size ((ValaCollection*) _tmp51_);
-		_tmp53_ = _tmp52_;
-		_base_type_size = _tmp53_;
+		ValaArrayList* _base_type_list = NULL;
+		ValaArrayList* _tmp47_ = NULL;
+		ValaArrayList* _tmp48_ = NULL;
+		gint _base_type_size = 0;
+		ValaArrayList* _tmp49_ = NULL;
+		gint _tmp50_ = 0;
+		gint _tmp51_ = 0;
+		gint _base_type_index = 0;
+		_tmp47_ = base_types;
+		_tmp48_ = _vala_iterable_ref0 (_tmp47_);
+		_base_type_list = _tmp48_;
+		_tmp49_ = _base_type_list;
+		_tmp50_ = vala_collection_get_size ((ValaCollection*) _tmp49_);
+		_tmp51_ = _tmp50_;
+		_base_type_size = _tmp51_;
 		_base_type_index = -1;
 		while (TRUE) {
-			gint _tmp54_;
-			gint _tmp55_;
-			gint _tmp56_;
-			ValaArrayList* _tmp57_;
-			gint _tmp58_;
-			gpointer _tmp59_ = NULL;
-			ValaDataType* base_type;
-			ValaInterface* _tmp60_;
-			ValaDataType* _tmp61_;
-			_tmp54_ = _base_type_index;
-			_base_type_index = _tmp54_ + 1;
-			_tmp55_ = _base_type_index;
-			_tmp56_ = _base_type_size;
-			if (!(_tmp55_ < _tmp56_)) {
+			gint _tmp52_ = 0;
+			gint _tmp53_ = 0;
+			gint _tmp54_ = 0;
+			ValaDataType* base_type = NULL;
+			ValaArrayList* _tmp55_ = NULL;
+			gint _tmp56_ = 0;
+			gpointer _tmp57_ = NULL;
+			ValaInterface* _tmp58_ = NULL;
+			ValaDataType* _tmp59_ = NULL;
+			_tmp52_ = _base_type_index;
+			_base_type_index = _tmp52_ + 1;
+			_tmp53_ = _base_type_index;
+			_tmp54_ = _base_type_size;
+			if (!(_tmp53_ < _tmp54_)) {
 				break;
 			}
-			_tmp57_ = _base_type_list;
-			_tmp58_ = _base_type_index;
-			_tmp59_ = vala_list_get ((ValaList*) _tmp57_, _tmp58_);
-			base_type = (ValaDataType*) _tmp59_;
-			_tmp60_ = iface;
-			_tmp61_ = base_type;
-			vala_interface_add_prerequisite (_tmp60_, _tmp61_);
+			_tmp55_ = _base_type_list;
+			_tmp56_ = _base_type_index;
+			_tmp57_ = vala_list_get ((ValaList*) _tmp55_, _tmp56_);
+			base_type = (ValaDataType*) _tmp57_;
+			_tmp58_ = iface;
+			_tmp59_ = base_type;
+			vala_interface_add_prerequisite (_tmp58_, _tmp59_);
 			_vala_code_node_unref0 (base_type);
 		}
 		_vala_iterable_unref0 (_base_type_list);
 	}
-	_tmp62_ = iface;
-	vala_parser_parse_declarations (self, (ValaSymbol*) _tmp62_, FALSE, &_inner_error_);
+	_tmp60_ = iface;
+	vala_parser_parse_declarations (self, (ValaSymbol*) _tmp60_, FALSE, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -19165,82 +19427,80 @@ static void vala_parser_parse_interface_declaration (ValaParser* self, ValaSymbo
 			return;
 		}
 	}
-	_tmp63_ = iface;
-	_tmp64_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp63_);
-	_result_ = _tmp64_;
+	_tmp61_ = iface;
+	_tmp62_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp61_);
+	_result_ = _tmp62_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp65_;
-		ValaUnresolvedSymbol* _tmp66_;
-		ValaUnresolvedSymbol* _tmp67_;
-		ValaUnresolvedSymbol* _tmp68_;
-		ValaUnresolvedSymbol* _tmp69_;
-		ValaSymbol* _tmp70_ = NULL;
-		ValaUnresolvedSymbol* _tmp71_;
-		ValaSymbol* _tmp81_;
-		ValaSymbol* _tmp82_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp83_;
-		ValaSymbol* _tmp88_;
-		ValaSymbol* _tmp89_;
-		_tmp65_ = sym;
-		if (!(_tmp65_ != NULL)) {
+		ValaUnresolvedSymbol* _tmp63_ = NULL;
+		ValaUnresolvedSymbol* _tmp64_ = NULL;
+		ValaUnresolvedSymbol* _tmp65_ = NULL;
+		ValaUnresolvedSymbol* _tmp66_ = NULL;
+		ValaUnresolvedSymbol* _tmp67_ = NULL;
+		ValaSymbol* _tmp68_ = NULL;
+		ValaUnresolvedSymbol* _tmp69_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp79_ = NULL;
+		ValaSymbol* _tmp80_ = NULL;
+		ValaSymbol* _tmp85_ = NULL;
+		ValaSymbol* _tmp86_ = NULL;
+		_tmp63_ = sym;
+		if (!(_tmp63_ != NULL)) {
 			break;
 		}
-		_tmp66_ = sym;
-		_tmp67_ = vala_unresolved_symbol_get_inner (_tmp66_);
-		_tmp68_ = _tmp67_;
-		_tmp69_ = _vala_code_node_ref0 (_tmp68_);
+		_tmp64_ = sym;
+		_tmp65_ = vala_unresolved_symbol_get_inner (_tmp64_);
+		_tmp66_ = _tmp65_;
+		_tmp67_ = _vala_code_node_ref0 (_tmp66_);
 		_vala_code_node_unref0 (sym);
-		sym = _tmp69_;
-		_tmp71_ = sym;
-		if (_tmp71_ != NULL) {
-			ValaUnresolvedSymbol* _tmp72_;
-			const gchar* _tmp73_;
-			const gchar* _tmp74_;
-			ValaInterface* _tmp75_;
-			ValaSourceReference* _tmp76_;
-			ValaSourceReference* _tmp77_;
-			ValaNamespace* _tmp78_;
-			_tmp72_ = sym;
-			_tmp73_ = vala_symbol_get_name ((ValaSymbol*) _tmp72_);
-			_tmp74_ = _tmp73_;
-			_tmp75_ = iface;
-			_tmp76_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp75_);
-			_tmp77_ = _tmp76_;
-			_tmp78_ = vala_namespace_new (_tmp74_, _tmp77_);
-			_vala_code_node_unref0 (_tmp70_);
-			_tmp70_ = (ValaSymbol*) _tmp78_;
+		sym = _tmp67_;
+		_tmp69_ = sym;
+		if (_tmp69_ != NULL) {
+			ValaUnresolvedSymbol* _tmp70_ = NULL;
+			const gchar* _tmp71_ = NULL;
+			const gchar* _tmp72_ = NULL;
+			ValaInterface* _tmp73_ = NULL;
+			ValaSourceReference* _tmp74_ = NULL;
+			ValaSourceReference* _tmp75_ = NULL;
+			ValaNamespace* _tmp76_ = NULL;
+			_tmp70_ = sym;
+			_tmp71_ = vala_symbol_get_name ((ValaSymbol*) _tmp70_);
+			_tmp72_ = _tmp71_;
+			_tmp73_ = iface;
+			_tmp74_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp73_);
+			_tmp75_ = _tmp74_;
+			_tmp76_ = vala_namespace_new (_tmp72_, _tmp75_);
+			_vala_code_node_unref0 (_tmp68_);
+			_tmp68_ = (ValaSymbol*) _tmp76_;
 		} else {
-			ValaSymbol* _tmp79_;
-			ValaSymbol* _tmp80_;
-			_tmp79_ = parent;
-			_tmp80_ = _vala_code_node_ref0 (_tmp79_);
-			_vala_code_node_unref0 (_tmp70_);
-			_tmp70_ = _tmp80_;
+			ValaSymbol* _tmp77_ = NULL;
+			ValaSymbol* _tmp78_ = NULL;
+			_tmp77_ = parent;
+			_tmp78_ = _vala_code_node_ref0 (_tmp77_);
+			_vala_code_node_unref0 (_tmp68_);
+			_tmp68_ = _tmp78_;
 		}
-		_tmp81_ = _tmp70_;
-		_tmp82_ = _vala_code_node_ref0 (_tmp81_);
-		next = _tmp82_;
-		_tmp83_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp83_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp84_;
-			ValaSymbol* _tmp85_;
-			_tmp84_ = next;
-			_tmp85_ = _result_;
-			vala_symbol_add_namespace (_tmp84_, G_TYPE_CHECK_INSTANCE_CAST (_tmp85_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp79_ = _vala_code_node_ref0 (_tmp68_);
+		next = _tmp79_;
+		_tmp80_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp80_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp81_ = NULL;
+			ValaSymbol* _tmp82_ = NULL;
+			_tmp81_ = next;
+			_tmp82_ = _result_;
+			vala_symbol_add_namespace (_tmp81_, G_TYPE_CHECK_INSTANCE_CAST (_tmp82_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp86_;
-			ValaSymbol* _tmp87_;
-			_tmp86_ = next;
-			_tmp87_ = _result_;
-			vala_symbol_add_interface (_tmp86_, G_TYPE_CHECK_INSTANCE_CAST (_tmp87_, VALA_TYPE_INTERFACE, ValaInterface));
+			ValaSymbol* _tmp83_ = NULL;
+			ValaSymbol* _tmp84_ = NULL;
+			_tmp83_ = next;
+			_tmp84_ = _result_;
+			vala_symbol_add_interface (_tmp83_, G_TYPE_CHECK_INSTANCE_CAST (_tmp84_, VALA_TYPE_INTERFACE, ValaInterface));
 		}
-		_tmp88_ = next;
-		_tmp89_ = _vala_code_node_ref0 (_tmp88_);
+		_tmp85_ = next;
+		_tmp86_ = _vala_code_node_ref0 (_tmp85_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp89_;
+		_result_ = _tmp86_;
 		_vala_code_node_unref0 (next);
-		_vala_code_node_unref0 (_tmp70_);
+		_vala_code_node_unref0 (_tmp68_);
 	}
 	_vala_code_node_unref0 (_result_);
 	_vala_code_node_unref0 (iface);
@@ -19251,35 +19511,34 @@ static void vala_parser_parse_interface_declaration (ValaParser* self, ValaSymbo
 
 
 static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
-	ValaUnresolvedSymbol* _tmp4_;
-	const gchar* _tmp5_;
-	const gchar* _tmp6_;
-	ValaSourceLocation _tmp7_;
+	ValaEnum* en = NULL;
+	ValaUnresolvedSymbol* _tmp4_ = NULL;
+	const gchar* _tmp5_ = NULL;
+	const gchar* _tmp6_ = NULL;
+	ValaSourceLocation _tmp7_ = {0};
 	ValaSourceReference* _tmp8_ = NULL;
-	ValaSourceReference* _tmp9_;
-	ValaComment* _tmp10_;
-	ValaEnum* _tmp11_;
-	ValaEnum* _tmp12_;
-	ValaEnum* en;
-	ValaEnum* _tmp13_;
-	ValaSymbolAccessibility _tmp14_;
+	ValaSourceReference* _tmp9_ = NULL;
+	ValaComment* _tmp10_ = NULL;
+	ValaEnum* _tmp11_ = NULL;
+	ValaEnum* _tmp12_ = NULL;
+	ValaEnum* _tmp13_ = NULL;
+	ValaSymbolAccessibility _tmp14_ = 0;
 	gboolean _tmp15_ = FALSE;
-	ValaParserModifierFlags _tmp16_;
-	gboolean _tmp22_;
-	ValaEnum* _tmp24_;
-	ValaList* _tmp25_;
-	gboolean _tmp58_ = FALSE;
-	ValaEnum* _tmp61_;
-	ValaSymbol* _tmp62_;
-	ValaSymbol* _result_;
+	ValaParserModifierFlags _tmp16_ = 0;
+	ValaEnum* _tmp23_ = NULL;
+	ValaList* _tmp24_ = NULL;
+	gboolean _tmp56_ = FALSE;
+	ValaSymbol* _result_ = NULL;
+	ValaEnum* _tmp59_ = NULL;
+	ValaSymbol* _tmp60_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -19330,11 +19589,11 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 	if ((_tmp16_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
 		_tmp15_ = TRUE;
 	} else {
-		ValaScanner* _tmp17_;
-		ValaSourceFile* _tmp18_;
-		ValaSourceFile* _tmp19_;
-		ValaSourceFileType _tmp20_;
-		ValaSourceFileType _tmp21_;
+		ValaScanner* _tmp17_ = NULL;
+		ValaSourceFile* _tmp18_ = NULL;
+		ValaSourceFile* _tmp19_ = NULL;
+		ValaSourceFileType _tmp20_ = 0;
+		ValaSourceFileType _tmp21_ = 0;
 		_tmp17_ = self->priv->scanner;
 		_tmp18_ = vala_scanner_get_source_file (_tmp17_);
 		_tmp19_ = _tmp18_;
@@ -19342,15 +19601,14 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 		_tmp21_ = _tmp20_;
 		_tmp15_ = _tmp21_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp22_ = _tmp15_;
-	if (_tmp22_) {
-		ValaEnum* _tmp23_;
-		_tmp23_ = en;
-		vala_symbol_set_external ((ValaSymbol*) _tmp23_, TRUE);
+	if (_tmp15_) {
+		ValaEnum* _tmp22_ = NULL;
+		_tmp22_ = en;
+		vala_symbol_set_external ((ValaSymbol*) _tmp22_, TRUE);
 	}
-	_tmp24_ = en;
-	_tmp25_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp24_, _tmp25_);
+	_tmp23_ = en;
+	_tmp24_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp23_, _tmp24_);
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_BRACE, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -19367,69 +19625,65 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 		}
 	}
 	{
-		gboolean _tmp26_;
-		_tmp26_ = TRUE;
+		gboolean _tmp25_ = FALSE;
+		_tmp25_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp27_;
-			gboolean _tmp29_ = FALSE;
-			ValaTokenType _tmp30_ = 0;
-			gboolean _tmp36_;
-			ValaList* _tmp37_ = NULL;
-			ValaList* value_attrs;
-			ValaSourceLocation _tmp38_ = {0};
-			ValaSourceLocation value_begin;
-			gchar* _tmp39_ = NULL;
-			gchar* id;
-			ValaScanner* _tmp40_;
-			ValaComment* _tmp41_ = NULL;
-			ValaExpression* value;
-			gboolean _tmp42_ = FALSE;
-			const gchar* _tmp45_;
-			ValaExpression* _tmp46_;
-			ValaSourceLocation _tmp47_;
-			ValaSourceReference* _tmp48_ = NULL;
-			ValaSourceReference* _tmp49_;
-			ValaComment* _tmp50_;
-			ValaEnumValue* _tmp51_;
-			ValaEnumValue* _tmp52_;
-			ValaEnumValue* ev;
-			ValaEnumValue* _tmp53_;
-			ValaEnumValue* _tmp54_;
-			ValaList* _tmp55_;
-			ValaEnum* _tmp56_;
-			ValaEnumValue* _tmp57_;
-			_tmp27_ = _tmp26_;
-			if (!_tmp27_) {
-				gboolean _tmp28_ = FALSE;
-				_tmp28_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-				if (!_tmp28_) {
+			gboolean _tmp27_ = FALSE;
+			ValaTokenType _tmp28_ = 0;
+			ValaList* value_attrs = NULL;
+			ValaList* _tmp34_ = NULL;
+			ValaSourceLocation value_begin = {0};
+			ValaSourceLocation _tmp35_ = {0};
+			gchar* id = NULL;
+			gchar* _tmp36_ = NULL;
+			ValaScanner* _tmp37_ = NULL;
+			ValaComment* _tmp38_ = NULL;
+			ValaExpression* value = NULL;
+			gboolean _tmp39_ = FALSE;
+			ValaEnumValue* ev = NULL;
+			const gchar* _tmp43_ = NULL;
+			ValaExpression* _tmp44_ = NULL;
+			ValaSourceLocation _tmp45_ = {0};
+			ValaSourceReference* _tmp46_ = NULL;
+			ValaSourceReference* _tmp47_ = NULL;
+			ValaComment* _tmp48_ = NULL;
+			ValaEnumValue* _tmp49_ = NULL;
+			ValaEnumValue* _tmp50_ = NULL;
+			ValaEnumValue* _tmp51_ = NULL;
+			ValaEnumValue* _tmp52_ = NULL;
+			ValaList* _tmp53_ = NULL;
+			ValaEnum* _tmp54_ = NULL;
+			ValaEnumValue* _tmp55_ = NULL;
+			if (!_tmp25_) {
+				gboolean _tmp26_ = FALSE;
+				_tmp26_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+				if (!_tmp26_) {
 					break;
 				}
 			}
-			_tmp26_ = FALSE;
-			_tmp30_ = vala_parser_current (self);
-			if (_tmp30_ == VALA_TOKEN_TYPE_CLOSE_BRACE) {
-				ValaEnum* _tmp31_;
-				ValaList* _tmp32_ = NULL;
-				ValaList* _tmp33_;
-				gint _tmp34_;
-				gint _tmp35_;
-				_tmp31_ = en;
-				_tmp32_ = vala_enum_get_values (_tmp31_);
+			_tmp25_ = FALSE;
+			_tmp28_ = vala_parser_current (self);
+			if (_tmp28_ == VALA_TOKEN_TYPE_CLOSE_BRACE) {
+				ValaEnum* _tmp29_ = NULL;
+				ValaList* _tmp30_ = NULL;
+				ValaList* _tmp31_ = NULL;
+				gint _tmp32_ = 0;
+				gint _tmp33_ = 0;
+				_tmp29_ = en;
+				_tmp30_ = vala_enum_get_values (_tmp29_);
+				_tmp31_ = _tmp30_;
+				_tmp32_ = vala_collection_get_size ((ValaCollection*) _tmp31_);
 				_tmp33_ = _tmp32_;
-				_tmp34_ = vala_collection_get_size ((ValaCollection*) _tmp33_);
-				_tmp35_ = _tmp34_;
-				_tmp29_ = _tmp35_ > 0;
-				_vala_iterable_unref0 (_tmp33_);
+				_tmp27_ = _tmp33_ > 0;
+				_vala_iterable_unref0 (_tmp31_);
 			} else {
-				_tmp29_ = FALSE;
+				_tmp27_ = FALSE;
 			}
-			_tmp36_ = _tmp29_;
-			if (_tmp36_) {
+			if (_tmp27_) {
 				break;
 			}
-			_tmp37_ = vala_parser_parse_attributes (self, &_inner_error_);
-			value_attrs = _tmp37_;
+			_tmp34_ = vala_parser_parse_attributes (self, &_inner_error_);
+			value_attrs = _tmp34_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19444,10 +19698,10 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 					return;
 				}
 			}
-			vala_parser_get_location (self, &_tmp38_);
-			value_begin = _tmp38_;
-			_tmp39_ = vala_parser_parse_identifier (self, &_inner_error_);
-			id = _tmp39_;
+			vala_parser_get_location (self, &_tmp35_);
+			value_begin = _tmp35_;
+			_tmp36_ = vala_parser_parse_identifier (self, &_inner_error_);
+			id = _tmp36_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19464,17 +19718,18 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 					return;
 				}
 			}
-			_tmp40_ = self->priv->scanner;
-			_tmp41_ = vala_scanner_pop_comment (_tmp40_);
+			_tmp37_ = self->priv->scanner;
+			_tmp38_ = vala_scanner_pop_comment (_tmp37_);
 			_vala_comment_unref0 (self->priv->comment);
-			self->priv->comment = _tmp41_;
+			self->priv->comment = _tmp38_;
 			value = NULL;
-			_tmp42_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
-			if (_tmp42_) {
-				ValaExpression* _tmp43_ = NULL;
-				ValaExpression* _tmp44_;
-				_tmp43_ = vala_parser_parse_expression (self, &_inner_error_);
-				_tmp44_ = _tmp43_;
+			_tmp39_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
+			if (_tmp39_) {
+				ValaExpression* _tmp40_ = NULL;
+				ValaExpression* _tmp41_ = NULL;
+				ValaExpression* _tmp42_ = NULL;
+				_tmp41_ = vala_parser_parse_expression (self, &_inner_error_);
+				_tmp40_ = _tmp41_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -19495,44 +19750,47 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 						return;
 					}
 				}
+				_tmp42_ = _tmp40_;
+				_tmp40_ = NULL;
 				_vala_code_node_unref0 (value);
-				value = _tmp44_;
+				value = _tmp42_;
+				_vala_code_node_unref0 (_tmp40_);
 			}
-			_tmp45_ = id;
-			_tmp46_ = value;
-			_tmp47_ = value_begin;
-			_tmp48_ = vala_parser_get_src (self, &_tmp47_);
-			_tmp49_ = _tmp48_;
-			_tmp50_ = self->priv->comment;
-			_tmp51_ = vala_enum_value_new (_tmp45_, _tmp46_, _tmp49_, _tmp50_);
-			_tmp52_ = _tmp51_;
-			_vala_source_reference_unref0 (_tmp49_);
-			ev = _tmp52_;
-			_tmp53_ = ev;
-			vala_symbol_set_access ((ValaSymbol*) _tmp53_, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
-			_tmp54_ = ev;
-			_tmp55_ = value_attrs;
-			vala_parser_set_attributes (self, (ValaCodeNode*) _tmp54_, _tmp55_);
-			_tmp56_ = en;
-			_tmp57_ = ev;
-			vala_enum_add_value (_tmp56_, _tmp57_);
+			_tmp43_ = id;
+			_tmp44_ = value;
+			_tmp45_ = value_begin;
+			_tmp46_ = vala_parser_get_src (self, &_tmp45_);
+			_tmp47_ = _tmp46_;
+			_tmp48_ = self->priv->comment;
+			_tmp49_ = vala_enum_value_new (_tmp43_, _tmp44_, _tmp47_, _tmp48_);
+			_tmp50_ = _tmp49_;
+			_vala_source_reference_unref0 (_tmp47_);
+			ev = _tmp50_;
+			_tmp51_ = ev;
+			vala_symbol_set_access ((ValaSymbol*) _tmp51_, VALA_SYMBOL_ACCESSIBILITY_PUBLIC);
+			_tmp52_ = ev;
+			_tmp53_ = value_attrs;
+			vala_parser_set_attributes (self, (ValaCodeNode*) _tmp52_, _tmp53_);
+			_tmp54_ = en;
+			_tmp55_ = ev;
+			vala_enum_add_value (_tmp54_, _tmp55_);
 			_vala_code_node_unref0 (ev);
 			_vala_code_node_unref0 (value);
 			_g_free0 (id);
 			_vala_iterable_unref0 (value_attrs);
 		}
 	}
-	_tmp58_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-	if (_tmp58_) {
+	_tmp56_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+	if (_tmp56_) {
 		while (TRUE) {
-			ValaTokenType _tmp59_ = 0;
-			ValaEnum* _tmp60_;
-			_tmp59_ = vala_parser_current (self);
-			if (!(_tmp59_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
+			ValaTokenType _tmp57_ = 0;
+			ValaEnum* _tmp58_ = NULL;
+			_tmp57_ = vala_parser_current (self);
+			if (!(_tmp57_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
 				break;
 			}
-			_tmp60_ = en;
-			vala_parser_parse_declaration (self, (ValaSymbol*) _tmp60_, FALSE, &_inner_error_);
+			_tmp58_ = en;
+			vala_parser_parse_declaration (self, (ValaSymbol*) _tmp58_, FALSE, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19564,82 +19822,80 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 			return;
 		}
 	}
-	_tmp61_ = en;
-	_tmp62_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp61_);
-	_result_ = _tmp62_;
+	_tmp59_ = en;
+	_tmp60_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp59_);
+	_result_ = _tmp60_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp63_;
-		ValaUnresolvedSymbol* _tmp64_;
-		ValaUnresolvedSymbol* _tmp65_;
-		ValaUnresolvedSymbol* _tmp66_;
-		ValaUnresolvedSymbol* _tmp67_;
-		ValaSymbol* _tmp68_ = NULL;
-		ValaUnresolvedSymbol* _tmp69_;
-		ValaSymbol* _tmp79_;
-		ValaSymbol* _tmp80_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp81_;
-		ValaSymbol* _tmp86_;
-		ValaSymbol* _tmp87_;
-		_tmp63_ = sym;
-		if (!(_tmp63_ != NULL)) {
+		ValaUnresolvedSymbol* _tmp61_ = NULL;
+		ValaUnresolvedSymbol* _tmp62_ = NULL;
+		ValaUnresolvedSymbol* _tmp63_ = NULL;
+		ValaUnresolvedSymbol* _tmp64_ = NULL;
+		ValaUnresolvedSymbol* _tmp65_ = NULL;
+		ValaSymbol* _tmp66_ = NULL;
+		ValaUnresolvedSymbol* _tmp67_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp77_ = NULL;
+		ValaSymbol* _tmp78_ = NULL;
+		ValaSymbol* _tmp83_ = NULL;
+		ValaSymbol* _tmp84_ = NULL;
+		_tmp61_ = sym;
+		if (!(_tmp61_ != NULL)) {
 			break;
 		}
-		_tmp64_ = sym;
-		_tmp65_ = vala_unresolved_symbol_get_inner (_tmp64_);
-		_tmp66_ = _tmp65_;
-		_tmp67_ = _vala_code_node_ref0 (_tmp66_);
+		_tmp62_ = sym;
+		_tmp63_ = vala_unresolved_symbol_get_inner (_tmp62_);
+		_tmp64_ = _tmp63_;
+		_tmp65_ = _vala_code_node_ref0 (_tmp64_);
 		_vala_code_node_unref0 (sym);
-		sym = _tmp67_;
-		_tmp69_ = sym;
-		if (_tmp69_ != NULL) {
-			ValaUnresolvedSymbol* _tmp70_;
-			const gchar* _tmp71_;
-			const gchar* _tmp72_;
-			ValaEnum* _tmp73_;
-			ValaSourceReference* _tmp74_;
-			ValaSourceReference* _tmp75_;
-			ValaNamespace* _tmp76_;
-			_tmp70_ = sym;
-			_tmp71_ = vala_symbol_get_name ((ValaSymbol*) _tmp70_);
-			_tmp72_ = _tmp71_;
-			_tmp73_ = en;
-			_tmp74_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp73_);
-			_tmp75_ = _tmp74_;
-			_tmp76_ = vala_namespace_new (_tmp72_, _tmp75_);
-			_vala_code_node_unref0 (_tmp68_);
-			_tmp68_ = (ValaSymbol*) _tmp76_;
+		sym = _tmp65_;
+		_tmp67_ = sym;
+		if (_tmp67_ != NULL) {
+			ValaUnresolvedSymbol* _tmp68_ = NULL;
+			const gchar* _tmp69_ = NULL;
+			const gchar* _tmp70_ = NULL;
+			ValaEnum* _tmp71_ = NULL;
+			ValaSourceReference* _tmp72_ = NULL;
+			ValaSourceReference* _tmp73_ = NULL;
+			ValaNamespace* _tmp74_ = NULL;
+			_tmp68_ = sym;
+			_tmp69_ = vala_symbol_get_name ((ValaSymbol*) _tmp68_);
+			_tmp70_ = _tmp69_;
+			_tmp71_ = en;
+			_tmp72_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp71_);
+			_tmp73_ = _tmp72_;
+			_tmp74_ = vala_namespace_new (_tmp70_, _tmp73_);
+			_vala_code_node_unref0 (_tmp66_);
+			_tmp66_ = (ValaSymbol*) _tmp74_;
 		} else {
-			ValaSymbol* _tmp77_;
-			ValaSymbol* _tmp78_;
-			_tmp77_ = parent;
-			_tmp78_ = _vala_code_node_ref0 (_tmp77_);
-			_vala_code_node_unref0 (_tmp68_);
-			_tmp68_ = _tmp78_;
+			ValaSymbol* _tmp75_ = NULL;
+			ValaSymbol* _tmp76_ = NULL;
+			_tmp75_ = parent;
+			_tmp76_ = _vala_code_node_ref0 (_tmp75_);
+			_vala_code_node_unref0 (_tmp66_);
+			_tmp66_ = _tmp76_;
 		}
-		_tmp79_ = _tmp68_;
-		_tmp80_ = _vala_code_node_ref0 (_tmp79_);
-		next = _tmp80_;
-		_tmp81_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp81_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp82_;
-			ValaSymbol* _tmp83_;
-			_tmp82_ = next;
-			_tmp83_ = _result_;
-			vala_symbol_add_namespace (_tmp82_, G_TYPE_CHECK_INSTANCE_CAST (_tmp83_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp77_ = _vala_code_node_ref0 (_tmp66_);
+		next = _tmp77_;
+		_tmp78_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp78_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp79_ = NULL;
+			ValaSymbol* _tmp80_ = NULL;
+			_tmp79_ = next;
+			_tmp80_ = _result_;
+			vala_symbol_add_namespace (_tmp79_, G_TYPE_CHECK_INSTANCE_CAST (_tmp80_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp84_;
-			ValaSymbol* _tmp85_;
-			_tmp84_ = next;
-			_tmp85_ = _result_;
-			vala_symbol_add_enum (_tmp84_, G_TYPE_CHECK_INSTANCE_CAST (_tmp85_, VALA_TYPE_ENUM, ValaEnum));
+			ValaSymbol* _tmp81_ = NULL;
+			ValaSymbol* _tmp82_ = NULL;
+			_tmp81_ = next;
+			_tmp82_ = _result_;
+			vala_symbol_add_enum (_tmp81_, G_TYPE_CHECK_INSTANCE_CAST (_tmp82_, VALA_TYPE_ENUM, ValaEnum));
 		}
-		_tmp86_ = next;
-		_tmp87_ = _vala_code_node_ref0 (_tmp86_);
+		_tmp83_ = next;
+		_tmp84_ = _vala_code_node_ref0 (_tmp83_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp87_;
+		_result_ = _tmp84_;
 		_vala_code_node_unref0 (next);
-		_vala_code_node_unref0 (_tmp68_);
+		_vala_code_node_unref0 (_tmp66_);
 	}
 	_vala_code_node_unref0 (_result_);
 	_vala_code_node_unref0 (en);
@@ -19648,35 +19904,34 @@ static void vala_parser_parse_enum_declaration (ValaParser* self, ValaSymbol* pa
 
 
 static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
-	ValaUnresolvedSymbol* _tmp4_;
-	const gchar* _tmp5_;
-	const gchar* _tmp6_;
-	ValaSourceLocation _tmp7_;
+	ValaErrorDomain* ed = NULL;
+	ValaUnresolvedSymbol* _tmp4_ = NULL;
+	const gchar* _tmp5_ = NULL;
+	const gchar* _tmp6_ = NULL;
+	ValaSourceLocation _tmp7_ = {0};
 	ValaSourceReference* _tmp8_ = NULL;
-	ValaSourceReference* _tmp9_;
-	ValaComment* _tmp10_;
-	ValaErrorDomain* _tmp11_;
-	ValaErrorDomain* _tmp12_;
-	ValaErrorDomain* ed;
-	ValaErrorDomain* _tmp13_;
-	ValaSymbolAccessibility _tmp14_;
+	ValaSourceReference* _tmp9_ = NULL;
+	ValaComment* _tmp10_ = NULL;
+	ValaErrorDomain* _tmp11_ = NULL;
+	ValaErrorDomain* _tmp12_ = NULL;
+	ValaErrorDomain* _tmp13_ = NULL;
+	ValaSymbolAccessibility _tmp14_ = 0;
 	gboolean _tmp15_ = FALSE;
-	ValaParserModifierFlags _tmp16_;
-	gboolean _tmp22_;
-	ValaErrorDomain* _tmp24_;
-	ValaList* _tmp25_;
-	gboolean _tmp58_ = FALSE;
-	ValaErrorDomain* _tmp61_;
-	ValaSymbol* _tmp62_;
-	ValaSymbol* _result_;
+	ValaParserModifierFlags _tmp16_ = 0;
+	ValaErrorDomain* _tmp23_ = NULL;
+	ValaList* _tmp24_ = NULL;
+	gboolean _tmp54_ = FALSE;
+	ValaSymbol* _result_ = NULL;
+	ValaErrorDomain* _tmp57_ = NULL;
+	ValaSymbol* _tmp58_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -19727,11 +19982,11 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 	if ((_tmp16_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
 		_tmp15_ = TRUE;
 	} else {
-		ValaScanner* _tmp17_;
-		ValaSourceFile* _tmp18_;
-		ValaSourceFile* _tmp19_;
-		ValaSourceFileType _tmp20_;
-		ValaSourceFileType _tmp21_;
+		ValaScanner* _tmp17_ = NULL;
+		ValaSourceFile* _tmp18_ = NULL;
+		ValaSourceFile* _tmp19_ = NULL;
+		ValaSourceFileType _tmp20_ = 0;
+		ValaSourceFileType _tmp21_ = 0;
 		_tmp17_ = self->priv->scanner;
 		_tmp18_ = vala_scanner_get_source_file (_tmp17_);
 		_tmp19_ = _tmp18_;
@@ -19739,15 +19994,14 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 		_tmp21_ = _tmp20_;
 		_tmp15_ = _tmp21_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp22_ = _tmp15_;
-	if (_tmp22_) {
-		ValaErrorDomain* _tmp23_;
-		_tmp23_ = ed;
-		vala_symbol_set_external ((ValaSymbol*) _tmp23_, TRUE);
+	if (_tmp15_) {
+		ValaErrorDomain* _tmp22_ = NULL;
+		_tmp22_ = ed;
+		vala_symbol_set_external ((ValaSymbol*) _tmp22_, TRUE);
 	}
-	_tmp24_ = ed;
-	_tmp25_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp24_, _tmp25_);
+	_tmp23_ = ed;
+	_tmp24_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp23_, _tmp24_);
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_BRACE, &_inner_error_);
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
@@ -19764,66 +20018,62 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 		}
 	}
 	{
-		gboolean _tmp26_;
-		_tmp26_ = TRUE;
+		gboolean _tmp25_ = FALSE;
+		_tmp25_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp27_;
-			gboolean _tmp29_ = FALSE;
-			ValaTokenType _tmp30_ = 0;
-			gboolean _tmp36_;
-			ValaList* _tmp37_ = NULL;
-			ValaList* code_attrs;
-			ValaSourceLocation _tmp38_ = {0};
-			ValaSourceLocation code_begin;
-			gchar* _tmp39_ = NULL;
-			gchar* id;
-			ValaScanner* _tmp40_;
-			ValaComment* _tmp41_ = NULL;
-			const gchar* _tmp42_;
-			ValaSourceLocation _tmp43_;
-			ValaSourceReference* _tmp44_ = NULL;
-			ValaSourceReference* _tmp45_;
-			ValaComment* _tmp46_;
-			ValaErrorCode* _tmp47_;
-			ValaErrorCode* _tmp48_;
-			ValaErrorCode* ec;
-			ValaErrorCode* _tmp49_;
-			ValaList* _tmp50_;
-			gboolean _tmp51_ = FALSE;
-			ValaErrorDomain* _tmp56_;
-			ValaErrorCode* _tmp57_;
-			_tmp27_ = _tmp26_;
-			if (!_tmp27_) {
-				gboolean _tmp28_ = FALSE;
-				_tmp28_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-				if (!_tmp28_) {
+			gboolean _tmp27_ = FALSE;
+			ValaTokenType _tmp28_ = 0;
+			ValaList* code_attrs = NULL;
+			ValaList* _tmp34_ = NULL;
+			ValaSourceLocation code_begin = {0};
+			ValaSourceLocation _tmp35_ = {0};
+			gchar* id = NULL;
+			gchar* _tmp36_ = NULL;
+			ValaScanner* _tmp37_ = NULL;
+			ValaComment* _tmp38_ = NULL;
+			ValaErrorCode* ec = NULL;
+			const gchar* _tmp39_ = NULL;
+			ValaSourceLocation _tmp40_ = {0};
+			ValaSourceReference* _tmp41_ = NULL;
+			ValaSourceReference* _tmp42_ = NULL;
+			ValaComment* _tmp43_ = NULL;
+			ValaErrorCode* _tmp44_ = NULL;
+			ValaErrorCode* _tmp45_ = NULL;
+			ValaErrorCode* _tmp46_ = NULL;
+			ValaList* _tmp47_ = NULL;
+			gboolean _tmp48_ = FALSE;
+			ValaErrorDomain* _tmp52_ = NULL;
+			ValaErrorCode* _tmp53_ = NULL;
+			if (!_tmp25_) {
+				gboolean _tmp26_ = FALSE;
+				_tmp26_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+				if (!_tmp26_) {
 					break;
 				}
 			}
-			_tmp26_ = FALSE;
-			_tmp30_ = vala_parser_current (self);
-			if (_tmp30_ == VALA_TOKEN_TYPE_CLOSE_BRACE) {
-				ValaErrorDomain* _tmp31_;
-				ValaList* _tmp32_ = NULL;
-				ValaList* _tmp33_;
-				gint _tmp34_;
-				gint _tmp35_;
-				_tmp31_ = ed;
-				_tmp32_ = vala_error_domain_get_codes (_tmp31_);
+			_tmp25_ = FALSE;
+			_tmp28_ = vala_parser_current (self);
+			if (_tmp28_ == VALA_TOKEN_TYPE_CLOSE_BRACE) {
+				ValaErrorDomain* _tmp29_ = NULL;
+				ValaList* _tmp30_ = NULL;
+				ValaList* _tmp31_ = NULL;
+				gint _tmp32_ = 0;
+				gint _tmp33_ = 0;
+				_tmp29_ = ed;
+				_tmp30_ = vala_error_domain_get_codes (_tmp29_);
+				_tmp31_ = _tmp30_;
+				_tmp32_ = vala_collection_get_size ((ValaCollection*) _tmp31_);
 				_tmp33_ = _tmp32_;
-				_tmp34_ = vala_collection_get_size ((ValaCollection*) _tmp33_);
-				_tmp35_ = _tmp34_;
-				_tmp29_ = _tmp35_ > 0;
-				_vala_iterable_unref0 (_tmp33_);
+				_tmp27_ = _tmp33_ > 0;
+				_vala_iterable_unref0 (_tmp31_);
 			} else {
-				_tmp29_ = FALSE;
+				_tmp27_ = FALSE;
 			}
-			_tmp36_ = _tmp29_;
-			if (_tmp36_) {
+			if (_tmp27_) {
 				break;
 			}
-			_tmp37_ = vala_parser_parse_attributes (self, &_inner_error_);
-			code_attrs = _tmp37_;
+			_tmp34_ = vala_parser_parse_attributes (self, &_inner_error_);
+			code_attrs = _tmp34_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19838,10 +20088,10 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 					return;
 				}
 			}
-			vala_parser_get_location (self, &_tmp38_);
-			code_begin = _tmp38_;
-			_tmp39_ = vala_parser_parse_identifier (self, &_inner_error_);
-			id = _tmp39_;
+			vala_parser_get_location (self, &_tmp35_);
+			code_begin = _tmp35_;
+			_tmp36_ = vala_parser_parse_identifier (self, &_inner_error_);
+			id = _tmp36_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19858,30 +20108,29 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 					return;
 				}
 			}
-			_tmp40_ = self->priv->scanner;
-			_tmp41_ = vala_scanner_pop_comment (_tmp40_);
+			_tmp37_ = self->priv->scanner;
+			_tmp38_ = vala_scanner_pop_comment (_tmp37_);
 			_vala_comment_unref0 (self->priv->comment);
-			self->priv->comment = _tmp41_;
-			_tmp42_ = id;
-			_tmp43_ = code_begin;
-			_tmp44_ = vala_parser_get_src (self, &_tmp43_);
+			self->priv->comment = _tmp38_;
+			_tmp39_ = id;
+			_tmp40_ = code_begin;
+			_tmp41_ = vala_parser_get_src (self, &_tmp40_);
+			_tmp42_ = _tmp41_;
+			_tmp43_ = self->priv->comment;
+			_tmp44_ = vala_error_code_new (_tmp39_, _tmp42_, _tmp43_);
 			_tmp45_ = _tmp44_;
-			_tmp46_ = self->priv->comment;
-			_tmp47_ = vala_error_code_new (_tmp42_, _tmp45_, _tmp46_);
-			_tmp48_ = _tmp47_;
-			_vala_source_reference_unref0 (_tmp45_);
-			ec = _tmp48_;
-			_tmp49_ = ec;
-			_tmp50_ = code_attrs;
-			vala_parser_set_attributes (self, (ValaCodeNode*) _tmp49_, _tmp50_);
-			_tmp51_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
-			if (_tmp51_) {
-				ValaExpression* _tmp52_ = NULL;
-				ValaExpression* _tmp53_;
-				ValaErrorCode* _tmp54_;
-				ValaExpression* _tmp55_;
-				_tmp52_ = vala_parser_parse_expression (self, &_inner_error_);
-				_tmp53_ = _tmp52_;
+			_vala_source_reference_unref0 (_tmp42_);
+			ec = _tmp45_;
+			_tmp46_ = ec;
+			_tmp47_ = code_attrs;
+			vala_parser_set_attributes (self, (ValaCodeNode*) _tmp46_, _tmp47_);
+			_tmp48_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
+			if (_tmp48_) {
+				ValaExpression* _tmp49_ = NULL;
+				ValaExpression* _tmp50_ = NULL;
+				ValaErrorCode* _tmp51_ = NULL;
+				_tmp50_ = vala_parser_parse_expression (self, &_inner_error_);
+				_tmp49_ = _tmp50_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -19902,30 +20151,29 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 						return;
 					}
 				}
-				_tmp54_ = ec;
-				_tmp55_ = _tmp53_;
-				vala_error_code_set_value (_tmp54_, _tmp55_);
-				_vala_code_node_unref0 (_tmp55_);
+				_tmp51_ = ec;
+				vala_error_code_set_value (_tmp51_, _tmp49_);
+				_vala_code_node_unref0 (_tmp49_);
 			}
-			_tmp56_ = ed;
-			_tmp57_ = ec;
-			vala_error_domain_add_code (_tmp56_, _tmp57_);
+			_tmp52_ = ed;
+			_tmp53_ = ec;
+			vala_error_domain_add_code (_tmp52_, _tmp53_);
 			_vala_code_node_unref0 (ec);
 			_g_free0 (id);
 			_vala_iterable_unref0 (code_attrs);
 		}
 	}
-	_tmp58_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-	if (_tmp58_) {
+	_tmp54_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+	if (_tmp54_) {
 		while (TRUE) {
-			ValaTokenType _tmp59_ = 0;
-			ValaErrorDomain* _tmp60_;
-			_tmp59_ = vala_parser_current (self);
-			if (!(_tmp59_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
+			ValaTokenType _tmp55_ = 0;
+			ValaErrorDomain* _tmp56_ = NULL;
+			_tmp55_ = vala_parser_current (self);
+			if (!(_tmp55_ != VALA_TOKEN_TYPE_CLOSE_BRACE)) {
 				break;
 			}
-			_tmp60_ = ed;
-			vala_parser_parse_declaration (self, (ValaSymbol*) _tmp60_, FALSE, &_inner_error_);
+			_tmp56_ = ed;
+			vala_parser_parse_declaration (self, (ValaSymbol*) _tmp56_, FALSE, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -19957,82 +20205,80 @@ static void vala_parser_parse_errordomain_declaration (ValaParser* self, ValaSym
 			return;
 		}
 	}
-	_tmp61_ = ed;
-	_tmp62_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp61_);
-	_result_ = _tmp62_;
+	_tmp57_ = ed;
+	_tmp58_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp57_);
+	_result_ = _tmp58_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp63_;
-		ValaUnresolvedSymbol* _tmp64_;
-		ValaUnresolvedSymbol* _tmp65_;
-		ValaUnresolvedSymbol* _tmp66_;
-		ValaUnresolvedSymbol* _tmp67_;
-		ValaSymbol* _tmp68_ = NULL;
-		ValaUnresolvedSymbol* _tmp69_;
-		ValaSymbol* _tmp79_;
-		ValaSymbol* _tmp80_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp81_;
-		ValaSymbol* _tmp86_;
-		ValaSymbol* _tmp87_;
-		_tmp63_ = sym;
-		if (!(_tmp63_ != NULL)) {
+		ValaUnresolvedSymbol* _tmp59_ = NULL;
+		ValaUnresolvedSymbol* _tmp60_ = NULL;
+		ValaUnresolvedSymbol* _tmp61_ = NULL;
+		ValaUnresolvedSymbol* _tmp62_ = NULL;
+		ValaUnresolvedSymbol* _tmp63_ = NULL;
+		ValaSymbol* _tmp64_ = NULL;
+		ValaUnresolvedSymbol* _tmp65_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp75_ = NULL;
+		ValaSymbol* _tmp76_ = NULL;
+		ValaSymbol* _tmp81_ = NULL;
+		ValaSymbol* _tmp82_ = NULL;
+		_tmp59_ = sym;
+		if (!(_tmp59_ != NULL)) {
 			break;
 		}
-		_tmp64_ = sym;
-		_tmp65_ = vala_unresolved_symbol_get_inner (_tmp64_);
-		_tmp66_ = _tmp65_;
-		_tmp67_ = _vala_code_node_ref0 (_tmp66_);
+		_tmp60_ = sym;
+		_tmp61_ = vala_unresolved_symbol_get_inner (_tmp60_);
+		_tmp62_ = _tmp61_;
+		_tmp63_ = _vala_code_node_ref0 (_tmp62_);
 		_vala_code_node_unref0 (sym);
-		sym = _tmp67_;
-		_tmp69_ = sym;
-		if (_tmp69_ != NULL) {
-			ValaUnresolvedSymbol* _tmp70_;
-			const gchar* _tmp71_;
-			const gchar* _tmp72_;
-			ValaErrorDomain* _tmp73_;
-			ValaSourceReference* _tmp74_;
-			ValaSourceReference* _tmp75_;
-			ValaNamespace* _tmp76_;
-			_tmp70_ = sym;
-			_tmp71_ = vala_symbol_get_name ((ValaSymbol*) _tmp70_);
-			_tmp72_ = _tmp71_;
-			_tmp73_ = ed;
-			_tmp74_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp73_);
-			_tmp75_ = _tmp74_;
-			_tmp76_ = vala_namespace_new (_tmp72_, _tmp75_);
-			_vala_code_node_unref0 (_tmp68_);
-			_tmp68_ = (ValaSymbol*) _tmp76_;
+		sym = _tmp63_;
+		_tmp65_ = sym;
+		if (_tmp65_ != NULL) {
+			ValaUnresolvedSymbol* _tmp66_ = NULL;
+			const gchar* _tmp67_ = NULL;
+			const gchar* _tmp68_ = NULL;
+			ValaErrorDomain* _tmp69_ = NULL;
+			ValaSourceReference* _tmp70_ = NULL;
+			ValaSourceReference* _tmp71_ = NULL;
+			ValaNamespace* _tmp72_ = NULL;
+			_tmp66_ = sym;
+			_tmp67_ = vala_symbol_get_name ((ValaSymbol*) _tmp66_);
+			_tmp68_ = _tmp67_;
+			_tmp69_ = ed;
+			_tmp70_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp69_);
+			_tmp71_ = _tmp70_;
+			_tmp72_ = vala_namespace_new (_tmp68_, _tmp71_);
+			_vala_code_node_unref0 (_tmp64_);
+			_tmp64_ = (ValaSymbol*) _tmp72_;
 		} else {
-			ValaSymbol* _tmp77_;
-			ValaSymbol* _tmp78_;
-			_tmp77_ = parent;
-			_tmp78_ = _vala_code_node_ref0 (_tmp77_);
-			_vala_code_node_unref0 (_tmp68_);
-			_tmp68_ = _tmp78_;
+			ValaSymbol* _tmp73_ = NULL;
+			ValaSymbol* _tmp74_ = NULL;
+			_tmp73_ = parent;
+			_tmp74_ = _vala_code_node_ref0 (_tmp73_);
+			_vala_code_node_unref0 (_tmp64_);
+			_tmp64_ = _tmp74_;
 		}
-		_tmp79_ = _tmp68_;
-		_tmp80_ = _vala_code_node_ref0 (_tmp79_);
-		next = _tmp80_;
-		_tmp81_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp81_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp82_;
-			ValaSymbol* _tmp83_;
-			_tmp82_ = next;
-			_tmp83_ = _result_;
-			vala_symbol_add_namespace (_tmp82_, G_TYPE_CHECK_INSTANCE_CAST (_tmp83_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp75_ = _vala_code_node_ref0 (_tmp64_);
+		next = _tmp75_;
+		_tmp76_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp76_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp77_ = NULL;
+			ValaSymbol* _tmp78_ = NULL;
+			_tmp77_ = next;
+			_tmp78_ = _result_;
+			vala_symbol_add_namespace (_tmp77_, G_TYPE_CHECK_INSTANCE_CAST (_tmp78_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp84_;
-			ValaSymbol* _tmp85_;
-			_tmp84_ = next;
-			_tmp85_ = _result_;
-			vala_symbol_add_error_domain (_tmp84_, G_TYPE_CHECK_INSTANCE_CAST (_tmp85_, VALA_TYPE_ERROR_DOMAIN, ValaErrorDomain));
+			ValaSymbol* _tmp79_ = NULL;
+			ValaSymbol* _tmp80_ = NULL;
+			_tmp79_ = next;
+			_tmp80_ = _result_;
+			vala_symbol_add_error_domain (_tmp79_, G_TYPE_CHECK_INSTANCE_CAST (_tmp80_, VALA_TYPE_ERROR_DOMAIN, ValaErrorDomain));
 		}
-		_tmp86_ = next;
-		_tmp87_ = _vala_code_node_ref0 (_tmp86_);
+		_tmp81_ = next;
+		_tmp82_ = _vala_code_node_ref0 (_tmp81_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp87_;
+		_result_ = _tmp82_;
 		_vala_code_node_unref0 (next);
-		_vala_code_node_unref0 (_tmp68_);
+		_vala_code_node_unref0 (_tmp64_);
 	}
 	_vala_code_node_unref0 (_result_);
 	_vala_code_node_unref0 (ed);
@@ -20072,7 +20318,7 @@ static ValaSymbolAccessibility vala_parser_parse_access_modifier (ValaParser* se
 		}
 		default:
 		{
-			ValaSymbolAccessibility _tmp1_;
+			ValaSymbolAccessibility _tmp1_ = 0;
 			_tmp1_ = default_access;
 			result = _tmp1_;
 			return result;
@@ -20083,7 +20329,7 @@ static ValaSymbolAccessibility vala_parser_parse_access_modifier (ValaParser* se
 
 static ValaParserModifierFlags vala_parser_parse_type_declaration_modifiers (ValaParser* self) {
 	ValaParserModifierFlags result = 0;
-	ValaParserModifierFlags flags;
+	ValaParserModifierFlags flags = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	flags = 0;
 	while (TRUE) {
@@ -20092,7 +20338,7 @@ static ValaParserModifierFlags vala_parser_parse_type_declaration_modifiers (Val
 		switch (_tmp0_) {
 			case VALA_TOKEN_TYPE_ABSTRACT:
 			{
-				ValaParserModifierFlags _tmp1_;
+				ValaParserModifierFlags _tmp1_ = 0;
 				vala_parser_next (self);
 				_tmp1_ = flags;
 				flags = _tmp1_ | VALA_PARSER_MODIFIER_FLAGS_ABSTRACT;
@@ -20100,7 +20346,7 @@ static ValaParserModifierFlags vala_parser_parse_type_declaration_modifiers (Val
 			}
 			case VALA_TOKEN_TYPE_EXTERN:
 			{
-				ValaParserModifierFlags _tmp2_;
+				ValaParserModifierFlags _tmp2_ = 0;
 				vala_parser_next (self);
 				_tmp2_ = flags;
 				flags = _tmp2_ | VALA_PARSER_MODIFIER_FLAGS_EXTERN;
@@ -20108,7 +20354,7 @@ static ValaParserModifierFlags vala_parser_parse_type_declaration_modifiers (Val
 			}
 			case VALA_TOKEN_TYPE_SEALED:
 			{
-				ValaParserModifierFlags _tmp3_;
+				ValaParserModifierFlags _tmp3_ = 0;
 				vala_parser_next (self);
 				_tmp3_ = flags;
 				flags = _tmp3_ | VALA_PARSER_MODIFIER_FLAGS_SEALED;
@@ -20126,7 +20372,7 @@ static ValaParserModifierFlags vala_parser_parse_type_declaration_modifiers (Val
 
 static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (ValaParser* self) {
 	ValaParserModifierFlags result = 0;
-	ValaParserModifierFlags flags;
+	ValaParserModifierFlags flags = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	flags = 0;
 	while (TRUE) {
@@ -20135,7 +20381,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 		switch (_tmp0_) {
 			case VALA_TOKEN_TYPE_ABSTRACT:
 			{
-				ValaParserModifierFlags _tmp1_;
+				ValaParserModifierFlags _tmp1_ = 0;
 				vala_parser_next (self);
 				_tmp1_ = flags;
 				flags = _tmp1_ | VALA_PARSER_MODIFIER_FLAGS_ABSTRACT;
@@ -20143,7 +20389,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_ASYNC:
 			{
-				ValaParserModifierFlags _tmp2_;
+				ValaParserModifierFlags _tmp2_ = 0;
 				vala_parser_next (self);
 				_tmp2_ = flags;
 				flags = _tmp2_ | VALA_PARSER_MODIFIER_FLAGS_ASYNC;
@@ -20151,7 +20397,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_CLASS:
 			{
-				ValaParserModifierFlags _tmp3_;
+				ValaParserModifierFlags _tmp3_ = 0;
 				vala_parser_next (self);
 				_tmp3_ = flags;
 				flags = _tmp3_ | VALA_PARSER_MODIFIER_FLAGS_CLASS;
@@ -20159,7 +20405,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_EXTERN:
 			{
-				ValaParserModifierFlags _tmp4_;
+				ValaParserModifierFlags _tmp4_ = 0;
 				vala_parser_next (self);
 				_tmp4_ = flags;
 				flags = _tmp4_ | VALA_PARSER_MODIFIER_FLAGS_EXTERN;
@@ -20167,7 +20413,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_INLINE:
 			{
-				ValaParserModifierFlags _tmp5_;
+				ValaParserModifierFlags _tmp5_ = 0;
 				vala_parser_next (self);
 				_tmp5_ = flags;
 				flags = _tmp5_ | VALA_PARSER_MODIFIER_FLAGS_INLINE;
@@ -20175,7 +20421,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_NEW:
 			{
-				ValaParserModifierFlags _tmp6_;
+				ValaParserModifierFlags _tmp6_ = 0;
 				vala_parser_next (self);
 				_tmp6_ = flags;
 				flags = _tmp6_ | VALA_PARSER_MODIFIER_FLAGS_NEW;
@@ -20183,7 +20429,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_OVERRIDE:
 			{
-				ValaParserModifierFlags _tmp7_;
+				ValaParserModifierFlags _tmp7_ = 0;
 				vala_parser_next (self);
 				_tmp7_ = flags;
 				flags = _tmp7_ | VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
@@ -20191,7 +20437,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_SEALED:
 			{
-				ValaParserModifierFlags _tmp8_;
+				ValaParserModifierFlags _tmp8_ = 0;
 				vala_parser_next (self);
 				_tmp8_ = flags;
 				flags = _tmp8_ | VALA_PARSER_MODIFIER_FLAGS_SEALED;
@@ -20199,7 +20445,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_STATIC:
 			{
-				ValaParserModifierFlags _tmp9_;
+				ValaParserModifierFlags _tmp9_ = 0;
 				vala_parser_next (self);
 				_tmp9_ = flags;
 				flags = _tmp9_ | VALA_PARSER_MODIFIER_FLAGS_STATIC;
@@ -20207,7 +20453,7 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 			}
 			case VALA_TOKEN_TYPE_VIRTUAL:
 			{
-				ValaParserModifierFlags _tmp10_;
+				ValaParserModifierFlags _tmp10_ = 0;
 				vala_parser_next (self);
 				_tmp10_ = flags;
 				flags = _tmp10_ | VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
@@ -20225,37 +20471,38 @@ static ValaParserModifierFlags vala_parser_parse_member_declaration_modifiers (V
 
 static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** error) {
 	ValaParameter* result = NULL;
+	ValaList* attrs = NULL;
 	ValaList* _tmp0_ = NULL;
-	ValaList* attrs;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp1_ = {0};
-	ValaSourceLocation begin;
 	gboolean _tmp2_ = FALSE;
+	gboolean params_array = FALSE;
 	gboolean _tmp8_ = FALSE;
-	gboolean params_array;
-	ValaParameterDirection direction;
+	ValaParameterDirection direction = 0;
 	gboolean _tmp9_ = FALSE;
 	ValaDataType* type = NULL;
-	ValaParameterDirection _tmp11_;
-	gchar* _tmp19_ = NULL;
-	gchar* id;
-	ValaDataType* _tmp20_;
-	ValaDataType* _tmp21_ = NULL;
-	ValaDataType* _tmp22_;
-	const gchar* _tmp23_;
-	ValaDataType* _tmp24_;
-	ValaSourceLocation _tmp25_;
-	ValaSourceReference* _tmp26_ = NULL;
-	ValaSourceReference* _tmp27_;
-	ValaParameter* _tmp28_;
-	ValaParameter* _tmp29_;
-	ValaParameter* param;
-	ValaParameter* _tmp30_;
-	ValaList* _tmp31_;
-	ValaParameter* _tmp32_;
-	ValaParameterDirection _tmp33_;
-	ValaParameter* _tmp34_;
-	gboolean _tmp35_;
-	gboolean _tmp36_ = FALSE;
+	ValaParameterDirection _tmp11_ = 0;
+	gchar* id = NULL;
+	gchar* _tmp22_ = NULL;
+	ValaDataType* _tmp23_ = NULL;
+	ValaDataType* _tmp24_ = NULL;
+	ValaDataType* _tmp25_ = NULL;
+	ValaDataType* _tmp26_ = NULL;
+	ValaParameter* param = NULL;
+	const gchar* _tmp27_ = NULL;
+	ValaDataType* _tmp28_ = NULL;
+	ValaSourceLocation _tmp29_ = {0};
+	ValaSourceReference* _tmp30_ = NULL;
+	ValaSourceReference* _tmp31_ = NULL;
+	ValaParameter* _tmp32_ = NULL;
+	ValaParameter* _tmp33_ = NULL;
+	ValaParameter* _tmp34_ = NULL;
+	ValaList* _tmp35_ = NULL;
+	ValaParameter* _tmp36_ = NULL;
+	ValaParameterDirection _tmp37_ = 0;
+	ValaParameter* _tmp38_ = NULL;
+	gboolean _tmp39_ = FALSE;
+	gboolean _tmp40_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_parse_attributes (self, &_inner_error_);
@@ -20274,11 +20521,11 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 	begin = _tmp1_;
 	_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ELLIPSIS);
 	if (_tmp2_) {
-		ValaSourceLocation _tmp3_;
+		ValaSourceLocation _tmp3_ = {0};
 		ValaSourceReference* _tmp4_ = NULL;
-		ValaSourceReference* _tmp5_;
-		ValaParameter* _tmp6_;
-		ValaParameter* _tmp7_;
+		ValaSourceReference* _tmp5_ = NULL;
+		ValaParameter* _tmp6_ = NULL;
+		ValaParameter* _tmp7_ = NULL;
 		_tmp3_ = begin;
 		_tmp4_ = vala_parser_get_src (self, &_tmp3_);
 		_tmp5_ = _tmp4_;
@@ -20305,9 +20552,10 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 	_tmp11_ = direction;
 	if (_tmp11_ == VALA_PARAMETER_DIRECTION_IN) {
 		ValaDataType* _tmp12_ = NULL;
-		ValaDataType* _tmp13_;
-		_tmp12_ = vala_parser_parse_type (self, FALSE, FALSE, &_inner_error_);
-		_tmp13_ = _tmp12_;
+		ValaDataType* _tmp13_ = NULL;
+		ValaDataType* _tmp14_ = NULL;
+		_tmp13_ = vala_parser_parse_type (self, FALSE, FALSE, &_inner_error_);
+		_tmp12_ = _tmp13_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -20322,37 +20570,20 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 				return NULL;
 			}
 		}
+		_tmp14_ = _tmp12_;
+		_tmp12_ = NULL;
 		_vala_code_node_unref0 (type);
-		type = _tmp13_;
+		type = _tmp14_;
+		_vala_code_node_unref0 (_tmp12_);
 	} else {
-		ValaParameterDirection _tmp14_;
-		_tmp14_ = direction;
-		if (_tmp14_ == VALA_PARAMETER_DIRECTION_REF) {
-			ValaDataType* _tmp15_ = NULL;
-			ValaDataType* _tmp16_;
-			_tmp15_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
-			_tmp16_ = _tmp15_;
-			if (_inner_error_ != NULL) {
-				if (_inner_error_->domain == VALA_PARSE_ERROR) {
-					g_propagate_error (error, _inner_error_);
-					_vala_code_node_unref0 (type);
-					_vala_iterable_unref0 (attrs);
-					return NULL;
-				} else {
-					_vala_code_node_unref0 (type);
-					_vala_iterable_unref0 (attrs);
-					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-					g_clear_error (&_inner_error_);
-					return NULL;
-				}
-			}
-			_vala_code_node_unref0 (type);
-			type = _tmp16_;
-		} else {
+		ValaParameterDirection _tmp15_ = 0;
+		_tmp15_ = direction;
+		if (_tmp15_ == VALA_PARAMETER_DIRECTION_REF) {
+			ValaDataType* _tmp16_ = NULL;
 			ValaDataType* _tmp17_ = NULL;
-			ValaDataType* _tmp18_;
-			_tmp17_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-			_tmp18_ = _tmp17_;
+			ValaDataType* _tmp18_ = NULL;
+			_tmp17_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
+			_tmp16_ = _tmp17_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -20367,12 +20598,40 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 					return NULL;
 				}
 			}
+			_tmp18_ = _tmp16_;
+			_tmp16_ = NULL;
 			_vala_code_node_unref0 (type);
 			type = _tmp18_;
+			_vala_code_node_unref0 (_tmp16_);
+		} else {
+			ValaDataType* _tmp19_ = NULL;
+			ValaDataType* _tmp20_ = NULL;
+			ValaDataType* _tmp21_ = NULL;
+			_tmp20_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+			_tmp19_ = _tmp20_;
+			if (_inner_error_ != NULL) {
+				if (_inner_error_->domain == VALA_PARSE_ERROR) {
+					g_propagate_error (error, _inner_error_);
+					_vala_code_node_unref0 (type);
+					_vala_iterable_unref0 (attrs);
+					return NULL;
+				} else {
+					_vala_code_node_unref0 (type);
+					_vala_iterable_unref0 (attrs);
+					g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+					g_clear_error (&_inner_error_);
+					return NULL;
+				}
+			}
+			_tmp21_ = _tmp19_;
+			_tmp19_ = NULL;
+			_vala_code_node_unref0 (type);
+			type = _tmp21_;
+			_vala_code_node_unref0 (_tmp19_);
 		}
 	}
-	_tmp19_ = vala_parser_parse_identifier (self, &_inner_error_);
-	id = _tmp19_;
+	_tmp22_ = vala_parser_parse_identifier (self, &_inner_error_);
+	id = _tmp22_;
 	if (_inner_error_ != NULL) {
 		if (_inner_error_->domain == VALA_PARSE_ERROR) {
 			g_propagate_error (error, _inner_error_);
@@ -20387,63 +20646,66 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 			return NULL;
 		}
 	}
-	_tmp20_ = type;
-	_tmp21_ = vala_parser_parse_inline_array_type (self, _tmp20_, &_inner_error_);
-	_tmp22_ = _tmp21_;
-	if (_inner_error_ != NULL) {
-		if (_inner_error_->domain == VALA_PARSE_ERROR) {
-			g_propagate_error (error, _inner_error_);
-			_g_free0 (id);
-			_vala_code_node_unref0 (type);
-			_vala_iterable_unref0 (attrs);
-			return NULL;
-		} else {
-			_g_free0 (id);
-			_vala_code_node_unref0 (type);
-			_vala_iterable_unref0 (attrs);
-			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-			g_clear_error (&_inner_error_);
-			return NULL;
-		}
-	}
-	_vala_code_node_unref0 (type);
-	type = _tmp22_;
-	_tmp23_ = id;
 	_tmp24_ = type;
-	_tmp25_ = begin;
-	_tmp26_ = vala_parser_get_src (self, &_tmp25_);
-	_tmp27_ = _tmp26_;
-	_tmp28_ = vala_parameter_new (_tmp23_, _tmp24_, _tmp27_);
-	_tmp29_ = _tmp28_;
-	_vala_source_reference_unref0 (_tmp27_);
-	param = _tmp29_;
-	_tmp30_ = param;
-	_tmp31_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp30_, _tmp31_);
-	_tmp32_ = param;
-	_tmp33_ = direction;
-	vala_parameter_set_direction (_tmp32_, _tmp33_);
+	_tmp25_ = vala_parser_parse_inline_array_type (self, _tmp24_, &_inner_error_);
+	_tmp23_ = _tmp25_;
+	if (_inner_error_ != NULL) {
+		if (_inner_error_->domain == VALA_PARSE_ERROR) {
+			g_propagate_error (error, _inner_error_);
+			_g_free0 (id);
+			_vala_code_node_unref0 (type);
+			_vala_iterable_unref0 (attrs);
+			return NULL;
+		} else {
+			_g_free0 (id);
+			_vala_code_node_unref0 (type);
+			_vala_iterable_unref0 (attrs);
+			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+			g_clear_error (&_inner_error_);
+			return NULL;
+		}
+	}
+	_tmp26_ = _tmp23_;
+	_tmp23_ = NULL;
+	_vala_code_node_unref0 (type);
+	type = _tmp26_;
+	_tmp27_ = id;
+	_tmp28_ = type;
+	_tmp29_ = begin;
+	_tmp30_ = vala_parser_get_src (self, &_tmp29_);
+	_tmp31_ = _tmp30_;
+	_tmp32_ = vala_parameter_new (_tmp27_, _tmp28_, _tmp31_);
+	_tmp33_ = _tmp32_;
+	_vala_source_reference_unref0 (_tmp31_);
+	param = _tmp33_;
 	_tmp34_ = param;
-	_tmp35_ = params_array;
-	vala_parameter_set_params_array (_tmp34_, _tmp35_);
-	_tmp36_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
-	if (_tmp36_) {
-		ValaExpression* _tmp37_ = NULL;
-		ValaExpression* _tmp38_;
-		ValaParameter* _tmp39_;
-		ValaExpression* _tmp40_;
-		_tmp37_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp38_ = _tmp37_;
+	_tmp35_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp34_, _tmp35_);
+	_tmp36_ = param;
+	_tmp37_ = direction;
+	vala_parameter_set_direction (_tmp36_, _tmp37_);
+	_tmp38_ = param;
+	_tmp39_ = params_array;
+	vala_parameter_set_params_array (_tmp38_, _tmp39_);
+	_tmp40_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ASSIGN);
+	if (_tmp40_) {
+		ValaExpression* _tmp41_ = NULL;
+		ValaExpression* _tmp42_ = NULL;
+		ValaParameter* _tmp43_ = NULL;
+		_tmp42_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp41_ = _tmp42_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
 				_vala_code_node_unref0 (param);
+				_vala_code_node_unref0 (_tmp23_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				_vala_iterable_unref0 (attrs);
 				return NULL;
 			} else {
 				_vala_code_node_unref0 (param);
+				_vala_code_node_unref0 (_tmp23_);
 				_g_free0 (id);
 				_vala_code_node_unref0 (type);
 				_vala_iterable_unref0 (attrs);
@@ -20452,12 +20714,12 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 				return NULL;
 			}
 		}
-		_tmp39_ = param;
-		_tmp40_ = _tmp38_;
-		vala_variable_set_initializer ((ValaVariable*) _tmp39_, _tmp40_);
-		_vala_code_node_unref0 (_tmp40_);
+		_tmp43_ = param;
+		vala_variable_set_initializer ((ValaVariable*) _tmp43_, _tmp41_);
+		_vala_code_node_unref0 (_tmp41_);
 	}
 	result = param;
+	_vala_code_node_unref0 (_tmp23_);
 	_g_free0 (id);
 	_vala_code_node_unref0 (type);
 	_vala_iterable_unref0 (attrs);
@@ -20466,35 +20728,33 @@ static ValaParameter* vala_parser_parse_parameter (ValaParser* self, GError** er
 
 
 static void vala_parser_parse_creation_method_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp3_ = NULL;
-	ValaUnresolvedSymbol* sym;
-	ValaParserModifierFlags _tmp4_;
+	ValaParserModifierFlags _tmp4_ = 0;
 	ValaCreationMethod* method = NULL;
-	ValaUnresolvedSymbol* _tmp9_;
-	ValaUnresolvedSymbol* _tmp10_;
-	ValaUnresolvedSymbol* _tmp11_;
-	ValaParserModifierFlags _tmp33_;
+	ValaUnresolvedSymbol* _tmp9_ = NULL;
+	ValaUnresolvedSymbol* _tmp10_ = NULL;
+	ValaUnresolvedSymbol* _tmp11_ = NULL;
+	ValaParserModifierFlags _tmp33_ = 0;
 	gboolean _tmp35_ = FALSE;
 	gboolean _tmp36_ = FALSE;
-	ValaParserModifierFlags _tmp37_;
-	gboolean _tmp39_;
-	gboolean _tmp41_;
-	ValaParserModifierFlags _tmp45_;
-	ValaTokenType _tmp47_ = 0;
-	gboolean _tmp54_ = FALSE;
-	ValaCreationMethod* _tmp72_;
-	ValaSymbolAccessibility _tmp73_;
-	ValaCreationMethod* _tmp74_;
-	ValaList* _tmp75_;
-	gboolean _tmp76_ = FALSE;
-	ValaSymbol* _tmp87_;
-	ValaCreationMethod* _tmp88_;
+	ValaParserModifierFlags _tmp37_ = 0;
+	ValaParserModifierFlags _tmp43_ = 0;
+	ValaTokenType _tmp45_ = 0;
+	gboolean _tmp51_ = FALSE;
+	ValaCreationMethod* _tmp65_ = NULL;
+	ValaSymbolAccessibility _tmp66_ = 0;
+	ValaCreationMethod* _tmp67_ = NULL;
+	ValaList* _tmp68_ = NULL;
+	gboolean _tmp69_ = FALSE;
+	ValaSymbol* _tmp79_ = NULL;
+	ValaCreationMethod* _tmp80_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -20519,9 +20779,9 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 	_tmp4_ = flags;
 	if ((_tmp4_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
 		gchar* _tmp5_ = NULL;
-		gchar* _tmp6_;
-		GError* _tmp7_;
-		GError* _tmp8_;
+		gchar* _tmp6_ = NULL;
+		GError* _tmp7_ = NULL;
+		GError* _tmp8_ = NULL;
 		_tmp5_ = vala_parser_get_error (self, "`new' modifier not allowed on creation method");
 		_tmp6_ = _tmp5_;
 		_tmp7_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp6_);
@@ -20543,14 +20803,14 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 	_tmp10_ = vala_unresolved_symbol_get_inner (_tmp9_);
 	_tmp11_ = _tmp10_;
 	if (_tmp11_ == NULL) {
-		ValaUnresolvedSymbol* _tmp12_;
-		const gchar* _tmp13_;
-		const gchar* _tmp14_;
-		ValaSourceLocation _tmp15_;
+		ValaUnresolvedSymbol* _tmp12_ = NULL;
+		const gchar* _tmp13_ = NULL;
+		const gchar* _tmp14_ = NULL;
+		ValaSourceLocation _tmp15_ = {0};
 		ValaSourceReference* _tmp16_ = NULL;
-		ValaSourceReference* _tmp17_;
-		ValaComment* _tmp18_;
-		ValaCreationMethod* _tmp19_;
+		ValaSourceReference* _tmp17_ = NULL;
+		ValaComment* _tmp18_ = NULL;
+		ValaCreationMethod* _tmp19_ = NULL;
 		_tmp12_ = sym;
 		_tmp13_ = vala_symbol_get_name ((ValaSymbol*) _tmp12_);
 		_tmp14_ = _tmp13_;
@@ -20563,19 +20823,19 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 		method = _tmp19_;
 		_vala_source_reference_unref0 (_tmp17_);
 	} else {
-		ValaUnresolvedSymbol* _tmp20_;
-		ValaUnresolvedSymbol* _tmp21_;
-		ValaUnresolvedSymbol* _tmp22_;
-		const gchar* _tmp23_;
-		const gchar* _tmp24_;
-		ValaUnresolvedSymbol* _tmp25_;
-		const gchar* _tmp26_;
-		const gchar* _tmp27_;
-		ValaSourceLocation _tmp28_;
+		ValaUnresolvedSymbol* _tmp20_ = NULL;
+		ValaUnresolvedSymbol* _tmp21_ = NULL;
+		ValaUnresolvedSymbol* _tmp22_ = NULL;
+		const gchar* _tmp23_ = NULL;
+		const gchar* _tmp24_ = NULL;
+		ValaUnresolvedSymbol* _tmp25_ = NULL;
+		const gchar* _tmp26_ = NULL;
+		const gchar* _tmp27_ = NULL;
+		ValaSourceLocation _tmp28_ = {0};
 		ValaSourceReference* _tmp29_ = NULL;
-		ValaSourceReference* _tmp30_;
-		ValaComment* _tmp31_;
-		ValaCreationMethod* _tmp32_;
+		ValaSourceReference* _tmp30_ = NULL;
+		ValaComment* _tmp31_ = NULL;
+		ValaCreationMethod* _tmp32_ = NULL;
 		_tmp20_ = sym;
 		_tmp21_ = vala_unresolved_symbol_get_inner (_tmp20_);
 		_tmp22_ = _tmp21_;
@@ -20595,7 +20855,7 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 	}
 	_tmp33_ = flags;
 	if ((_tmp33_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
-		ValaCreationMethod* _tmp34_;
+		ValaCreationMethod* _tmp34_ = NULL;
 		_tmp34_ = method;
 		vala_symbol_set_external ((ValaSymbol*) _tmp34_, TRUE);
 	}
@@ -20603,34 +20863,32 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 	if ((_tmp37_ & VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) == VALA_PARSER_MODIFIER_FLAGS_ABSTRACT) {
 		_tmp36_ = TRUE;
 	} else {
-		ValaParserModifierFlags _tmp38_;
+		ValaParserModifierFlags _tmp38_ = 0;
 		_tmp38_ = flags;
 		_tmp36_ = (_tmp38_ & VALA_PARSER_MODIFIER_FLAGS_VIRTUAL) == VALA_PARSER_MODIFIER_FLAGS_VIRTUAL;
 	}
-	_tmp39_ = _tmp36_;
-	if (_tmp39_) {
+	if (_tmp36_) {
 		_tmp35_ = TRUE;
 	} else {
-		ValaParserModifierFlags _tmp40_;
-		_tmp40_ = flags;
-		_tmp35_ = (_tmp40_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
+		ValaParserModifierFlags _tmp39_ = 0;
+		_tmp39_ = flags;
+		_tmp35_ = (_tmp39_ & VALA_PARSER_MODIFIER_FLAGS_OVERRIDE) == VALA_PARSER_MODIFIER_FLAGS_OVERRIDE;
 	}
-	_tmp41_ = _tmp35_;
-	if (_tmp41_) {
-		ValaCreationMethod* _tmp42_;
-		ValaSourceReference* _tmp43_;
-		ValaSourceReference* _tmp44_;
-		_tmp42_ = method;
-		_tmp43_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp42_);
-		_tmp44_ = _tmp43_;
-		vala_report_error (_tmp44_, "abstract, virtual, and override modifiers are not applicable to creati" \
+	if (_tmp35_) {
+		ValaCreationMethod* _tmp40_ = NULL;
+		ValaSourceReference* _tmp41_ = NULL;
+		ValaSourceReference* _tmp42_ = NULL;
+		_tmp40_ = method;
+		_tmp41_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp40_);
+		_tmp42_ = _tmp41_;
+		vala_report_error (_tmp42_, "abstract, virtual, and override modifiers are not applicable to creati" \
 "on methods");
 	}
-	_tmp45_ = flags;
-	if ((_tmp45_ & VALA_PARSER_MODIFIER_FLAGS_ASYNC) == VALA_PARSER_MODIFIER_FLAGS_ASYNC) {
-		ValaCreationMethod* _tmp46_;
-		_tmp46_ = method;
-		vala_method_set_coroutine ((ValaMethod*) _tmp46_, TRUE);
+	_tmp43_ = flags;
+	if ((_tmp43_ & VALA_PARSER_MODIFIER_FLAGS_ASYNC) == VALA_PARSER_MODIFIER_FLAGS_ASYNC) {
+		ValaCreationMethod* _tmp44_ = NULL;
+		_tmp44_ = method;
+		vala_method_set_coroutine ((ValaMethod*) _tmp44_, TRUE);
 	}
 	vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
 	if (_inner_error_ != NULL) {
@@ -20647,28 +20905,26 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 			return;
 		}
 	}
-	_tmp47_ = vala_parser_current (self);
-	if (_tmp47_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+	_tmp45_ = vala_parser_current (self);
+	if (_tmp45_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp48_;
-			_tmp48_ = TRUE;
+			gboolean _tmp46_ = FALSE;
+			_tmp46_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp49_;
-				ValaParameter* _tmp51_ = NULL;
-				ValaParameter* param;
-				ValaCreationMethod* _tmp52_;
-				ValaParameter* _tmp53_;
-				_tmp49_ = _tmp48_;
-				if (!_tmp49_) {
-					gboolean _tmp50_ = FALSE;
-					_tmp50_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp50_) {
+				ValaParameter* param = NULL;
+				ValaParameter* _tmp48_ = NULL;
+				ValaCreationMethod* _tmp49_ = NULL;
+				ValaParameter* _tmp50_ = NULL;
+				if (!_tmp46_) {
+					gboolean _tmp47_ = FALSE;
+					_tmp47_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp47_) {
 						break;
 					}
 				}
-				_tmp48_ = FALSE;
-				_tmp51_ = vala_parser_parse_parameter (self, &_inner_error_);
-				param = _tmp51_;
+				_tmp46_ = FALSE;
+				_tmp48_ = vala_parser_parse_parameter (self, &_inner_error_);
+				param = _tmp48_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -20683,9 +20939,9 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 						return;
 					}
 				}
-				_tmp52_ = method;
-				_tmp53_ = param;
-				vala_method_add_parameter ((ValaMethod*) _tmp52_, _tmp53_);
+				_tmp49_ = method;
+				_tmp50_ = param;
+				vala_method_add_parameter ((ValaMethod*) _tmp49_, _tmp50_);
 				_vala_code_node_unref0 (param);
 			}
 		}
@@ -20705,28 +20961,25 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 			return;
 		}
 	}
-	_tmp54_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
-	if (_tmp54_) {
+	_tmp51_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
+	if (_tmp51_) {
 		{
-			gboolean _tmp55_;
-			_tmp55_ = TRUE;
+			gboolean _tmp52_ = FALSE;
+			_tmp52_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp56_;
-				ValaDataType* _tmp58_ = NULL;
-				ValaDataType* _tmp59_;
-				ValaCreationMethod* _tmp60_;
-				ValaDataType* _tmp61_;
-				_tmp56_ = _tmp55_;
-				if (!_tmp56_) {
-					gboolean _tmp57_ = FALSE;
-					_tmp57_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp57_) {
+				ValaDataType* _tmp54_ = NULL;
+				ValaDataType* _tmp55_ = NULL;
+				ValaCreationMethod* _tmp56_ = NULL;
+				if (!_tmp52_) {
+					gboolean _tmp53_ = FALSE;
+					_tmp53_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp53_) {
 						break;
 					}
 				}
-				_tmp55_ = FALSE;
-				_tmp58_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				_tmp59_ = _tmp58_;
+				_tmp52_ = FALSE;
+				_tmp55_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+				_tmp54_ = _tmp55_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -20741,21 +20994,80 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 						return;
 					}
 				}
-				_tmp60_ = method;
-				_tmp61_ = _tmp59_;
-				vala_code_node_add_error_type ((ValaCodeNode*) _tmp60_, _tmp61_);
-				_vala_code_node_unref0 (_tmp61_);
+				_tmp56_ = method;
+				vala_code_node_add_error_type ((ValaCodeNode*) _tmp56_, _tmp54_);
+				_vala_code_node_unref0 (_tmp54_);
 			}
 		}
 	}
 	while (TRUE) {
-		gboolean _tmp62_ = FALSE;
+		gboolean _tmp57_ = FALSE;
+		ValaExpression* _tmp58_ = NULL;
+		ValaExpression* _tmp59_ = NULL;
+		ValaCreationMethod* _tmp60_ = NULL;
+		_tmp57_ = vala_parser_accept (self, VALA_TOKEN_TYPE_REQUIRES);
+		if (!_tmp57_) {
+			break;
+		}
+		vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == VALA_PARSE_ERROR) {
+				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				return;
+			} else {
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return;
+			}
+		}
+		_tmp59_ = vala_parser_parse_expression (self, &_inner_error_);
+		_tmp58_ = _tmp59_;
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == VALA_PARSE_ERROR) {
+				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				return;
+			} else {
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return;
+			}
+		}
+		_tmp60_ = method;
+		vala_method_add_precondition ((ValaMethod*) _tmp60_, _tmp58_);
+		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
+		if (_inner_error_ != NULL) {
+			if (_inner_error_->domain == VALA_PARSE_ERROR) {
+				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp58_);
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				return;
+			} else {
+				_vala_code_node_unref0 (_tmp58_);
+				_vala_code_node_unref0 (method);
+				_vala_code_node_unref0 (sym);
+				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
+				g_clear_error (&_inner_error_);
+				return;
+			}
+		}
+		_vala_code_node_unref0 (_tmp58_);
+	}
+	while (TRUE) {
+		gboolean _tmp61_ = FALSE;
+		ValaExpression* _tmp62_ = NULL;
 		ValaExpression* _tmp63_ = NULL;
-		ValaExpression* _tmp64_;
-		ValaCreationMethod* _tmp65_;
-		ValaExpression* _tmp66_;
-		_tmp62_ = vala_parser_accept (self, VALA_TOKEN_TYPE_REQUIRES);
-		if (!_tmp62_) {
+		ValaCreationMethod* _tmp64_ = NULL;
+		_tmp61_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ENSURES);
+		if (!_tmp61_) {
 			break;
 		}
 		vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
@@ -20774,7 +21086,7 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 			}
 		}
 		_tmp63_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp64_ = _tmp63_;
+		_tmp62_ = _tmp63_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -20789,18 +21101,18 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 				return;
 			}
 		}
-		_tmp65_ = method;
-		_tmp66_ = _tmp64_;
-		vala_method_add_precondition ((ValaMethod*) _tmp65_, _tmp66_);
-		_vala_code_node_unref0 (_tmp66_);
+		_tmp64_ = method;
+		vala_method_add_postcondition ((ValaMethod*) _tmp64_, _tmp62_);
 		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
+				_vala_code_node_unref0 (_tmp62_);
 				_vala_code_node_unref0 (method);
 				_vala_code_node_unref0 (sym);
 				return;
 			} else {
+				_vala_code_node_unref0 (_tmp62_);
 				_vala_code_node_unref0 (method);
 				_vala_code_node_unref0 (sym);
 				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -20808,18 +21120,21 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 				return;
 			}
 		}
+		_vala_code_node_unref0 (_tmp62_);
 	}
-	while (TRUE) {
-		gboolean _tmp67_ = FALSE;
-		ValaExpression* _tmp68_ = NULL;
-		ValaExpression* _tmp69_;
-		ValaCreationMethod* _tmp70_;
-		ValaExpression* _tmp71_;
-		_tmp67_ = vala_parser_accept (self, VALA_TOKEN_TYPE_ENSURES);
-		if (!_tmp67_) {
-			break;
-		}
-		vala_parser_expect (self, VALA_TOKEN_TYPE_OPEN_PARENS, &_inner_error_);
+	_tmp65_ = method;
+	_tmp66_ = access;
+	vala_symbol_set_access ((ValaSymbol*) _tmp65_, _tmp66_);
+	_tmp67_ = method;
+	_tmp68_ = attrs;
+	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp67_, _tmp68_);
+	_tmp69_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
+	if (!_tmp69_) {
+		ValaBlock* _tmp70_ = NULL;
+		ValaBlock* _tmp71_ = NULL;
+		ValaCreationMethod* _tmp72_ = NULL;
+		_tmp71_ = vala_parser_parse_block (self, &_inner_error_);
+		_tmp70_ = _tmp71_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == VALA_PARSE_ERROR) {
 				g_propagate_error (error, _inner_error_);
@@ -20834,137 +21149,71 @@ static void vala_parser_parse_creation_method_declaration (ValaParser* self, Val
 				return;
 			}
 		}
-		_tmp68_ = vala_parser_parse_expression (self, &_inner_error_);
-		_tmp69_ = _tmp68_;
-		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == VALA_PARSE_ERROR) {
-				g_propagate_error (error, _inner_error_);
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				return;
-			} else {
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-				g_clear_error (&_inner_error_);
-				return;
-			}
-		}
-		_tmp70_ = method;
-		_tmp71_ = _tmp69_;
-		vala_method_add_postcondition ((ValaMethod*) _tmp70_, _tmp71_);
-		_vala_code_node_unref0 (_tmp71_);
-		vala_parser_expect (self, VALA_TOKEN_TYPE_CLOSE_PARENS, &_inner_error_);
-		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == VALA_PARSE_ERROR) {
-				g_propagate_error (error, _inner_error_);
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				return;
-			} else {
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-				g_clear_error (&_inner_error_);
-				return;
-			}
-		}
-	}
-	_tmp72_ = method;
-	_tmp73_ = access;
-	vala_symbol_set_access ((ValaSymbol*) _tmp72_, _tmp73_);
-	_tmp74_ = method;
-	_tmp75_ = attrs;
-	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp74_, _tmp75_);
-	_tmp76_ = vala_parser_accept (self, VALA_TOKEN_TYPE_SEMICOLON);
-	if (!_tmp76_) {
-		ValaBlock* _tmp77_ = NULL;
-		ValaBlock* _tmp78_;
-		ValaCreationMethod* _tmp79_;
-		ValaBlock* _tmp80_;
-		_tmp77_ = vala_parser_parse_block (self, &_inner_error_);
-		_tmp78_ = _tmp77_;
-		if (_inner_error_ != NULL) {
-			if (_inner_error_->domain == VALA_PARSE_ERROR) {
-				g_propagate_error (error, _inner_error_);
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				return;
-			} else {
-				_vala_code_node_unref0 (method);
-				_vala_code_node_unref0 (sym);
-				g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
-				g_clear_error (&_inner_error_);
-				return;
-			}
-		}
-		_tmp79_ = method;
-		_tmp80_ = _tmp78_;
-		vala_subroutine_set_body ((ValaSubroutine*) _tmp79_, _tmp80_);
-		_vala_code_node_unref0 (_tmp80_);
+		_tmp72_ = method;
+		vala_subroutine_set_body ((ValaSubroutine*) _tmp72_, _tmp70_);
+		_vala_code_node_unref0 (_tmp70_);
 	} else {
-		ValaScanner* _tmp81_;
-		ValaSourceFile* _tmp82_;
-		ValaSourceFile* _tmp83_;
-		ValaSourceFileType _tmp84_;
-		ValaSourceFileType _tmp85_;
-		_tmp81_ = self->priv->scanner;
-		_tmp82_ = vala_scanner_get_source_file (_tmp81_);
-		_tmp83_ = _tmp82_;
-		_tmp84_ = vala_source_file_get_file_type (_tmp83_);
-		_tmp85_ = _tmp84_;
-		if (_tmp85_ == VALA_SOURCE_FILE_TYPE_PACKAGE) {
-			ValaCreationMethod* _tmp86_;
-			_tmp86_ = method;
-			vala_symbol_set_external ((ValaSymbol*) _tmp86_, TRUE);
+		ValaScanner* _tmp73_ = NULL;
+		ValaSourceFile* _tmp74_ = NULL;
+		ValaSourceFile* _tmp75_ = NULL;
+		ValaSourceFileType _tmp76_ = 0;
+		ValaSourceFileType _tmp77_ = 0;
+		_tmp73_ = self->priv->scanner;
+		_tmp74_ = vala_scanner_get_source_file (_tmp73_);
+		_tmp75_ = _tmp74_;
+		_tmp76_ = vala_source_file_get_file_type (_tmp75_);
+		_tmp77_ = _tmp76_;
+		if (_tmp77_ == VALA_SOURCE_FILE_TYPE_PACKAGE) {
+			ValaCreationMethod* _tmp78_ = NULL;
+			_tmp78_ = method;
+			vala_symbol_set_external ((ValaSymbol*) _tmp78_, TRUE);
 		}
 	}
-	_tmp87_ = parent;
-	_tmp88_ = method;
-	vala_symbol_add_method (_tmp87_, (ValaMethod*) _tmp88_);
+	_tmp79_ = parent;
+	_tmp80_ = method;
+	vala_symbol_add_method (_tmp79_, (ValaMethod*) _tmp80_);
 	_vala_code_node_unref0 (method);
 	_vala_code_node_unref0 (sym);
 }
 
 
 static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol* parent, ValaList* attrs, GError** error) {
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
+	ValaSymbolAccessibility access = 0;
 	ValaSymbolAccessibility _tmp1_ = 0;
-	ValaSymbolAccessibility access;
+	ValaParserModifierFlags flags = 0;
 	ValaParserModifierFlags _tmp2_ = 0;
-	ValaParserModifierFlags flags;
-	ValaParserModifierFlags _tmp3_;
+	ValaParserModifierFlags _tmp3_ = 0;
+	ValaDataType* type = NULL;
 	ValaDataType* _tmp8_ = NULL;
-	ValaDataType* type;
+	ValaUnresolvedSymbol* sym = NULL;
 	ValaUnresolvedSymbol* _tmp9_ = NULL;
-	ValaUnresolvedSymbol* sym;
+	ValaList* type_param_list = NULL;
 	ValaList* _tmp10_ = NULL;
-	ValaList* type_param_list;
-	ValaUnresolvedSymbol* _tmp11_;
-	const gchar* _tmp12_;
-	const gchar* _tmp13_;
-	ValaDataType* _tmp14_;
-	ValaSourceLocation _tmp15_;
+	ValaDelegate* d = NULL;
+	ValaUnresolvedSymbol* _tmp11_ = NULL;
+	const gchar* _tmp12_ = NULL;
+	const gchar* _tmp13_ = NULL;
+	ValaDataType* _tmp14_ = NULL;
+	ValaSourceLocation _tmp15_ = {0};
 	ValaSourceReference* _tmp16_ = NULL;
-	ValaSourceReference* _tmp17_;
-	ValaComment* _tmp18_;
-	ValaDelegate* _tmp19_;
-	ValaDelegate* _tmp20_;
-	ValaDelegate* d;
-	ValaDelegate* _tmp21_;
-	ValaSymbolAccessibility _tmp22_;
-	ValaDelegate* _tmp23_;
-	ValaList* _tmp24_;
-	ValaParserModifierFlags _tmp25_;
+	ValaSourceReference* _tmp17_ = NULL;
+	ValaComment* _tmp18_ = NULL;
+	ValaDelegate* _tmp19_ = NULL;
+	ValaDelegate* _tmp20_ = NULL;
+	ValaDelegate* _tmp21_ = NULL;
+	ValaSymbolAccessibility _tmp22_ = 0;
+	ValaDelegate* _tmp23_ = NULL;
+	ValaList* _tmp24_ = NULL;
+	ValaParserModifierFlags _tmp25_ = 0;
 	gboolean _tmp32_ = FALSE;
-	ValaParserModifierFlags _tmp33_;
-	gboolean _tmp39_;
-	ValaTokenType _tmp54_ = 0;
-	gboolean _tmp61_ = FALSE;
-	ValaDelegate* _tmp69_;
-	ValaSymbol* _tmp70_;
-	ValaSymbol* _result_;
+	ValaParserModifierFlags _tmp33_ = 0;
+	ValaTokenType _tmp53_ = 0;
+	gboolean _tmp59_ = FALSE;
+	ValaSymbol* _result_ = NULL;
+	ValaDelegate* _tmp65_ = NULL;
+	ValaSymbol* _tmp66_ = NULL;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (parent != NULL);
@@ -20988,9 +21237,9 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 	_tmp3_ = flags;
 	if ((_tmp3_ & VALA_PARSER_MODIFIER_FLAGS_NEW) == VALA_PARSER_MODIFIER_FLAGS_NEW) {
 		gchar* _tmp4_ = NULL;
-		gchar* _tmp5_;
-		GError* _tmp6_;
-		GError* _tmp7_;
+		gchar* _tmp5_ = NULL;
+		GError* _tmp6_ = NULL;
+		GError* _tmp7_ = NULL;
 		_tmp4_ = vala_parser_get_error (self, "`new' modifier not allowed on delegates");
 		_tmp5_ = _tmp4_;
 		_tmp6_ = g_error_new_literal (VALA_PARSE_ERROR, VALA_PARSE_ERROR_SYNTAX, _tmp5_);
@@ -21068,16 +21317,16 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 	vala_parser_set_attributes (self, (ValaCodeNode*) _tmp23_, _tmp24_);
 	_tmp25_ = flags;
 	if ((_tmp25_ & VALA_PARSER_MODIFIER_FLAGS_STATIC) == VALA_PARSER_MODIFIER_FLAGS_STATIC) {
-		ValaCodeContext* _tmp26_;
-		gboolean _tmp27_;
-		gboolean _tmp28_;
-		ValaDelegate* _tmp31_;
+		ValaCodeContext* _tmp26_ = NULL;
+		gboolean _tmp27_ = FALSE;
+		gboolean _tmp28_ = FALSE;
+		ValaDelegate* _tmp31_ = NULL;
 		_tmp26_ = self->priv->context;
 		_tmp27_ = vala_code_context_get_deprecated (_tmp26_);
 		_tmp28_ = _tmp27_;
 		if (!_tmp28_) {
 			ValaSourceReference* _tmp29_ = NULL;
-			ValaSourceReference* _tmp30_;
+			ValaSourceReference* _tmp30_ = NULL;
 			_tmp29_ = vala_parser_get_last_src (self);
 			_tmp30_ = _tmp29_;
 			vala_report_warning (_tmp30_, "deprecated syntax, use [CCode (has_target = false)]");
@@ -21090,11 +21339,11 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 	if ((_tmp33_ & VALA_PARSER_MODIFIER_FLAGS_EXTERN) == VALA_PARSER_MODIFIER_FLAGS_EXTERN) {
 		_tmp32_ = TRUE;
 	} else {
-		ValaScanner* _tmp34_;
-		ValaSourceFile* _tmp35_;
-		ValaSourceFile* _tmp36_;
-		ValaSourceFileType _tmp37_;
-		ValaSourceFileType _tmp38_;
+		ValaScanner* _tmp34_ = NULL;
+		ValaSourceFile* _tmp35_ = NULL;
+		ValaSourceFile* _tmp36_ = NULL;
+		ValaSourceFileType _tmp37_ = 0;
+		ValaSourceFileType _tmp38_ = 0;
 		_tmp34_ = self->priv->scanner;
 		_tmp35_ = vala_scanner_get_source_file (_tmp34_);
 		_tmp36_ = _tmp35_;
@@ -21102,53 +21351,52 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 		_tmp38_ = _tmp37_;
 		_tmp32_ = _tmp38_ == VALA_SOURCE_FILE_TYPE_PACKAGE;
 	}
-	_tmp39_ = _tmp32_;
-	if (_tmp39_) {
-		ValaDelegate* _tmp40_;
-		_tmp40_ = d;
-		vala_symbol_set_external ((ValaSymbol*) _tmp40_, TRUE);
+	if (_tmp32_) {
+		ValaDelegate* _tmp39_ = NULL;
+		_tmp39_ = d;
+		vala_symbol_set_external ((ValaSymbol*) _tmp39_, TRUE);
 	}
 	{
-		ValaList* _tmp41_;
-		ValaList* _tmp42_;
-		ValaList* _type_param_list;
-		ValaList* _tmp43_;
-		gint _tmp44_;
-		gint _tmp45_;
-		gint _type_param_size;
-		gint _type_param_index;
-		_tmp41_ = type_param_list;
-		_tmp42_ = _vala_iterable_ref0 (_tmp41_);
-		_type_param_list = _tmp42_;
-		_tmp43_ = _type_param_list;
-		_tmp44_ = vala_collection_get_size ((ValaCollection*) _tmp43_);
-		_tmp45_ = _tmp44_;
-		_type_param_size = _tmp45_;
+		ValaList* _type_param_list = NULL;
+		ValaList* _tmp40_ = NULL;
+		ValaList* _tmp41_ = NULL;
+		gint _type_param_size = 0;
+		ValaList* _tmp42_ = NULL;
+		gint _tmp43_ = 0;
+		gint _tmp44_ = 0;
+		gint _type_param_index = 0;
+		_tmp40_ = type_param_list;
+		_tmp41_ = _vala_iterable_ref0 (_tmp40_);
+		_type_param_list = _tmp41_;
+		_tmp42_ = _type_param_list;
+		_tmp43_ = vala_collection_get_size ((ValaCollection*) _tmp42_);
+		_tmp44_ = _tmp43_;
+		_type_param_size = _tmp44_;
 		_type_param_index = -1;
 		while (TRUE) {
-			gint _tmp46_;
-			gint _tmp47_;
-			gint _tmp48_;
-			ValaList* _tmp49_;
-			gint _tmp50_;
-			gpointer _tmp51_ = NULL;
-			ValaTypeParameter* type_param;
-			ValaDelegate* _tmp52_;
-			ValaTypeParameter* _tmp53_;
+			gint _tmp45_ = 0;
+			gint _tmp46_ = 0;
+			gint _tmp47_ = 0;
+			ValaTypeParameter* type_param = NULL;
+			ValaList* _tmp48_ = NULL;
+			gint _tmp49_ = 0;
+			gpointer _tmp50_ = NULL;
+			ValaDelegate* _tmp51_ = NULL;
+			ValaTypeParameter* _tmp52_ = NULL;
+			_tmp45_ = _type_param_index;
+			_type_param_index = _tmp45_ + 1;
 			_tmp46_ = _type_param_index;
-			_type_param_index = _tmp46_ + 1;
-			_tmp47_ = _type_param_index;
-			_tmp48_ = _type_param_size;
-			if (!(_tmp47_ < _tmp48_)) {
+			_tmp47_ = _type_param_size;
+			if (!(_tmp46_ < _tmp47_)) {
 				break;
 			}
-			_tmp49_ = _type_param_list;
-			_tmp50_ = _type_param_index;
-			_tmp51_ = vala_list_get (_tmp49_, _tmp50_);
-			type_param = (ValaTypeParameter*) _tmp51_;
-			_tmp52_ = d;
-			_tmp53_ = type_param;
-			vala_delegate_add_type_parameter (_tmp52_, _tmp53_);
+			_tmp48_ = _type_param_list;
+			_tmp49_ = _type_param_index;
+			_tmp50_ = vala_list_get (_tmp48_, _tmp49_);
+			type_param = (ValaTypeParameter*) _tmp50_;
+			_tmp51_ = d;
+			_tmp52_ = type_param;
+			vala_delegate_add_type_parameter (_tmp51_, _tmp52_);
 			_vala_code_node_unref0 (type_param);
 		}
 		_vala_iterable_unref0 (_type_param_list);
@@ -21172,28 +21420,26 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp54_ = vala_parser_current (self);
-	if (_tmp54_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
+	_tmp53_ = vala_parser_current (self);
+	if (_tmp53_ != VALA_TOKEN_TYPE_CLOSE_PARENS) {
 		{
-			gboolean _tmp55_;
-			_tmp55_ = TRUE;
+			gboolean _tmp54_ = FALSE;
+			_tmp54_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp56_;
+				ValaParameter* param = NULL;
+				ValaParameter* _tmp56_ = NULL;
+				ValaDelegate* _tmp57_ = NULL;
 				ValaParameter* _tmp58_ = NULL;
-				ValaParameter* param;
-				ValaDelegate* _tmp59_;
-				ValaParameter* _tmp60_;
-				_tmp56_ = _tmp55_;
-				if (!_tmp56_) {
-					gboolean _tmp57_ = FALSE;
-					_tmp57_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp57_) {
+				if (!_tmp54_) {
+					gboolean _tmp55_ = FALSE;
+					_tmp55_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp55_) {
 						break;
 					}
 				}
-				_tmp55_ = FALSE;
-				_tmp58_ = vala_parser_parse_parameter (self, &_inner_error_);
-				param = _tmp58_;
+				_tmp54_ = FALSE;
+				_tmp56_ = vala_parser_parse_parameter (self, &_inner_error_);
+				param = _tmp56_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -21212,9 +21458,9 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 						return;
 					}
 				}
-				_tmp59_ = d;
-				_tmp60_ = param;
-				vala_delegate_add_parameter (_tmp59_, _tmp60_);
+				_tmp57_ = d;
+				_tmp58_ = param;
+				vala_delegate_add_parameter (_tmp57_, _tmp58_);
 				_vala_code_node_unref0 (param);
 			}
 		}
@@ -21238,28 +21484,25 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp61_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
-	if (_tmp61_) {
+	_tmp59_ = vala_parser_accept (self, VALA_TOKEN_TYPE_THROWS);
+	if (_tmp59_) {
 		{
-			gboolean _tmp62_;
-			_tmp62_ = TRUE;
+			gboolean _tmp60_ = FALSE;
+			_tmp60_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp63_;
-				ValaDataType* _tmp65_ = NULL;
-				ValaDataType* _tmp66_;
-				ValaDelegate* _tmp67_;
-				ValaDataType* _tmp68_;
-				_tmp63_ = _tmp62_;
-				if (!_tmp63_) {
-					gboolean _tmp64_ = FALSE;
-					_tmp64_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp64_) {
+				ValaDataType* _tmp62_ = NULL;
+				ValaDataType* _tmp63_ = NULL;
+				ValaDelegate* _tmp64_ = NULL;
+				if (!_tmp60_) {
+					gboolean _tmp61_ = FALSE;
+					_tmp61_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp61_) {
 						break;
 					}
 				}
-				_tmp62_ = FALSE;
-				_tmp65_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
-				_tmp66_ = _tmp65_;
+				_tmp60_ = FALSE;
+				_tmp63_ = vala_parser_parse_type (self, TRUE, FALSE, &_inner_error_);
+				_tmp62_ = _tmp63_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -21278,10 +21521,9 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 						return;
 					}
 				}
-				_tmp67_ = d;
-				_tmp68_ = _tmp66_;
-				vala_code_node_add_error_type ((ValaCodeNode*) _tmp67_, _tmp68_);
-				_vala_code_node_unref0 (_tmp68_);
+				_tmp64_ = d;
+				vala_code_node_add_error_type ((ValaCodeNode*) _tmp64_, _tmp62_);
+				_vala_code_node_unref0 (_tmp62_);
 			}
 		}
 	}
@@ -21304,82 +21546,80 @@ static void vala_parser_parse_delegate_declaration (ValaParser* self, ValaSymbol
 			return;
 		}
 	}
-	_tmp69_ = d;
-	_tmp70_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp69_);
-	_result_ = _tmp70_;
+	_tmp65_ = d;
+	_tmp66_ = _vala_code_node_ref0 ((ValaSymbol*) _tmp65_);
+	_result_ = _tmp66_;
 	while (TRUE) {
-		ValaUnresolvedSymbol* _tmp71_;
-		ValaUnresolvedSymbol* _tmp72_;
-		ValaUnresolvedSymbol* _tmp73_;
-		ValaUnresolvedSymbol* _tmp74_;
-		ValaUnresolvedSymbol* _tmp75_;
-		ValaSymbol* _tmp76_ = NULL;
-		ValaUnresolvedSymbol* _tmp77_;
-		ValaSymbol* _tmp87_;
-		ValaSymbol* _tmp88_;
-		ValaSymbol* next;
-		ValaSymbol* _tmp89_;
-		ValaSymbol* _tmp94_;
-		ValaSymbol* _tmp95_;
-		_tmp71_ = sym;
-		if (!(_tmp71_ != NULL)) {
+		ValaUnresolvedSymbol* _tmp67_ = NULL;
+		ValaUnresolvedSymbol* _tmp68_ = NULL;
+		ValaUnresolvedSymbol* _tmp69_ = NULL;
+		ValaUnresolvedSymbol* _tmp70_ = NULL;
+		ValaUnresolvedSymbol* _tmp71_ = NULL;
+		ValaSymbol* _tmp72_ = NULL;
+		ValaUnresolvedSymbol* _tmp73_ = NULL;
+		ValaSymbol* next = NULL;
+		ValaSymbol* _tmp83_ = NULL;
+		ValaSymbol* _tmp84_ = NULL;
+		ValaSymbol* _tmp89_ = NULL;
+		ValaSymbol* _tmp90_ = NULL;
+		_tmp67_ = sym;
+		if (!(_tmp67_ != NULL)) {
 			break;
 		}
-		_tmp72_ = sym;
-		_tmp73_ = vala_unresolved_symbol_get_inner (_tmp72_);
-		_tmp74_ = _tmp73_;
-		_tmp75_ = _vala_code_node_ref0 (_tmp74_);
+		_tmp68_ = sym;
+		_tmp69_ = vala_unresolved_symbol_get_inner (_tmp68_);
+		_tmp70_ = _tmp69_;
+		_tmp71_ = _vala_code_node_ref0 (_tmp70_);
 		_vala_code_node_unref0 (sym);
-		sym = _tmp75_;
-		_tmp77_ = sym;
-		if (_tmp77_ != NULL) {
-			ValaUnresolvedSymbol* _tmp78_;
-			const gchar* _tmp79_;
-			const gchar* _tmp80_;
-			ValaDelegate* _tmp81_;
-			ValaSourceReference* _tmp82_;
-			ValaSourceReference* _tmp83_;
-			ValaNamespace* _tmp84_;
-			_tmp78_ = sym;
-			_tmp79_ = vala_symbol_get_name ((ValaSymbol*) _tmp78_);
-			_tmp80_ = _tmp79_;
-			_tmp81_ = d;
-			_tmp82_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp81_);
-			_tmp83_ = _tmp82_;
-			_tmp84_ = vala_namespace_new (_tmp80_, _tmp83_);
-			_vala_code_node_unref0 (_tmp76_);
-			_tmp76_ = (ValaSymbol*) _tmp84_;
+		sym = _tmp71_;
+		_tmp73_ = sym;
+		if (_tmp73_ != NULL) {
+			ValaUnresolvedSymbol* _tmp74_ = NULL;
+			const gchar* _tmp75_ = NULL;
+			const gchar* _tmp76_ = NULL;
+			ValaDelegate* _tmp77_ = NULL;
+			ValaSourceReference* _tmp78_ = NULL;
+			ValaSourceReference* _tmp79_ = NULL;
+			ValaNamespace* _tmp80_ = NULL;
+			_tmp74_ = sym;
+			_tmp75_ = vala_symbol_get_name ((ValaSymbol*) _tmp74_);
+			_tmp76_ = _tmp75_;
+			_tmp77_ = d;
+			_tmp78_ = vala_code_node_get_source_reference ((ValaCodeNode*) _tmp77_);
+			_tmp79_ = _tmp78_;
+			_tmp80_ = vala_namespace_new (_tmp76_, _tmp79_);
+			_vala_code_node_unref0 (_tmp72_);
+			_tmp72_ = (ValaSymbol*) _tmp80_;
 		} else {
-			ValaSymbol* _tmp85_;
-			ValaSymbol* _tmp86_;
-			_tmp85_ = parent;
-			_tmp86_ = _vala_code_node_ref0 (_tmp85_);
-			_vala_code_node_unref0 (_tmp76_);
-			_tmp76_ = _tmp86_;
+			ValaSymbol* _tmp81_ = NULL;
+			ValaSymbol* _tmp82_ = NULL;
+			_tmp81_ = parent;
+			_tmp82_ = _vala_code_node_ref0 (_tmp81_);
+			_vala_code_node_unref0 (_tmp72_);
+			_tmp72_ = _tmp82_;
 		}
-		_tmp87_ = _tmp76_;
-		_tmp88_ = _vala_code_node_ref0 (_tmp87_);
-		next = _tmp88_;
-		_tmp89_ = _result_;
-		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp89_, VALA_TYPE_NAMESPACE)) {
-			ValaSymbol* _tmp90_;
-			ValaSymbol* _tmp91_;
-			_tmp90_ = next;
-			_tmp91_ = _result_;
-			vala_symbol_add_namespace (_tmp90_, G_TYPE_CHECK_INSTANCE_CAST (_tmp91_, VALA_TYPE_NAMESPACE, ValaNamespace));
+		_tmp83_ = _vala_code_node_ref0 (_tmp72_);
+		next = _tmp83_;
+		_tmp84_ = _result_;
+		if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp84_, VALA_TYPE_NAMESPACE)) {
+			ValaSymbol* _tmp85_ = NULL;
+			ValaSymbol* _tmp86_ = NULL;
+			_tmp85_ = next;
+			_tmp86_ = _result_;
+			vala_symbol_add_namespace (_tmp85_, G_TYPE_CHECK_INSTANCE_CAST (_tmp86_, VALA_TYPE_NAMESPACE, ValaNamespace));
 		} else {
-			ValaSymbol* _tmp92_;
-			ValaSymbol* _tmp93_;
-			_tmp92_ = next;
-			_tmp93_ = _result_;
-			vala_symbol_add_delegate (_tmp92_, G_TYPE_CHECK_INSTANCE_CAST (_tmp93_, VALA_TYPE_DELEGATE, ValaDelegate));
+			ValaSymbol* _tmp87_ = NULL;
+			ValaSymbol* _tmp88_ = NULL;
+			_tmp87_ = next;
+			_tmp88_ = _result_;
+			vala_symbol_add_delegate (_tmp87_, G_TYPE_CHECK_INSTANCE_CAST (_tmp88_, VALA_TYPE_DELEGATE, ValaDelegate));
 		}
-		_tmp94_ = next;
-		_tmp95_ = _vala_code_node_ref0 (_tmp94_);
+		_tmp89_ = next;
+		_tmp90_ = _vala_code_node_ref0 (_tmp89_);
 		_vala_code_node_unref0 (_result_);
-		_result_ = _tmp95_;
+		_result_ = _tmp90_;
 		_vala_code_node_unref0 (next);
-		_vala_code_node_unref0 (_tmp76_);
+		_vala_code_node_unref0 (_tmp72_);
 	}
 	_vala_code_node_unref0 (_result_);
 	_vala_code_node_unref0 (d);
@@ -21396,41 +21636,39 @@ static ValaList* vala_parser_parse_type_parameter_list (ValaParser* self, GError
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_LT);
 	if (_tmp0_) {
-		GEqualFunc _tmp1_;
-		ValaArrayList* _tmp2_;
-		ValaArrayList* list;
+		ValaArrayList* list = NULL;
+		GEqualFunc _tmp1_ = NULL;
+		ValaArrayList* _tmp2_ = NULL;
 		_tmp1_ = g_direct_equal;
 		_tmp2_ = vala_array_list_new (VALA_TYPE_TYPEPARAMETER, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp1_);
 		list = _tmp2_;
 		{
-			gboolean _tmp3_;
+			gboolean _tmp3_ = FALSE;
 			_tmp3_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp4_;
-				ValaSourceLocation _tmp6_ = {0};
-				ValaSourceLocation begin;
-				gchar* _tmp7_ = NULL;
-				gchar* id;
-				ValaArrayList* _tmp8_;
-				const gchar* _tmp9_;
-				ValaSourceLocation _tmp10_;
+				ValaSourceLocation begin = {0};
+				ValaSourceLocation _tmp5_ = {0};
+				gchar* id = NULL;
+				gchar* _tmp6_ = NULL;
+				ValaArrayList* _tmp7_ = NULL;
+				const gchar* _tmp8_ = NULL;
+				ValaSourceLocation _tmp9_ = {0};
+				ValaSourceReference* _tmp10_ = NULL;
 				ValaSourceReference* _tmp11_ = NULL;
-				ValaSourceReference* _tmp12_;
-				ValaTypeParameter* _tmp13_;
-				ValaTypeParameter* _tmp14_;
-				_tmp4_ = _tmp3_;
-				if (!_tmp4_) {
-					gboolean _tmp5_ = FALSE;
-					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp5_) {
+				ValaTypeParameter* _tmp12_ = NULL;
+				ValaTypeParameter* _tmp13_ = NULL;
+				if (!_tmp3_) {
+					gboolean _tmp4_ = FALSE;
+					_tmp4_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp4_) {
 						break;
 					}
 				}
 				_tmp3_ = FALSE;
-				vala_parser_get_location (self, &_tmp6_);
-				begin = _tmp6_;
-				_tmp7_ = vala_parser_parse_identifier (self, &_inner_error_);
-				id = _tmp7_;
+				vala_parser_get_location (self, &_tmp5_);
+				begin = _tmp5_;
+				_tmp6_ = vala_parser_parse_identifier (self, &_inner_error_);
+				id = _tmp6_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -21443,16 +21681,16 @@ static ValaList* vala_parser_parse_type_parameter_list (ValaParser* self, GError
 						return NULL;
 					}
 				}
-				_tmp8_ = list;
-				_tmp9_ = id;
-				_tmp10_ = begin;
-				_tmp11_ = vala_parser_get_src (self, &_tmp10_);
-				_tmp12_ = _tmp11_;
-				_tmp13_ = vala_typeparameter_new (_tmp9_, _tmp12_);
-				_tmp14_ = _tmp13_;
-				vala_collection_add ((ValaCollection*) _tmp8_, _tmp14_);
-				_vala_code_node_unref0 (_tmp14_);
-				_vala_source_reference_unref0 (_tmp12_);
+				_tmp7_ = list;
+				_tmp8_ = id;
+				_tmp9_ = begin;
+				_tmp10_ = vala_parser_get_src (self, &_tmp9_);
+				_tmp11_ = _tmp10_;
+				_tmp12_ = vala_typeparameter_new (_tmp8_, _tmp11_);
+				_tmp13_ = _tmp12_;
+				vala_collection_add ((ValaCollection*) _tmp7_, _tmp13_);
+				_vala_code_node_unref0 (_tmp13_);
+				_vala_source_reference_unref0 (_tmp11_);
 				_g_free0 (id);
 			}
 		}
@@ -21472,21 +21710,21 @@ static ValaList* vala_parser_parse_type_parameter_list (ValaParser* self, GError
 		result = (ValaList*) list;
 		return result;
 	} else {
-		ValaList* _tmp15_;
-		ValaList* _tmp18_;
-		ValaList* _tmp19_;
-		_tmp15_ = vala_parser__empty_type_parameter_list;
-		if (_tmp15_ == NULL) {
-			GEqualFunc _tmp16_;
-			ValaArrayList* _tmp17_;
-			_tmp16_ = g_direct_equal;
-			_tmp17_ = vala_array_list_new (VALA_TYPE_TYPEPARAMETER, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp16_);
+		ValaList* _tmp14_ = NULL;
+		ValaList* _tmp17_ = NULL;
+		ValaList* _tmp18_ = NULL;
+		_tmp14_ = vala_parser__empty_type_parameter_list;
+		if (_tmp14_ == NULL) {
+			GEqualFunc _tmp15_ = NULL;
+			ValaArrayList* _tmp16_ = NULL;
+			_tmp15_ = g_direct_equal;
+			_tmp16_ = vala_array_list_new (VALA_TYPE_TYPEPARAMETER, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp15_);
 			_vala_iterable_unref0 (vala_parser__empty_type_parameter_list);
-			vala_parser__empty_type_parameter_list = (ValaList*) _tmp17_;
+			vala_parser__empty_type_parameter_list = (ValaList*) _tmp16_;
 		}
-		_tmp18_ = vala_parser__empty_type_parameter_list;
-		_tmp19_ = _vala_iterable_ref0 (_tmp18_);
-		result = _tmp19_;
+		_tmp17_ = vala_parser__empty_type_parameter_list;
+		_tmp18_ = _vala_iterable_ref0 (_tmp17_);
+		result = _tmp18_;
 		return result;
 	}
 }
@@ -21499,15 +21737,13 @@ static void vala_parser_skip_type_argument_list (ValaParser* self, GError** erro
 	_tmp0_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_LT);
 	if (_tmp0_) {
 		{
-			gboolean _tmp1_;
+			gboolean _tmp1_ = FALSE;
 			_tmp1_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp2_;
-				_tmp2_ = _tmp1_;
-				if (!_tmp2_) {
-					gboolean _tmp3_ = FALSE;
-					_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp3_) {
+				if (!_tmp1_) {
+					gboolean _tmp2_ = FALSE;
+					_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp2_) {
 						break;
 					}
 				}
@@ -21542,8 +21778,8 @@ static void vala_parser_skip_type_argument_list (ValaParser* self, GError** erro
 
 static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolean maybe_expression, GError** error) {
 	ValaList* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
 	gboolean _tmp1_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
@@ -21551,43 +21787,41 @@ static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolea
 	begin = _tmp0_;
 	_tmp1_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_LT);
 	if (_tmp1_) {
-		GEqualFunc _tmp2_;
-		ValaArrayList* _tmp3_;
-		ValaArrayList* list;
-		gboolean _tmp12_ = FALSE;
-		gboolean _tmp14_;
+		ValaArrayList* list = NULL;
+		GEqualFunc _tmp2_ = NULL;
+		ValaArrayList* _tmp3_ = NULL;
+		gboolean _tmp11_ = FALSE;
+		gboolean _tmp13_ = FALSE;
 		_tmp2_ = g_direct_equal;
 		_tmp3_ = vala_array_list_new (VALA_TYPE_DATA_TYPE, (GBoxedCopyFunc) vala_code_node_ref, vala_code_node_unref, _tmp2_);
 		list = _tmp3_;
 		{
-			gboolean _tmp4_;
+			gboolean _tmp4_ = FALSE;
 			_tmp4_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp5_;
-				ValaTokenType _tmp7_ = 0;
-				_tmp5_ = _tmp4_;
-				if (!_tmp5_) {
-					gboolean _tmp6_ = FALSE;
-					_tmp6_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
-					if (!_tmp6_) {
+				ValaTokenType _tmp6_ = 0;
+				if (!_tmp4_) {
+					gboolean _tmp5_ = FALSE;
+					_tmp5_ = vala_parser_accept (self, VALA_TOKEN_TYPE_COMMA);
+					if (!_tmp5_) {
 						break;
 					}
 				}
 				_tmp4_ = FALSE;
-				_tmp7_ = vala_parser_current (self);
-				switch (_tmp7_) {
+				_tmp6_ = vala_parser_current (self);
+				switch (_tmp6_) {
 					case VALA_TOKEN_TYPE_VOID:
 					case VALA_TOKEN_TYPE_DYNAMIC:
 					case VALA_TOKEN_TYPE_UNOWNED:
 					case VALA_TOKEN_TYPE_WEAK:
 					case VALA_TOKEN_TYPE_IDENTIFIER:
 					{
-						ValaDataType* _tmp8_ = NULL;
-						ValaDataType* type;
-						ValaArrayList* _tmp9_;
-						ValaDataType* _tmp10_;
-						_tmp8_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
-						type = _tmp8_;
+						ValaDataType* type = NULL;
+						ValaDataType* _tmp7_ = NULL;
+						ValaArrayList* _tmp8_ = NULL;
+						ValaDataType* _tmp9_ = NULL;
+						_tmp7_ = vala_parser_parse_type (self, TRUE, TRUE, &_inner_error_);
+						type = _tmp7_;
 						if (_inner_error_ != NULL) {
 							if (_inner_error_->domain == VALA_PARSE_ERROR) {
 								g_propagate_error (error, _inner_error_);
@@ -21600,17 +21834,17 @@ static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolea
 								return NULL;
 							}
 						}
-						_tmp9_ = list;
-						_tmp10_ = type;
-						vala_collection_add ((ValaCollection*) _tmp9_, _tmp10_);
+						_tmp8_ = list;
+						_tmp9_ = type;
+						vala_collection_add ((ValaCollection*) _tmp8_, _tmp9_);
 						_vala_code_node_unref0 (type);
 						break;
 					}
 					default:
 					{
-						ValaSourceLocation _tmp11_;
-						_tmp11_ = begin;
-						vala_parser_rollback (self, &_tmp11_);
+						ValaSourceLocation _tmp10_ = {0};
+						_tmp10_ = begin;
+						vala_parser_rollback (self, &_tmp10_);
 						result = NULL;
 						_vala_iterable_unref0 (list);
 						return result;
@@ -21618,20 +21852,20 @@ static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolea
 				}
 			}
 		}
-		_tmp12_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_GT);
-		if (!_tmp12_) {
-			ValaSourceLocation _tmp13_;
-			_tmp13_ = begin;
-			vala_parser_rollback (self, &_tmp13_);
+		_tmp11_ = vala_parser_accept (self, VALA_TOKEN_TYPE_OP_GT);
+		if (!_tmp11_) {
+			ValaSourceLocation _tmp12_ = {0};
+			_tmp12_ = begin;
+			vala_parser_rollback (self, &_tmp12_);
 			result = NULL;
 			_vala_iterable_unref0 (list);
 			return result;
 		}
-		_tmp14_ = maybe_expression;
-		if (_tmp14_) {
-			ValaTokenType _tmp15_ = 0;
-			_tmp15_ = vala_parser_current (self);
-			switch (_tmp15_) {
+		_tmp13_ = maybe_expression;
+		if (_tmp13_) {
+			ValaTokenType _tmp14_ = 0;
+			_tmp14_ = vala_parser_current (self);
+			switch (_tmp14_) {
 				case VALA_TOKEN_TYPE_OPEN_PARENS:
 				case VALA_TOKEN_TYPE_CLOSE_PARENS:
 				case VALA_TOKEN_TYPE_CLOSE_BRACKET:
@@ -21648,9 +21882,9 @@ static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolea
 				}
 				default:
 				{
-					ValaSourceLocation _tmp16_;
-					_tmp16_ = begin;
-					vala_parser_rollback (self, &_tmp16_);
+					ValaSourceLocation _tmp15_ = {0};
+					_tmp15_ = begin;
+					vala_parser_rollback (self, &_tmp15_);
 					result = NULL;
 					_vala_iterable_unref0 (list);
 					return result;
@@ -21667,10 +21901,10 @@ static ValaList* vala_parser_parse_type_argument_list (ValaParser* self, gboolea
 
 static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaExpression* base_expr, GError** error) {
 	ValaMemberAccess* result = NULL;
+	ValaSourceLocation begin = {0};
 	ValaSourceLocation _tmp0_ = {0};
-	ValaSourceLocation begin;
-	ValaMemberAccess* expr;
-	gboolean first;
+	ValaMemberAccess* expr = NULL;
+	gboolean first = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	vala_parser_get_location (self, &_tmp0_);
@@ -21678,42 +21912,37 @@ static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaEx
 	expr = NULL;
 	first = TRUE;
 	{
-		gboolean _tmp1_;
+		gboolean _tmp1_ = FALSE;
 		_tmp1_ = TRUE;
 		while (TRUE) {
-			gboolean _tmp2_;
-			gchar* _tmp4_ = NULL;
-			gchar* id;
-			gboolean qualified;
+			gchar* id = NULL;
+			gchar* _tmp3_ = NULL;
+			gboolean qualified = FALSE;
+			gboolean _tmp4_ = FALSE;
 			gboolean _tmp5_ = FALSE;
 			gboolean _tmp6_ = FALSE;
-			gboolean _tmp7_;
-			gboolean _tmp9_;
-			gboolean _tmp11_;
-			ValaList* _tmp14_ = NULL;
-			ValaList* type_arg_list;
-			ValaExpression* _tmp15_ = NULL;
-			ValaMemberAccess* _tmp16_;
-			ValaExpression* _tmp19_;
-			const gchar* _tmp20_;
-			ValaSourceLocation _tmp21_;
-			ValaSourceReference* _tmp22_ = NULL;
-			ValaSourceReference* _tmp23_;
-			ValaMemberAccess* _tmp24_;
-			ValaMemberAccess* _tmp25_;
-			gboolean _tmp26_;
-			ValaList* _tmp27_;
-			_tmp2_ = _tmp1_;
-			if (!_tmp2_) {
-				gboolean _tmp3_ = FALSE;
-				_tmp3_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
-				if (!_tmp3_) {
+			ValaList* type_arg_list = NULL;
+			ValaList* _tmp12_ = NULL;
+			ValaExpression* _tmp13_ = NULL;
+			ValaMemberAccess* _tmp14_ = NULL;
+			const gchar* _tmp17_ = NULL;
+			ValaSourceLocation _tmp18_ = {0};
+			ValaSourceReference* _tmp19_ = NULL;
+			ValaSourceReference* _tmp20_ = NULL;
+			ValaMemberAccess* _tmp21_ = NULL;
+			ValaMemberAccess* _tmp22_ = NULL;
+			gboolean _tmp23_ = FALSE;
+			ValaList* _tmp24_ = NULL;
+			if (!_tmp1_) {
+				gboolean _tmp2_ = FALSE;
+				_tmp2_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOT);
+				if (!_tmp2_) {
 					break;
 				}
 			}
 			_tmp1_ = FALSE;
-			_tmp4_ = vala_parser_parse_identifier (self, &_inner_error_);
-			id = _tmp4_;
+			_tmp3_ = vala_parser_parse_identifier (self, &_inner_error_);
+			id = _tmp3_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -21727,28 +21956,27 @@ static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaEx
 				}
 			}
 			qualified = FALSE;
-			_tmp7_ = first;
-			if (_tmp7_) {
-				const gchar* _tmp8_;
-				_tmp8_ = id;
-				_tmp6_ = g_strcmp0 (_tmp8_, "global") == 0;
-			} else {
-				_tmp6_ = FALSE;
-			}
-			_tmp9_ = _tmp6_;
-			if (_tmp9_) {
-				gboolean _tmp10_ = FALSE;
-				_tmp10_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
-				_tmp5_ = _tmp10_;
+			_tmp6_ = first;
+			if (_tmp6_) {
+				const gchar* _tmp7_ = NULL;
+				_tmp7_ = id;
+				_tmp5_ = g_strcmp0 (_tmp7_, "global") == 0;
 			} else {
 				_tmp5_ = FALSE;
 			}
-			_tmp11_ = _tmp5_;
-			if (_tmp11_) {
-				gchar* _tmp12_ = NULL;
-				gchar* _tmp13_;
-				_tmp12_ = vala_parser_parse_identifier (self, &_inner_error_);
-				_tmp13_ = _tmp12_;
+			if (_tmp5_) {
+				gboolean _tmp8_ = FALSE;
+				_tmp8_ = vala_parser_accept (self, VALA_TOKEN_TYPE_DOUBLE_COLON);
+				_tmp4_ = _tmp8_;
+			} else {
+				_tmp4_ = FALSE;
+			}
+			if (_tmp4_) {
+				gchar* _tmp9_ = NULL;
+				gchar* _tmp10_ = NULL;
+				gchar* _tmp11_ = NULL;
+				_tmp10_ = vala_parser_parse_identifier (self, &_inner_error_);
+				_tmp9_ = _tmp10_;
 				if (_inner_error_ != NULL) {
 					if (_inner_error_->domain == VALA_PARSE_ERROR) {
 						g_propagate_error (error, _inner_error_);
@@ -21763,12 +21991,15 @@ static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaEx
 						return NULL;
 					}
 				}
+				_tmp11_ = _tmp9_;
+				_tmp9_ = NULL;
 				_g_free0 (id);
-				id = _tmp13_;
+				id = _tmp11_;
 				qualified = TRUE;
+				_g_free0 (_tmp9_);
 			}
-			_tmp14_ = vala_parser_parse_type_argument_list (self, FALSE, &_inner_error_);
-			type_arg_list = _tmp14_;
+			_tmp12_ = vala_parser_parse_type_argument_list (self, FALSE, &_inner_error_);
+			type_arg_list = _tmp12_;
 			if (_inner_error_ != NULL) {
 				if (_inner_error_->domain == VALA_PARSE_ERROR) {
 					g_propagate_error (error, _inner_error_);
@@ -21783,71 +22014,70 @@ static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaEx
 					return NULL;
 				}
 			}
-			_tmp16_ = expr;
-			if (_tmp16_ != NULL) {
-				ValaMemberAccess* _tmp17_;
-				_tmp17_ = expr;
-				_tmp15_ = (ValaExpression*) _tmp17_;
+			_tmp14_ = expr;
+			if (_tmp14_ != NULL) {
+				ValaMemberAccess* _tmp15_ = NULL;
+				_tmp15_ = expr;
+				_tmp13_ = (ValaExpression*) _tmp15_;
 			} else {
-				ValaExpression* _tmp18_;
-				_tmp18_ = base_expr;
-				_tmp15_ = _tmp18_;
+				ValaExpression* _tmp16_ = NULL;
+				_tmp16_ = base_expr;
+				_tmp13_ = _tmp16_;
 			}
-			_tmp19_ = _tmp15_;
-			_tmp20_ = id;
-			_tmp21_ = begin;
-			_tmp22_ = vala_parser_get_src (self, &_tmp21_);
-			_tmp23_ = _tmp22_;
-			_tmp24_ = vala_member_access_new (_tmp19_, _tmp20_, _tmp23_);
+			_tmp17_ = id;
+			_tmp18_ = begin;
+			_tmp19_ = vala_parser_get_src (self, &_tmp18_);
+			_tmp20_ = _tmp19_;
+			_tmp21_ = vala_member_access_new (_tmp13_, _tmp17_, _tmp20_);
 			_vala_code_node_unref0 (expr);
-			expr = _tmp24_;
-			_vala_source_reference_unref0 (_tmp23_);
-			_tmp25_ = expr;
-			_tmp26_ = qualified;
-			vala_member_access_set_qualified (_tmp25_, _tmp26_);
-			_tmp27_ = type_arg_list;
-			if (_tmp27_ != NULL) {
+			expr = _tmp21_;
+			_vala_source_reference_unref0 (_tmp20_);
+			_tmp22_ = expr;
+			_tmp23_ = qualified;
+			vala_member_access_set_qualified (_tmp22_, _tmp23_);
+			_tmp24_ = type_arg_list;
+			if (_tmp24_ != NULL) {
 				{
-					ValaList* _tmp28_;
-					ValaList* _tmp29_;
-					ValaList* _type_arg_list;
-					ValaList* _tmp30_;
-					gint _tmp31_;
-					gint _tmp32_;
-					gint _type_arg_size;
-					gint _type_arg_index;
-					_tmp28_ = type_arg_list;
-					_tmp29_ = _vala_iterable_ref0 (_tmp28_);
-					_type_arg_list = _tmp29_;
-					_tmp30_ = _type_arg_list;
-					_tmp31_ = vala_collection_get_size ((ValaCollection*) _tmp30_);
-					_tmp32_ = _tmp31_;
-					_type_arg_size = _tmp32_;
+					ValaList* _type_arg_list = NULL;
+					ValaList* _tmp25_ = NULL;
+					ValaList* _tmp26_ = NULL;
+					gint _type_arg_size = 0;
+					ValaList* _tmp27_ = NULL;
+					gint _tmp28_ = 0;
+					gint _tmp29_ = 0;
+					gint _type_arg_index = 0;
+					_tmp25_ = type_arg_list;
+					_tmp26_ = _vala_iterable_ref0 (_tmp25_);
+					_type_arg_list = _tmp26_;
+					_tmp27_ = _type_arg_list;
+					_tmp28_ = vala_collection_get_size ((ValaCollection*) _tmp27_);
+					_tmp29_ = _tmp28_;
+					_type_arg_size = _tmp29_;
 					_type_arg_index = -1;
 					while (TRUE) {
-						gint _tmp33_;
-						gint _tmp34_;
-						gint _tmp35_;
-						ValaList* _tmp36_;
-						gint _tmp37_;
-						gpointer _tmp38_ = NULL;
-						ValaDataType* type_arg;
-						ValaMemberAccess* _tmp39_;
-						ValaDataType* _tmp40_;
-						_tmp33_ = _type_arg_index;
-						_type_arg_index = _tmp33_ + 1;
-						_tmp34_ = _type_arg_index;
-						_tmp35_ = _type_arg_size;
-						if (!(_tmp34_ < _tmp35_)) {
+						gint _tmp30_ = 0;
+						gint _tmp31_ = 0;
+						gint _tmp32_ = 0;
+						ValaDataType* type_arg = NULL;
+						ValaList* _tmp33_ = NULL;
+						gint _tmp34_ = 0;
+						gpointer _tmp35_ = NULL;
+						ValaMemberAccess* _tmp36_ = NULL;
+						ValaDataType* _tmp37_ = NULL;
+						_tmp30_ = _type_arg_index;
+						_type_arg_index = _tmp30_ + 1;
+						_tmp31_ = _type_arg_index;
+						_tmp32_ = _type_arg_size;
+						if (!(_tmp31_ < _tmp32_)) {
 							break;
 						}
-						_tmp36_ = _type_arg_list;
-						_tmp37_ = _type_arg_index;
-						_tmp38_ = vala_list_get (_tmp36_, _tmp37_);
-						type_arg = (ValaDataType*) _tmp38_;
-						_tmp39_ = expr;
-						_tmp40_ = type_arg;
-						vala_member_access_add_type_argument (_tmp39_, _tmp40_);
+						_tmp33_ = _type_arg_list;
+						_tmp34_ = _type_arg_index;
+						_tmp35_ = vala_list_get (_tmp33_, _tmp34_);
+						type_arg = (ValaDataType*) _tmp35_;
+						_tmp36_ = expr;
+						_tmp37_ = type_arg;
+						vala_member_access_add_type_argument (_tmp36_, _tmp37_);
 						_vala_code_node_unref0 (type_arg);
 					}
 					_vala_iterable_unref0 (_type_arg_list);
@@ -21865,7 +22095,7 @@ static ValaMemberAccess* vala_parser_parse_member_name (ValaParser* self, ValaEx
 
 static gboolean vala_parser_is_declaration_keyword (ValaParser* self, ValaTokenType type) {
 	gboolean result = FALSE;
-	ValaTokenType _tmp0_;
+	ValaTokenType _tmp0_ = 0;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = type;
 	switch (_tmp0_) {

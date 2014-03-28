@@ -424,6 +424,17 @@ typedef struct _ValaCCodeLabelClass ValaCCodeLabelClass;
 typedef struct _ValaCCodeLabelPrivate ValaCCodeLabelPrivate;
 typedef struct _ValaCCodeLineDirectivePrivate ValaCCodeLineDirectivePrivate;
 
+#define VALA_TYPE_CCODE_IF_SECTION (vala_ccode_if_section_get_type ())
+#define VALA_CCODE_IF_SECTION(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_CCODE_IF_SECTION, ValaCCodeIfSection))
+#define VALA_CCODE_IF_SECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_CCODE_IF_SECTION, ValaCCodeIfSectionClass))
+#define VALA_IS_CCODE_IF_SECTION(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), VALA_TYPE_CCODE_IF_SECTION))
+#define VALA_IS_CCODE_IF_SECTION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), VALA_TYPE_CCODE_IF_SECTION))
+#define VALA_CCODE_IF_SECTION_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), VALA_TYPE_CCODE_IF_SECTION, ValaCCodeIfSectionClass))
+
+typedef struct _ValaCCodeIfSection ValaCCodeIfSection;
+typedef struct _ValaCCodeIfSectionClass ValaCCodeIfSectionClass;
+typedef struct _ValaCCodeIfSectionPrivate ValaCCodeIfSectionPrivate;
+
 #define VALA_TYPE_CCODE_MACRO_REPLACEMENT (vala_ccode_macro_replacement_get_type ())
 #define VALA_CCODE_MACRO_REPLACEMENT(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), VALA_TYPE_CCODE_MACRO_REPLACEMENT, ValaCCodeMacroReplacement))
 #define VALA_CCODE_MACRO_REPLACEMENT_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), VALA_TYPE_CCODE_MACRO_REPLACEMENT, ValaCCodeMacroReplacementClass))
@@ -941,6 +952,15 @@ struct _ValaCCodeLineDirectiveClass {
 	ValaCCodeNodeClass parent_class;
 };
 
+struct _ValaCCodeIfSection {
+	ValaCCodeFragment parent_instance;
+	ValaCCodeIfSectionPrivate * priv;
+};
+
+struct _ValaCCodeIfSectionClass {
+	ValaCCodeFragmentClass parent_class;
+};
+
 struct _ValaCCodeMacroReplacement {
 	ValaCCodeNode parent_instance;
 	ValaCCodeMacroReplacementPrivate * priv;
@@ -1366,6 +1386,11 @@ const gchar* vala_ccode_line_directive_get_filename (ValaCCodeLineDirective* sel
 void vala_ccode_line_directive_set_filename (ValaCCodeLineDirective* self, const gchar* value);
 gint vala_ccode_line_directive_get_line_number (ValaCCodeLineDirective* self);
 void vala_ccode_line_directive_set_line_number (ValaCCodeLineDirective* self, gint value);
+GType vala_ccode_if_section_get_type (void) G_GNUC_CONST;
+ValaCCodeIfSection* vala_ccode_if_section_new (const gchar* expr);
+ValaCCodeIfSection* vala_ccode_if_section_construct (GType object_type, const gchar* expr);
+const gchar* vala_ccode_if_section_get_expression (ValaCCodeIfSection* self);
+void vala_ccode_if_section_set_expression (ValaCCodeIfSection* self, const gchar* value);
 GType vala_ccode_macro_replacement_get_type (void) G_GNUC_CONST;
 ValaCCodeMacroReplacement* vala_ccode_macro_replacement_new (const gchar* name, const gchar* replacement);
 ValaCCodeMacroReplacement* vala_ccode_macro_replacement_construct (GType object_type, const gchar* name, const gchar* replacement);

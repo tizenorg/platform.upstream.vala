@@ -31,11 +31,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <valacodegen.h>
+#include <version.h>
+#include <config.h>
 #include <glib/gstdio.h>
 #include <unistd.h>
 #include <locale.h>
-#include <config.h>
-#include <version.h>
 #include <gobject/gvaluecollector.h>
 
 
@@ -116,6 +116,8 @@ static gchar** vala_compiler_fast_vapis;
 static gchar** vala_compiler_fast_vapis = NULL;
 static gchar* vala_compiler_target_glib;
 static gchar* vala_compiler_target_glib = NULL;
+static gchar** vala_compiler_gresources;
+static gchar** vala_compiler_gresources = NULL;
 static gboolean vala_compiler_ccode_only;
 static gboolean vala_compiler_ccode_only = FALSE;
 static gchar* vala_compiler_header_filename;
@@ -203,45 +205,44 @@ static gint vala_compiler_run (ValaCompiler* self);
 static gchar** _vala_array_dup1 (gchar** self, int length);
 static gchar** _vala_array_dup2 (gchar** self, int length);
 static gchar** _vala_array_dup3 (gchar** self, int length);
+static gchar** _vala_array_dup4 (gchar** self, int length);
 static gint vala_compiler_run_source (gchar** args, int args_length1);
 ValaCompiler* vala_compiler_new (void);
 ValaCompiler* vala_compiler_construct (GType object_type);
 static void _vala_array_add1 (gchar*** array, int* length, int* size, gchar* value);
 static Block1Data* block1_data_ref (Block1Data* _data1_);
 static void block1_data_unref (void * _userdata_);
-static void ___lambda2_ (Block1Data* _data1_, GPid pid, gint status);
-static void ____lambda2__gchild_watch_func (GPid pid, gint status, gpointer self);
+static void ___lambda3_ (Block1Data* _data1_, GPid pid, gint status);
+static void ____lambda3__gchild_watch_func (GPid pid, gint status, gpointer self);
 static gint vala_compiler_main (gchar** args, int args_length1);
 static void vala_compiler_finalize (ValaCompiler* obj);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static gint _vala_array_length (gpointer array);
 
-static const GOptionEntry VALA_COMPILER_options[49] = {{"vapidir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_vapi_directories, "Look for package bindings in DIRECTORY", "DIRECTORY..."}, {"girdir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_gir_directories, "Look for .gir files in DIRECTORY", "DIRECTORY..."}, {"metadatadir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_metadata_directories, "Look for GIR .metadata files in DIRECTORY", "DIRECTORY..."}, {"pkg", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_packages, "Include binding for PACKAGE", "PACKAGE..."}, {"vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_vapi_filename, "Output VAPI file name", "FILE"}, {"library", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_library, "Library name", "NAME"}, {"gir", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_gir, "GObject-Introspection repository file name", "NAME-VERSION.gir"}, {"basedir", 'b', 0, G_OPTION_ARG_FILENAME, &vala_compiler_basedir, "Base source directory", "DIRECTORY"}, {"directory", 'd', 0, G_OPTION_ARG_FILENAME, &vala_compiler_directory, "Output directory", "DIRECTORY"}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_version, "Display version number", NULL}, {"api-version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_api_version, "Display API version number", NULL}, {"ccode", 'C', 0, G_OPTION_ARG_NONE, &vala_compiler_ccode_only, "Output C code", NULL}, {"header", 'H', 0, G_OPTION_ARG_FILENAME, &vala_compiler_header_filename, "Output C header file", "FILE"}, {"use-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_use_header, "Use C header file", NULL}, {"includedir", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_includedir, "Directory used to include the C header file", "DIRECTORY"}, {"internal-header", 'h', 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_header_filename, "Output internal C header file", "FILE"}, {"internal-vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_vapi_filename, "Output vapi with internal api", "FILE"}, {"fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_fast_vapi_filename, "Output vapi without performing symbol resolution", NULL}, {"use-fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_fast_vapis, "Use --fast-vapi output during this compile", NULL}, {"deps", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_dependencies, "Write make-style dependency information to this file", NULL}, {"symbols", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_symbols_filename, "Output symbols file", "FILE"}, {"compile", 'c', 0, G_OPTION_ARG_NONE, &vala_compiler_compile_only, "Compile but do not link", NULL}, {"output", 'o', 0, G_OPTION_ARG_FILENAME, &vala_compiler_output, "Place output in file FILE", "FILE"}, {"debug", 'g', 0, G_OPTION_ARG_NONE, &vala_compiler_debug, "Produce debug information", NULL}, {"thread", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_thread, "Enable multithreading support", NULL}, {"enable-mem-profiler", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_mem_profiler, "Enable GLib memory profiler", NULL}, {"define", 'D', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_defines, "Define SYMBOL", "SYMBOL..."}, {"main", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_entry_point, "Use SYMBOL as entry point", "SYMBOL..."}, {"nostdpkg", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_nostdpkg, "Do not include standard packages", NULL}, {"disable-assert", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_assert, "Disable assertions", NULL}, {"enable-checking", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_checking, "Enable additional run-time checks", NULL}, {"enable-deprecated", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_deprecated, "Enable deprecated features", NULL}, {"enable-experimental", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental, "Enable experimental features", NULL}, {"disable-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_warnings, "Disable warnings", NULL}, {"fatal-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_fatal_warnings, "Treat warnings as fatal", NULL}, {"enable-experimental-non-null", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental_non_null, "Enable experimental enhancements for non-null types", NULL}, {"enable-gobject-tracing", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_gobject_tracing, "Enable GObject creation tracing", NULL}, {"cc", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_cc_command, "Use COMMAND as C compiler command", "COMMAND"}, {"Xcc", 'X', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_cc_options, "Pass OPTION to the C compiler", "OPTION..."}, {"dump-tree", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_dump_tree, "Write code tree to FILE", "FILE"}, {"save-temps", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_save_temps, "Keep temporary files", NULL}, {"profile", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_profile, "Use the given profile instead of the default", "PROFILE"}, {"quiet", 'q', 0, G_OPTION_ARG_NONE, &vala_compiler_quiet_mode, "Do not print messages to the console", NULL}, {"verbose", 'v', 0, G_OPTION_ARG_NONE, &vala_compiler_verbose_mode, "Print additional messages to the console", NULL}, {"target-glib", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_target_glib, "Target version of glib for code generation", "MAJOR.MINOR"}, {"enable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_version_header, "Write vala build version in generated files", NULL}, {"disable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_version_header, "Do not write vala build version in generated files", NULL}, {"", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_sources, NULL, "FILE..."}, {NULL}};
+static const GOptionEntry VALA_COMPILER_options[50] = {{"vapidir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_vapi_directories, "Look for package bindings in DIRECTORY", "DIRECTORY..."}, {"girdir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_gir_directories, "Look for .gir files in DIRECTORY", "DIRECTORY..."}, {"metadatadir", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_metadata_directories, "Look for GIR .metadata files in DIRECTORY", "DIRECTORY..."}, {"pkg", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_packages, "Include binding for PACKAGE", "PACKAGE..."}, {"vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_vapi_filename, "Output VAPI file name", "FILE"}, {"library", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_library, "Library name", "NAME"}, {"gir", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_gir, "GObject-Introspection repository file name", "NAME-VERSION.gir"}, {"basedir", 'b', 0, G_OPTION_ARG_FILENAME, &vala_compiler_basedir, "Base source directory", "DIRECTORY"}, {"directory", 'd', 0, G_OPTION_ARG_FILENAME, &vala_compiler_directory, "Output directory", "DIRECTORY"}, {"version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_version, "Display version number", NULL}, {"api-version", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_api_version, "Display API version number", NULL}, {"ccode", 'C', 0, G_OPTION_ARG_NONE, &vala_compiler_ccode_only, "Output C code", NULL}, {"header", 'H', 0, G_OPTION_ARG_FILENAME, &vala_compiler_header_filename, "Output C header file", "FILE"}, {"use-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_use_header, "Use C header file", NULL}, {"includedir", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_includedir, "Directory used to include the C header file", "DIRECTORY"}, {"internal-header", 'h', 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_header_filename, "Output internal C header file", "FILE"}, {"internal-vapi", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_internal_vapi_filename, "Output vapi with internal api", "FILE"}, {"fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_fast_vapi_filename, "Output vapi without performing symbol resolution", NULL}, {"use-fast-vapi", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_fast_vapis, "Use --fast-vapi output during this compile", NULL}, {"deps", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_dependencies, "Write make-style dependency information to this file", NULL}, {"symbols", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_symbols_filename, "Output symbols file", "FILE"}, {"compile", 'c', 0, G_OPTION_ARG_NONE, &vala_compiler_compile_only, "Compile but do not link", NULL}, {"output", 'o', 0, G_OPTION_ARG_FILENAME, &vala_compiler_output, "Place output in file FILE", "FILE"}, {"debug", 'g', 0, G_OPTION_ARG_NONE, &vala_compiler_debug, "Produce debug information", NULL}, {"thread", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_thread, "Enable multithreading support", NULL}, {"enable-mem-profiler", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_mem_profiler, "Enable GLib memory profiler", NULL}, {"define", 'D', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_defines, "Define SYMBOL", "SYMBOL..."}, {"main", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_entry_point, "Use SYMBOL as entry point", "SYMBOL..."}, {"nostdpkg", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_nostdpkg, "Do not include standard packages", NULL}, {"disable-assert", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_assert, "Disable assertions", NULL}, {"enable-checking", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_checking, "Enable additional run-time checks", NULL}, {"enable-deprecated", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_deprecated, "Enable deprecated features", NULL}, {"enable-experimental", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental, "Enable experimental features", NULL}, {"disable-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_warnings, "Disable warnings", NULL}, {"fatal-warnings", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_fatal_warnings, "Treat warnings as fatal", NULL}, {"enable-experimental-non-null", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_experimental_non_null, "Enable experimental enhancements for non-null types", NULL}, {"enable-gobject-tracing", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_gobject_tracing, "Enable GObject creation tracing", NULL}, {"cc", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_cc_command, "Use COMMAND as C compiler command", "COMMAND"}, {"Xcc", 'X', 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_cc_options, "Pass OPTION to the C compiler", "OPTION..."}, {"dump-tree", (gchar) 0, 0, G_OPTION_ARG_FILENAME, &vala_compiler_dump_tree, "Write code tree to FILE", "FILE"}, {"save-temps", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_save_temps, "Keep temporary files", NULL}, {"profile", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_profile, "Use the given profile instead of the default", "PROFILE"}, {"quiet", 'q', 0, G_OPTION_ARG_NONE, &vala_compiler_quiet_mode, "Do not print messages to the console", NULL}, {"verbose", 'v', 0, G_OPTION_ARG_NONE, &vala_compiler_verbose_mode, "Print additional messages to the console", NULL}, {"target-glib", (gchar) 0, 0, G_OPTION_ARG_STRING, &vala_compiler_target_glib, "Target version of glib for code generation", "MAJOR.MINOR"}, {"gresources", (gchar) 0, 0, G_OPTION_ARG_STRING_ARRAY, &vala_compiler_gresources, "XML of gresources", "FILE..."}, {"enable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_enable_version_header, "Write vala build version in generated files", NULL}, {"disable-version-header", (gchar) 0, 0, G_OPTION_ARG_NONE, &vala_compiler_disable_version_header, "Do not write vala build version in generated files", NULL}, {"", (gchar) 0, 0, G_OPTION_ARG_FILENAME_ARRAY, &vala_compiler_sources, NULL, "FILE..."}, {NULL}};
 
 static gint vala_compiler_quit (ValaCompiler* self) {
 	gint result = 0;
 	gboolean _tmp0_ = FALSE;
-	ValaCodeContext* _tmp1_;
-	ValaReport* _tmp2_;
-	ValaReport* _tmp3_;
+	ValaCodeContext* _tmp1_ = NULL;
+	ValaReport* _tmp2_ = NULL;
+	ValaReport* _tmp3_ = NULL;
 	gint _tmp4_ = 0;
-	gboolean _tmp9_;
-	gboolean _tmp10_ = FALSE;
-	ValaCodeContext* _tmp11_;
-	ValaReport* _tmp12_;
-	ValaReport* _tmp13_;
-	gint _tmp14_ = 0;
-	gboolean _tmp22_;
+	gboolean _tmp9_ = FALSE;
+	ValaCodeContext* _tmp10_ = NULL;
+	ValaReport* _tmp11_ = NULL;
+	ValaReport* _tmp12_ = NULL;
+	gint _tmp13_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp1_ = self->priv->context;
 	_tmp2_ = vala_code_context_get_report (_tmp1_);
 	_tmp3_ = _tmp2_;
 	_tmp4_ = vala_report_get_errors (_tmp3_);
 	if (_tmp4_ == 0) {
-		ValaCodeContext* _tmp5_;
-		ValaReport* _tmp6_;
-		ValaReport* _tmp7_;
+		ValaCodeContext* _tmp5_ = NULL;
+		ValaReport* _tmp6_ = NULL;
+		ValaReport* _tmp7_ = NULL;
 		gint _tmp8_ = 0;
 		_tmp5_ = self->priv->context;
 		_tmp6_ = vala_code_context_get_report (_tmp5_);
@@ -251,80 +252,76 @@ static gint vala_compiler_quit (ValaCompiler* self) {
 	} else {
 		_tmp0_ = FALSE;
 	}
-	_tmp9_ = _tmp0_;
-	if (_tmp9_) {
+	if (_tmp0_) {
 		result = 0;
 		return result;
 	}
-	_tmp11_ = self->priv->context;
-	_tmp12_ = vala_code_context_get_report (_tmp11_);
-	_tmp13_ = _tmp12_;
-	_tmp14_ = vala_report_get_errors (_tmp13_);
-	if (_tmp14_ == 0) {
+	_tmp10_ = self->priv->context;
+	_tmp11_ = vala_code_context_get_report (_tmp10_);
+	_tmp12_ = _tmp11_;
+	_tmp13_ = vala_report_get_errors (_tmp12_);
+	if (_tmp13_ == 0) {
+		gboolean _tmp14_ = FALSE;
 		gboolean _tmp15_ = FALSE;
-		gboolean _tmp16_;
-		gboolean _tmp21_;
-		_tmp16_ = vala_compiler_fatal_warnings;
-		if (!_tmp16_) {
-			_tmp15_ = TRUE;
+		_tmp15_ = vala_compiler_fatal_warnings;
+		if (!_tmp15_) {
+			_tmp14_ = TRUE;
 		} else {
-			ValaCodeContext* _tmp17_;
-			ValaReport* _tmp18_;
-			ValaReport* _tmp19_;
-			gint _tmp20_ = 0;
-			_tmp17_ = self->priv->context;
-			_tmp18_ = vala_code_context_get_report (_tmp17_);
-			_tmp19_ = _tmp18_;
-			_tmp20_ = vala_report_get_warnings (_tmp19_);
-			_tmp15_ = _tmp20_ == 0;
+			ValaCodeContext* _tmp16_ = NULL;
+			ValaReport* _tmp17_ = NULL;
+			ValaReport* _tmp18_ = NULL;
+			gint _tmp19_ = 0;
+			_tmp16_ = self->priv->context;
+			_tmp17_ = vala_code_context_get_report (_tmp16_);
+			_tmp18_ = _tmp17_;
+			_tmp19_ = vala_report_get_warnings (_tmp18_);
+			_tmp14_ = _tmp19_ == 0;
 		}
-		_tmp21_ = _tmp15_;
-		_tmp10_ = _tmp21_;
+		_tmp9_ = _tmp14_;
 	} else {
-		_tmp10_ = FALSE;
+		_tmp9_ = FALSE;
 	}
-	_tmp22_ = _tmp10_;
-	if (_tmp22_) {
-		gboolean _tmp23_;
-		_tmp23_ = vala_compiler_quiet_mode;
-		if (!_tmp23_) {
-			FILE* _tmp24_;
-			ValaCodeContext* _tmp25_;
-			ValaReport* _tmp26_;
-			ValaReport* _tmp27_;
-			gint _tmp28_ = 0;
-			_tmp24_ = stdout;
-			_tmp25_ = self->priv->context;
-			_tmp26_ = vala_code_context_get_report (_tmp25_);
-			_tmp27_ = _tmp26_;
-			_tmp28_ = vala_report_get_warnings (_tmp27_);
-			fprintf (_tmp24_, "Compilation succeeded - %d warning(s)\n", _tmp28_);
+	if (_tmp9_) {
+		gboolean _tmp20_ = FALSE;
+		_tmp20_ = vala_compiler_quiet_mode;
+		if (!_tmp20_) {
+			FILE* _tmp21_ = NULL;
+			ValaCodeContext* _tmp22_ = NULL;
+			ValaReport* _tmp23_ = NULL;
+			ValaReport* _tmp24_ = NULL;
+			gint _tmp25_ = 0;
+			_tmp21_ = stdout;
+			_tmp22_ = self->priv->context;
+			_tmp23_ = vala_code_context_get_report (_tmp22_);
+			_tmp24_ = _tmp23_;
+			_tmp25_ = vala_report_get_warnings (_tmp24_);
+			fprintf (_tmp21_, "Compilation succeeded - %d warning(s)\n", _tmp25_);
 		}
 		result = 0;
 		return result;
 	} else {
-		gboolean _tmp29_;
-		_tmp29_ = vala_compiler_quiet_mode;
-		if (!_tmp29_) {
-			FILE* _tmp30_;
-			ValaCodeContext* _tmp31_;
-			ValaReport* _tmp32_;
-			ValaReport* _tmp33_;
-			gint _tmp34_ = 0;
-			ValaCodeContext* _tmp35_;
-			ValaReport* _tmp36_;
-			ValaReport* _tmp37_;
-			gint _tmp38_ = 0;
-			_tmp30_ = stdout;
-			_tmp31_ = self->priv->context;
-			_tmp32_ = vala_code_context_get_report (_tmp31_);
-			_tmp33_ = _tmp32_;
-			_tmp34_ = vala_report_get_errors (_tmp33_);
-			_tmp35_ = self->priv->context;
-			_tmp36_ = vala_code_context_get_report (_tmp35_);
-			_tmp37_ = _tmp36_;
-			_tmp38_ = vala_report_get_warnings (_tmp37_);
-			fprintf (_tmp30_, "Compilation failed: %d error(s), %d warning(s)\n", _tmp34_, _tmp38_);
+		gboolean _tmp26_ = FALSE;
+		_tmp26_ = vala_compiler_quiet_mode;
+		if (!_tmp26_) {
+			FILE* _tmp27_ = NULL;
+			ValaCodeContext* _tmp28_ = NULL;
+			ValaReport* _tmp29_ = NULL;
+			ValaReport* _tmp30_ = NULL;
+			gint _tmp31_ = 0;
+			ValaCodeContext* _tmp32_ = NULL;
+			ValaReport* _tmp33_ = NULL;
+			ValaReport* _tmp34_ = NULL;
+			gint _tmp35_ = 0;
+			_tmp27_ = stdout;
+			_tmp28_ = self->priv->context;
+			_tmp29_ = vala_code_context_get_report (_tmp28_);
+			_tmp30_ = _tmp29_;
+			_tmp31_ = vala_report_get_errors (_tmp30_);
+			_tmp32_ = self->priv->context;
+			_tmp33_ = vala_code_context_get_report (_tmp32_);
+			_tmp34_ = _tmp33_;
+			_tmp35_ = vala_report_get_warnings (_tmp34_);
+			fprintf (_tmp27_, "Compilation failed: %d error(s), %d warning(s)\n", _tmp31_, _tmp35_);
 		}
 		result = 1;
 		return result;
@@ -334,11 +331,11 @@ static gint vala_compiler_quit (ValaCompiler* self) {
 
 static gint string_last_index_of_char (const gchar* self, gunichar c, gint start_index) {
 	gint result = 0;
-	gint _tmp0_;
-	gunichar _tmp1_;
+	gchar* _result_ = NULL;
+	gint _tmp0_ = 0;
+	gunichar _tmp1_ = 0U;
 	gchar* _tmp2_ = NULL;
-	gchar* _result_;
-	gchar* _tmp3_;
+	gchar* _tmp3_ = NULL;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = start_index;
 	_tmp1_ = c;
@@ -346,7 +343,7 @@ static gint string_last_index_of_char (const gchar* self, gunichar c, gint start
 	_result_ = _tmp2_;
 	_tmp3_ = _result_;
 	if (_tmp3_ != NULL) {
-		gchar* _tmp4_;
+		gchar* _tmp4_ = NULL;
 		_tmp4_ = _result_;
 		result = (gint) (_tmp4_ - ((gchar*) self));
 		return result;
@@ -359,24 +356,24 @@ static gint string_last_index_of_char (const gchar* self, gunichar c, gint start
 
 static glong string_strnlen (gchar* str, glong maxlen) {
 	glong result = 0L;
-	gchar* _tmp0_;
-	glong _tmp1_;
+	gchar* end = NULL;
+	gchar* _tmp0_ = NULL;
+	glong _tmp1_ = 0L;
 	gchar* _tmp2_ = NULL;
-	gchar* end;
-	gchar* _tmp3_;
+	gchar* _tmp3_ = NULL;
 	_tmp0_ = str;
 	_tmp1_ = maxlen;
 	_tmp2_ = memchr (_tmp0_, 0, (gsize) _tmp1_);
 	end = _tmp2_;
 	_tmp3_ = end;
 	if (_tmp3_ == NULL) {
-		glong _tmp4_;
+		glong _tmp4_ = 0L;
 		_tmp4_ = maxlen;
 		result = _tmp4_;
 		return result;
 	} else {
-		gchar* _tmp5_;
-		gchar* _tmp6_;
+		gchar* _tmp5_ = NULL;
+		gchar* _tmp6_ = NULL;
 		_tmp5_ = end;
 		_tmp6_ = str;
 		result = (glong) (_tmp5_ - _tmp6_);
@@ -389,74 +386,72 @@ static gchar* string_substring (const gchar* self, glong offset, glong len) {
 	gchar* result = NULL;
 	glong string_length = 0L;
 	gboolean _tmp0_ = FALSE;
-	glong _tmp1_;
-	gboolean _tmp3_;
-	glong _tmp9_;
-	glong _tmp15_;
-	glong _tmp18_;
-	glong _tmp19_;
-	glong _tmp20_;
-	glong _tmp21_;
-	glong _tmp22_;
-	gchar* _tmp23_ = NULL;
+	glong _tmp1_ = 0L;
+	glong _tmp8_ = 0L;
+	glong _tmp14_ = 0L;
+	glong _tmp17_ = 0L;
+	glong _tmp18_ = 0L;
+	glong _tmp19_ = 0L;
+	glong _tmp20_ = 0L;
+	glong _tmp21_ = 0L;
+	gchar* _tmp22_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp1_ = offset;
 	if (_tmp1_ >= ((glong) 0)) {
-		glong _tmp2_;
+		glong _tmp2_ = 0L;
 		_tmp2_ = len;
 		_tmp0_ = _tmp2_ >= ((glong) 0);
 	} else {
 		_tmp0_ = FALSE;
 	}
-	_tmp3_ = _tmp0_;
-	if (_tmp3_) {
-		glong _tmp4_;
-		glong _tmp5_;
-		glong _tmp6_ = 0L;
-		_tmp4_ = offset;
-		_tmp5_ = len;
-		_tmp6_ = string_strnlen ((gchar*) self, _tmp4_ + _tmp5_);
-		string_length = _tmp6_;
+	if (_tmp0_) {
+		glong _tmp3_ = 0L;
+		glong _tmp4_ = 0L;
+		glong _tmp5_ = 0L;
+		_tmp3_ = offset;
+		_tmp4_ = len;
+		_tmp5_ = string_strnlen ((gchar*) self, _tmp3_ + _tmp4_);
+		string_length = _tmp5_;
 	} else {
-		gint _tmp7_;
-		gint _tmp8_;
-		_tmp7_ = strlen (self);
-		_tmp8_ = _tmp7_;
-		string_length = (glong) _tmp8_;
+		gint _tmp6_ = 0;
+		gint _tmp7_ = 0;
+		_tmp6_ = strlen (self);
+		_tmp7_ = _tmp6_;
+		string_length = (glong) _tmp7_;
 	}
-	_tmp9_ = offset;
-	if (_tmp9_ < ((glong) 0)) {
-		glong _tmp10_;
-		glong _tmp11_;
-		glong _tmp12_;
-		_tmp10_ = string_length;
+	_tmp8_ = offset;
+	if (_tmp8_ < ((glong) 0)) {
+		glong _tmp9_ = 0L;
+		glong _tmp10_ = 0L;
+		glong _tmp11_ = 0L;
+		_tmp9_ = string_length;
+		_tmp10_ = offset;
+		offset = _tmp9_ + _tmp10_;
 		_tmp11_ = offset;
-		offset = _tmp10_ + _tmp11_;
-		_tmp12_ = offset;
-		g_return_val_if_fail (_tmp12_ >= ((glong) 0), NULL);
+		g_return_val_if_fail (_tmp11_ >= ((glong) 0), NULL);
 	} else {
-		glong _tmp13_;
-		glong _tmp14_;
-		_tmp13_ = offset;
-		_tmp14_ = string_length;
-		g_return_val_if_fail (_tmp13_ <= _tmp14_, NULL);
+		glong _tmp12_ = 0L;
+		glong _tmp13_ = 0L;
+		_tmp12_ = offset;
+		_tmp13_ = string_length;
+		g_return_val_if_fail (_tmp12_ <= _tmp13_, NULL);
 	}
-	_tmp15_ = len;
-	if (_tmp15_ < ((glong) 0)) {
-		glong _tmp16_;
-		glong _tmp17_;
-		_tmp16_ = string_length;
-		_tmp17_ = offset;
-		len = _tmp16_ - _tmp17_;
+	_tmp14_ = len;
+	if (_tmp14_ < ((glong) 0)) {
+		glong _tmp15_ = 0L;
+		glong _tmp16_ = 0L;
+		_tmp15_ = string_length;
+		_tmp16_ = offset;
+		len = _tmp15_ - _tmp16_;
 	}
-	_tmp18_ = offset;
-	_tmp19_ = len;
-	_tmp20_ = string_length;
-	g_return_val_if_fail ((_tmp18_ + _tmp19_) <= _tmp20_, NULL);
-	_tmp21_ = offset;
-	_tmp22_ = len;
-	_tmp23_ = g_strndup (((gchar*) self) + _tmp21_, (gsize) _tmp22_);
-	result = _tmp23_;
+	_tmp17_ = offset;
+	_tmp18_ = len;
+	_tmp19_ = string_length;
+	g_return_val_if_fail ((_tmp17_ + _tmp18_) <= _tmp19_, NULL);
+	_tmp20_ = offset;
+	_tmp21_ = len;
+	_tmp22_ = g_strndup (((gchar*) self) + _tmp20_, (gsize) _tmp21_);
+	result = _tmp22_;
 	return result;
 }
 
@@ -466,7 +461,7 @@ static gchar** _vala_array_dup1 (gchar** self, int length) {
 	int i;
 	result = g_new0 (gchar*, length + 1);
 	for (i = 0; i < length; i++) {
-		gchar* _tmp0_;
+		gchar* _tmp0_ = NULL;
 		_tmp0_ = g_strdup (self[i]);
 		result[i] = _tmp0_;
 	}
@@ -479,7 +474,7 @@ static gchar** _vala_array_dup2 (gchar** self, int length) {
 	int i;
 	result = g_new0 (gchar*, length + 1);
 	for (i = 0; i < length; i++) {
-		gchar* _tmp0_;
+		gchar* _tmp0_ = NULL;
 		_tmp0_ = g_strdup (self[i]);
 		result[i] = _tmp0_;
 	}
@@ -492,7 +487,20 @@ static gchar** _vala_array_dup3 (gchar** self, int length) {
 	int i;
 	result = g_new0 (gchar*, length + 1);
 	for (i = 0; i < length; i++) {
-		gchar* _tmp0_;
+		gchar* _tmp0_ = NULL;
+		_tmp0_ = g_strdup (self[i]);
+		result[i] = _tmp0_;
+	}
+	return result;
+}
+
+
+static gchar** _vala_array_dup4 (gchar** self, int length) {
+	gchar** result;
+	int i;
+	result = g_new0 (gchar*, length + 1);
+	for (i = 0; i < length; i++) {
+		gchar* _tmp0_ = NULL;
 		_tmp0_ = g_strdup (self[i]);
 		result[i] = _tmp0_;
 	}
@@ -502,8 +510,8 @@ static gchar** _vala_array_dup3 (gchar** self, int length) {
 
 static gchar string_get (const gchar* self, glong index) {
 	gchar result = '\0';
-	glong _tmp0_;
-	gchar _tmp1_;
+	glong _tmp0_ = 0L;
+	gchar _tmp1_ = '\0';
 	g_return_val_if_fail (self != NULL, '\0');
 	_tmp0_ = index;
 	_tmp1_ = ((gchar*) self)[_tmp0_];
@@ -514,7 +522,7 @@ static gchar string_get (const gchar* self, glong index) {
 
 static gboolean string_contains (const gchar* self, const gchar* needle) {
 	gboolean result = FALSE;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	gchar* _tmp1_ = NULL;
 	g_return_val_if_fail (self != NULL, FALSE);
 	g_return_val_if_fail (needle != NULL, FALSE);
@@ -527,188 +535,178 @@ static gboolean string_contains (const gchar* self, const gchar* needle) {
 
 static gint vala_compiler_run (ValaCompiler* self) {
 	gint result = 0;
-	ValaCodeContext* _tmp0_;
-	ValaCodeContext* _tmp1_;
+	ValaCodeContext* _tmp0_ = NULL;
+	ValaCodeContext* _tmp1_ = NULL;
 	gboolean _tmp2_ = FALSE;
 	gboolean _tmp3_ = FALSE;
-	gboolean _tmp4_;
-	gboolean _tmp6_;
-	gboolean _tmp8_;
-	ValaCodeContext* _tmp21_;
-	gboolean _tmp22_;
-	ValaCodeContext* _tmp23_;
-	gboolean _tmp24_;
-	ValaCodeContext* _tmp25_;
-	gboolean _tmp26_;
-	ValaCodeContext* _tmp27_;
-	gboolean _tmp28_;
-	ValaCodeContext* _tmp29_;
-	gboolean _tmp30_;
-	ValaCodeContext* _tmp31_;
-	gboolean _tmp32_;
-	ValaCodeContext* _tmp33_;
-	ValaReport* _tmp34_;
-	ValaReport* _tmp35_;
-	gboolean _tmp36_;
-	ValaCodeContext* _tmp37_;
-	ValaReport* _tmp38_;
-	ValaReport* _tmp39_;
-	gboolean _tmp40_;
-	ValaCodeContext* _tmp41_;
-	gboolean _tmp42_;
-	ValaCodeContext* _tmp43_;
-	gboolean _tmp44_;
-	ValaCodeContext* _tmp45_;
-	gboolean _tmp46_;
-	ValaCodeContext* _tmp47_;
-	gboolean _tmp48_;
-	ValaCodeContext* _tmp49_;
-	const gchar* _tmp50_;
-	gboolean _tmp51_ = FALSE;
-	const gchar* _tmp52_;
-	gboolean _tmp54_;
-	ValaCodeContext* _tmp55_;
-	gboolean _tmp56_;
-	ValaCodeContext* _tmp57_;
-	const gchar* _tmp58_;
-	ValaCodeContext* _tmp59_;
-	const gchar* _tmp60_;
-	ValaCodeContext* _tmp61_;
-	const gchar* _tmp62_;
-	ValaCodeContext* _tmp63_;
-	const gchar* _tmp64_;
-	const gchar* _tmp65_;
-	const gchar* _tmp73_;
-	ValaCodeContext* _tmp82_;
-	gchar** _tmp83_;
-	gint _tmp83__length1;
-	gchar** _tmp84_;
-	gint _tmp84__length1;
-	ValaCodeContext* _tmp85_;
-	gchar** _tmp86_;
-	gint _tmp86__length1;
-	gchar** _tmp87_;
-	gint _tmp87__length1;
-	ValaCodeContext* _tmp88_;
-	gchar** _tmp89_;
-	gint _tmp89__length1;
-	gchar** _tmp90_;
-	gint _tmp90__length1;
-	ValaCodeContext* _tmp91_;
-	gboolean _tmp92_;
-	ValaCodeContext* _tmp93_;
-	gboolean _tmp94_;
-	ValaCodeContext* _tmp95_;
-	gboolean _tmp96_;
-	ValaCodeContext* _tmp97_;
-	gboolean _tmp98_;
-	gboolean _tmp99_ = FALSE;
-	gboolean _tmp100_ = FALSE;
-	const gchar* _tmp101_;
-	gboolean _tmp103_;
-	gboolean _tmp105_;
-	gboolean _tmp111_;
-	const gchar* _tmp112_;
-	ValaCodeContext* _tmp113_;
-	gboolean _tmp114_;
-	ValaCodeContext* _tmp115_;
-	const gchar* _tmp116_;
-	ValaCodeContext* _tmp117_;
-	gboolean _tmp118_;
-	gchar** _tmp119_;
-	gint _tmp119__length1;
-	gint glib_major;
-	gint glib_minor;
-	gboolean _tmp132_ = FALSE;
-	const gchar* _tmp133_;
-	gboolean _tmp136_;
-	ValaCodeContext* _tmp137_;
-	gint _tmp138_;
-	ValaCodeContext* _tmp139_;
-	gint _tmp140_;
-	ValaCodeContext* _tmp141_;
-	gint _tmp142_;
-	gint _tmp143_;
-	gboolean _tmp153_;
-	gchar** _tmp156_;
-	gint _tmp156__length1;
-	gchar** _tmp161_;
-	gint _tmp161__length1;
-	gboolean _tmp172_ = FALSE;
-	ValaCodeContext* _tmp173_;
-	ValaReport* _tmp174_;
-	ValaReport* _tmp175_;
-	gint _tmp176_ = 0;
-	gboolean _tmp184_;
-	ValaCodeContext* _tmp186_;
-	ValaGDBusServerModule* _tmp187_;
-	ValaGDBusServerModule* _tmp188_;
-	gboolean has_c_files;
-	gchar** _tmp189_;
-	gint _tmp189__length1;
-	gboolean _tmp197_ = FALSE;
-	ValaCodeContext* _tmp198_;
-	ValaReport* _tmp199_;
-	ValaReport* _tmp200_;
-	gint _tmp201_ = 0;
-	gboolean _tmp209_;
-	ValaParser* _tmp211_;
-	ValaParser* parser;
-	ValaParser* _tmp212_;
-	ValaCodeContext* _tmp213_;
-	ValaGenieParser* _tmp214_;
-	ValaGenieParser* genie_parser;
-	ValaGenieParser* _tmp215_;
-	ValaCodeContext* _tmp216_;
-	ValaGirParser* _tmp217_;
-	ValaGirParser* gir_parser;
-	ValaGirParser* _tmp218_;
-	ValaCodeContext* _tmp219_;
-	gboolean _tmp220_ = FALSE;
-	ValaCodeContext* _tmp221_;
-	ValaReport* _tmp222_;
-	ValaReport* _tmp223_;
-	gint _tmp224_ = 0;
-	gboolean _tmp232_;
-	const gchar* _tmp234_;
-	ValaCodeContext* _tmp240_;
-	gboolean _tmp241_ = FALSE;
-	ValaCodeContext* _tmp242_;
-	ValaReport* _tmp243_;
-	ValaReport* _tmp244_;
-	gint _tmp245_ = 0;
-	gboolean _tmp253_;
-	gboolean _tmp255_ = FALSE;
-	gboolean _tmp256_ = FALSE;
-	gboolean _tmp257_;
-	gboolean _tmp259_;
-	gboolean _tmp261_;
-	const gchar* _tmp268_;
+	gboolean _tmp4_ = FALSE;
+	ValaCodeContext* _tmp19_ = NULL;
+	gboolean _tmp20_ = FALSE;
+	ValaCodeContext* _tmp21_ = NULL;
+	gboolean _tmp22_ = FALSE;
+	ValaCodeContext* _tmp23_ = NULL;
+	gboolean _tmp24_ = FALSE;
+	ValaCodeContext* _tmp25_ = NULL;
+	gboolean _tmp26_ = FALSE;
+	ValaCodeContext* _tmp27_ = NULL;
+	gboolean _tmp28_ = FALSE;
+	ValaCodeContext* _tmp29_ = NULL;
+	gboolean _tmp30_ = FALSE;
+	ValaCodeContext* _tmp31_ = NULL;
+	ValaReport* _tmp32_ = NULL;
+	ValaReport* _tmp33_ = NULL;
+	gboolean _tmp34_ = FALSE;
+	ValaCodeContext* _tmp35_ = NULL;
+	ValaReport* _tmp36_ = NULL;
+	ValaReport* _tmp37_ = NULL;
+	gboolean _tmp38_ = FALSE;
+	ValaCodeContext* _tmp39_ = NULL;
+	gboolean _tmp40_ = FALSE;
+	ValaCodeContext* _tmp41_ = NULL;
+	gboolean _tmp42_ = FALSE;
+	ValaCodeContext* _tmp43_ = NULL;
+	gboolean _tmp44_ = FALSE;
+	ValaCodeContext* _tmp45_ = NULL;
+	gboolean _tmp46_ = FALSE;
+	ValaCodeContext* _tmp47_ = NULL;
+	const gchar* _tmp48_ = NULL;
+	gboolean _tmp49_ = FALSE;
+	const gchar* _tmp50_ = NULL;
+	ValaCodeContext* _tmp52_ = NULL;
+	gboolean _tmp53_ = FALSE;
+	ValaCodeContext* _tmp54_ = NULL;
+	const gchar* _tmp55_ = NULL;
+	ValaCodeContext* _tmp56_ = NULL;
+	const gchar* _tmp57_ = NULL;
+	ValaCodeContext* _tmp58_ = NULL;
+	const gchar* _tmp59_ = NULL;
+	ValaCodeContext* _tmp60_ = NULL;
+	const gchar* _tmp61_ = NULL;
+	const gchar* _tmp62_ = NULL;
+	const gchar* _tmp70_ = NULL;
+	ValaCodeContext* _tmp79_ = NULL;
+	gchar** _tmp80_ = NULL;
+	gint _tmp80__length1 = 0;
+	gchar** _tmp81_ = NULL;
+	gint _tmp81__length1 = 0;
+	ValaCodeContext* _tmp82_ = NULL;
+	gchar** _tmp83_ = NULL;
+	gint _tmp83__length1 = 0;
+	gchar** _tmp84_ = NULL;
+	gint _tmp84__length1 = 0;
+	ValaCodeContext* _tmp85_ = NULL;
+	gchar** _tmp86_ = NULL;
+	gint _tmp86__length1 = 0;
+	gchar** _tmp87_ = NULL;
+	gint _tmp87__length1 = 0;
+	ValaCodeContext* _tmp88_ = NULL;
+	gboolean _tmp89_ = FALSE;
+	ValaCodeContext* _tmp90_ = NULL;
+	gboolean _tmp91_ = FALSE;
+	ValaCodeContext* _tmp92_ = NULL;
+	gboolean _tmp93_ = FALSE;
+	ValaCodeContext* _tmp94_ = NULL;
+	gboolean _tmp95_ = FALSE;
+	gboolean _tmp96_ = FALSE;
+	gboolean _tmp97_ = FALSE;
+	const gchar* _tmp98_ = NULL;
+	gboolean _tmp106_ = FALSE;
+	const gchar* _tmp107_ = NULL;
+	ValaCodeContext* _tmp108_ = NULL;
+	gboolean _tmp109_ = FALSE;
+	ValaCodeContext* _tmp110_ = NULL;
+	const gchar* _tmp111_ = NULL;
+	ValaCodeContext* _tmp112_ = NULL;
+	gboolean _tmp113_ = FALSE;
+	gchar** _tmp114_ = NULL;
+	gint _tmp114__length1 = 0;
+	gint glib_major = 0;
+	gint glib_minor = 0;
+	gboolean _tmp126_ = FALSE;
+	const gchar* _tmp127_ = NULL;
+	ValaCodeContext* _tmp130_ = NULL;
+	gint _tmp131_ = 0;
+	ValaCodeContext* _tmp132_ = NULL;
+	gint _tmp133_ = 0;
+	ValaCodeContext* _tmp134_ = NULL;
+	gint _tmp135_ = 0;
+	gint _tmp136_ = 0;
+	gboolean _tmp145_ = FALSE;
+	gchar** _tmp148_ = NULL;
+	gint _tmp148__length1 = 0;
+	gchar** _tmp153_ = NULL;
+	gint _tmp153__length1 = 0;
+	ValaCodeContext* _tmp164_ = NULL;
+	gchar** _tmp165_ = NULL;
+	gint _tmp165__length1 = 0;
+	gchar** _tmp166_ = NULL;
+	gint _tmp166__length1 = 0;
+	gboolean _tmp167_ = FALSE;
+	ValaCodeContext* _tmp168_ = NULL;
+	ValaReport* _tmp169_ = NULL;
+	ValaReport* _tmp170_ = NULL;
+	gint _tmp171_ = 0;
+	ValaCodeContext* _tmp179_ = NULL;
+	ValaGDBusServerModule* _tmp180_ = NULL;
+	ValaGDBusServerModule* _tmp181_ = NULL;
+	gboolean has_c_files = FALSE;
+	gchar** _tmp182_ = NULL;
+	gint _tmp182__length1 = 0;
+	gboolean _tmp190_ = FALSE;
+	ValaCodeContext* _tmp191_ = NULL;
+	ValaReport* _tmp192_ = NULL;
+	ValaReport* _tmp193_ = NULL;
+	gint _tmp194_ = 0;
+	ValaParser* parser = NULL;
+	ValaParser* _tmp202_ = NULL;
+	ValaParser* _tmp203_ = NULL;
+	ValaCodeContext* _tmp204_ = NULL;
+	ValaGenieParser* genie_parser = NULL;
+	ValaGenieParser* _tmp205_ = NULL;
+	ValaGenieParser* _tmp206_ = NULL;
+	ValaCodeContext* _tmp207_ = NULL;
+	ValaGirParser* gir_parser = NULL;
+	ValaGirParser* _tmp208_ = NULL;
+	ValaGirParser* _tmp209_ = NULL;
+	ValaCodeContext* _tmp210_ = NULL;
+	gboolean _tmp211_ = FALSE;
+	ValaCodeContext* _tmp212_ = NULL;
+	ValaReport* _tmp213_ = NULL;
+	ValaReport* _tmp214_ = NULL;
+	gint _tmp215_ = 0;
+	const gchar* _tmp223_ = NULL;
+	ValaCodeContext* _tmp229_ = NULL;
+	gboolean _tmp230_ = FALSE;
+	ValaCodeContext* _tmp231_ = NULL;
+	ValaReport* _tmp232_ = NULL;
+	ValaReport* _tmp233_ = NULL;
+	gint _tmp234_ = 0;
+	gboolean _tmp242_ = FALSE;
+	gboolean _tmp243_ = FALSE;
+	gboolean _tmp244_ = FALSE;
+	const gchar* _tmp252_ = NULL;
+	gboolean _tmp257_ = FALSE;
+	ValaCodeContext* _tmp258_ = NULL;
+	ValaReport* _tmp259_ = NULL;
+	ValaReport* _tmp260_ = NULL;
+	gint _tmp261_ = 0;
+	ValaCodeContext* _tmp269_ = NULL;
+	ValaCodeGenerator* _tmp270_ = NULL;
+	ValaCodeGenerator* _tmp271_ = NULL;
+	ValaCodeContext* _tmp272_ = NULL;
 	gboolean _tmp273_ = FALSE;
-	ValaCodeContext* _tmp274_;
-	ValaReport* _tmp275_;
-	ValaReport* _tmp276_;
+	ValaCodeContext* _tmp274_ = NULL;
+	ValaReport* _tmp275_ = NULL;
+	ValaReport* _tmp276_ = NULL;
 	gint _tmp277_ = 0;
-	gboolean _tmp285_;
-	ValaCodeContext* _tmp287_;
-	ValaCodeGenerator* _tmp288_;
-	ValaCodeGenerator* _tmp289_;
-	ValaCodeContext* _tmp290_;
-	gboolean _tmp291_ = FALSE;
-	ValaCodeContext* _tmp292_;
-	ValaReport* _tmp293_;
-	ValaReport* _tmp294_;
-	gint _tmp295_ = 0;
-	gboolean _tmp303_;
-	gboolean _tmp305_ = FALSE;
-	const gchar* _tmp306_;
-	gboolean _tmp308_;
-	const gchar* _tmp311_;
-	const gchar* _tmp364_;
-	const gchar* _tmp379_;
-	const gchar* _tmp404_;
-	gboolean _tmp407_;
-	gint _tmp425_ = 0;
+	gboolean _tmp285_ = FALSE;
+	const gchar* _tmp286_ = NULL;
+	const gchar* _tmp290_ = NULL;
+	const gchar* _tmp342_ = NULL;
+	const gchar* _tmp356_ = NULL;
+	const gchar* _tmp379_ = NULL;
+	gboolean _tmp382_ = FALSE;
+	gint _tmp399_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = vala_code_context_new ();
 	_vala_code_context_unref0 (self->priv->context);
@@ -717,417 +715,407 @@ static gint vala_compiler_run (ValaCompiler* self) {
 	vala_code_context_push (_tmp1_);
 	_tmp4_ = vala_compiler_ccode_only;
 	if (!_tmp4_) {
-		gboolean _tmp5_;
+		gboolean _tmp5_ = FALSE;
 		_tmp5_ = vala_compiler_compile_only;
 		_tmp3_ = !_tmp5_;
 	} else {
 		_tmp3_ = FALSE;
 	}
-	_tmp6_ = _tmp3_;
-	if (_tmp6_) {
-		const gchar* _tmp7_;
-		_tmp7_ = vala_compiler_output;
-		_tmp2_ = _tmp7_ == NULL;
+	if (_tmp3_) {
+		const gchar* _tmp6_ = NULL;
+		_tmp6_ = vala_compiler_output;
+		_tmp2_ = _tmp6_ == NULL;
 	} else {
 		_tmp2_ = FALSE;
 	}
-	_tmp8_ = _tmp2_;
-	if (_tmp8_) {
-		gchar** _tmp9_;
-		gint _tmp9__length1;
-		const gchar* _tmp10_;
-		gint _tmp11_ = 0;
-		_tmp9_ = vala_compiler_sources;
-		_tmp9__length1 = _vala_array_length (vala_compiler_sources);
-		_tmp10_ = _tmp9_[0];
-		_tmp11_ = string_last_index_of_char (_tmp10_, (gunichar) '.', 0);
-		if (_tmp11_ != (-1)) {
-			gchar** _tmp12_;
-			gint _tmp12__length1;
-			const gchar* _tmp13_;
-			gint _tmp14_ = 0;
-			gint dot;
-			gchar** _tmp15_;
-			gint _tmp15__length1;
-			const gchar* _tmp16_;
-			gint _tmp17_;
+	if (_tmp2_) {
+		gchar** _tmp7_ = NULL;
+		gint _tmp7__length1 = 0;
+		const gchar* _tmp8_ = NULL;
+		gint _tmp9_ = 0;
+		_tmp7_ = vala_compiler_sources;
+		_tmp7__length1 = _vala_array_length (vala_compiler_sources);
+		_tmp8_ = _tmp7_[0];
+		_tmp9_ = string_last_index_of_char (_tmp8_, (gunichar) '.', 0);
+		if (_tmp9_ != (-1)) {
+			gint dot = 0;
+			gchar** _tmp10_ = NULL;
+			gint _tmp10__length1 = 0;
+			const gchar* _tmp11_ = NULL;
+			gint _tmp12_ = 0;
+			gchar** _tmp13_ = NULL;
+			gint _tmp13__length1 = 0;
+			const gchar* _tmp14_ = NULL;
+			gint _tmp15_ = 0;
+			gchar* _tmp16_ = NULL;
+			gchar* _tmp17_ = NULL;
 			gchar* _tmp18_ = NULL;
-			gchar* _tmp19_;
-			gchar* _tmp20_ = NULL;
-			_tmp12_ = vala_compiler_sources;
-			_tmp12__length1 = _vala_array_length (vala_compiler_sources);
-			_tmp13_ = _tmp12_[0];
-			_tmp14_ = string_last_index_of_char (_tmp13_, (gunichar) '.', 0);
-			dot = _tmp14_;
-			_tmp15_ = vala_compiler_sources;
-			_tmp15__length1 = _vala_array_length (vala_compiler_sources);
-			_tmp16_ = _tmp15_[0];
-			_tmp17_ = dot;
-			_tmp18_ = string_substring (_tmp16_, (glong) 0, (glong) _tmp17_);
-			_tmp19_ = _tmp18_;
-			_tmp20_ = g_path_get_basename (_tmp19_);
+			_tmp10_ = vala_compiler_sources;
+			_tmp10__length1 = _vala_array_length (vala_compiler_sources);
+			_tmp11_ = _tmp10_[0];
+			_tmp12_ = string_last_index_of_char (_tmp11_, (gunichar) '.', 0);
+			dot = _tmp12_;
+			_tmp13_ = vala_compiler_sources;
+			_tmp13__length1 = _vala_array_length (vala_compiler_sources);
+			_tmp14_ = _tmp13_[0];
+			_tmp15_ = dot;
+			_tmp16_ = string_substring (_tmp14_, (glong) 0, (glong) _tmp15_);
+			_tmp17_ = _tmp16_;
+			_tmp18_ = g_path_get_basename (_tmp17_);
 			_g_free0 (vala_compiler_output);
-			vala_compiler_output = _tmp20_;
-			_g_free0 (_tmp19_);
+			vala_compiler_output = _tmp18_;
+			_g_free0 (_tmp17_);
 		}
 	}
+	_tmp19_ = self->priv->context;
+	_tmp20_ = vala_compiler_disable_assert;
+	vala_code_context_set_assert (_tmp19_, !_tmp20_);
 	_tmp21_ = self->priv->context;
-	_tmp22_ = vala_compiler_disable_assert;
-	vala_code_context_set_assert (_tmp21_, !_tmp22_);
+	_tmp22_ = vala_compiler_enable_checking;
+	vala_code_context_set_checking (_tmp21_, _tmp22_);
 	_tmp23_ = self->priv->context;
-	_tmp24_ = vala_compiler_enable_checking;
-	vala_code_context_set_checking (_tmp23_, _tmp24_);
+	_tmp24_ = vala_compiler_deprecated;
+	vala_code_context_set_deprecated (_tmp23_, _tmp24_);
 	_tmp25_ = self->priv->context;
-	_tmp26_ = vala_compiler_deprecated;
-	vala_code_context_set_deprecated (_tmp25_, _tmp26_);
+	_tmp26_ = vala_compiler_experimental;
+	vala_code_context_set_experimental (_tmp25_, _tmp26_);
 	_tmp27_ = self->priv->context;
-	_tmp28_ = vala_compiler_experimental;
-	vala_code_context_set_experimental (_tmp27_, _tmp28_);
+	_tmp28_ = vala_compiler_experimental_non_null;
+	vala_code_context_set_experimental_non_null (_tmp27_, _tmp28_);
 	_tmp29_ = self->priv->context;
-	_tmp30_ = vala_compiler_experimental_non_null;
-	vala_code_context_set_experimental_non_null (_tmp29_, _tmp30_);
+	_tmp30_ = vala_compiler_gobject_tracing;
+	vala_code_context_set_gobject_tracing (_tmp29_, _tmp30_);
 	_tmp31_ = self->priv->context;
-	_tmp32_ = vala_compiler_gobject_tracing;
-	vala_code_context_set_gobject_tracing (_tmp31_, _tmp32_);
-	_tmp33_ = self->priv->context;
-	_tmp34_ = vala_code_context_get_report (_tmp33_);
-	_tmp35_ = _tmp34_;
-	_tmp36_ = vala_compiler_disable_warnings;
-	vala_report_set_enable_warnings (_tmp35_, !_tmp36_);
-	_tmp37_ = self->priv->context;
-	_tmp38_ = vala_code_context_get_report (_tmp37_);
-	_tmp39_ = _tmp38_;
-	_tmp40_ = vala_compiler_quiet_mode;
-	vala_report_set_verbose_errors (_tmp39_, !_tmp40_);
+	_tmp32_ = vala_code_context_get_report (_tmp31_);
+	_tmp33_ = _tmp32_;
+	_tmp34_ = vala_compiler_disable_warnings;
+	vala_report_set_enable_warnings (_tmp33_, !_tmp34_);
+	_tmp35_ = self->priv->context;
+	_tmp36_ = vala_code_context_get_report (_tmp35_);
+	_tmp37_ = _tmp36_;
+	_tmp38_ = vala_compiler_quiet_mode;
+	vala_report_set_verbose_errors (_tmp37_, !_tmp38_);
+	_tmp39_ = self->priv->context;
+	_tmp40_ = vala_compiler_verbose_mode;
+	vala_code_context_set_verbose_mode (_tmp39_, _tmp40_);
 	_tmp41_ = self->priv->context;
-	_tmp42_ = vala_compiler_verbose_mode;
-	vala_code_context_set_verbose_mode (_tmp41_, _tmp42_);
+	_tmp42_ = vala_compiler_disable_version_header;
+	vala_code_context_set_version_header (_tmp41_, !_tmp42_);
 	_tmp43_ = self->priv->context;
-	_tmp44_ = vala_compiler_disable_version_header;
-	vala_code_context_set_version_header (_tmp43_, !_tmp44_);
+	_tmp44_ = vala_compiler_ccode_only;
+	vala_code_context_set_ccode_only (_tmp43_, _tmp44_);
 	_tmp45_ = self->priv->context;
-	_tmp46_ = vala_compiler_ccode_only;
-	vala_code_context_set_ccode_only (_tmp45_, _tmp46_);
+	_tmp46_ = vala_compiler_compile_only;
+	vala_code_context_set_compile_only (_tmp45_, _tmp46_);
 	_tmp47_ = self->priv->context;
-	_tmp48_ = vala_compiler_compile_only;
-	vala_code_context_set_compile_only (_tmp47_, _tmp48_);
-	_tmp49_ = self->priv->context;
+	_tmp48_ = vala_compiler_header_filename;
+	vala_code_context_set_header_filename (_tmp47_, _tmp48_);
 	_tmp50_ = vala_compiler_header_filename;
-	vala_code_context_set_header_filename (_tmp49_, _tmp50_);
-	_tmp52_ = vala_compiler_header_filename;
-	if (_tmp52_ == NULL) {
-		gboolean _tmp53_;
-		_tmp53_ = vala_compiler_use_header;
-		_tmp51_ = _tmp53_;
+	if (_tmp50_ == NULL) {
+		gboolean _tmp51_ = FALSE;
+		_tmp51_ = vala_compiler_use_header;
+		_tmp49_ = _tmp51_;
 	} else {
-		_tmp51_ = FALSE;
+		_tmp49_ = FALSE;
 	}
-	_tmp54_ = _tmp51_;
-	if (_tmp54_) {
+	if (_tmp49_) {
 		vala_report_error (NULL, "--use-header may only be used in combination with --header");
 	}
-	_tmp55_ = self->priv->context;
-	_tmp56_ = vala_compiler_use_header;
-	vala_code_context_set_use_header (_tmp55_, _tmp56_);
-	_tmp57_ = self->priv->context;
-	_tmp58_ = vala_compiler_internal_header_filename;
-	vala_code_context_set_internal_header_filename (_tmp57_, _tmp58_);
-	_tmp59_ = self->priv->context;
-	_tmp60_ = vala_compiler_symbols_filename;
-	vala_code_context_set_symbols_filename (_tmp59_, _tmp60_);
-	_tmp61_ = self->priv->context;
-	_tmp62_ = vala_compiler_includedir;
-	vala_code_context_set_includedir (_tmp61_, _tmp62_);
-	_tmp63_ = self->priv->context;
-	_tmp64_ = vala_compiler_output;
-	vala_code_context_set_output (_tmp63_, _tmp64_);
-	_tmp65_ = vala_compiler_basedir;
-	if (_tmp65_ == NULL) {
-		ValaCodeContext* _tmp66_;
-		gchar* _tmp67_ = NULL;
-		gchar* _tmp68_;
+	_tmp52_ = self->priv->context;
+	_tmp53_ = vala_compiler_use_header;
+	vala_code_context_set_use_header (_tmp52_, _tmp53_);
+	_tmp54_ = self->priv->context;
+	_tmp55_ = vala_compiler_internal_header_filename;
+	vala_code_context_set_internal_header_filename (_tmp54_, _tmp55_);
+	_tmp56_ = self->priv->context;
+	_tmp57_ = vala_compiler_symbols_filename;
+	vala_code_context_set_symbols_filename (_tmp56_, _tmp57_);
+	_tmp58_ = self->priv->context;
+	_tmp59_ = vala_compiler_includedir;
+	vala_code_context_set_includedir (_tmp58_, _tmp59_);
+	_tmp60_ = self->priv->context;
+	_tmp61_ = vala_compiler_output;
+	vala_code_context_set_output (_tmp60_, _tmp61_);
+	_tmp62_ = vala_compiler_basedir;
+	if (_tmp62_ == NULL) {
+		ValaCodeContext* _tmp63_ = NULL;
+		gchar* _tmp64_ = NULL;
+		gchar* _tmp65_ = NULL;
+		_tmp63_ = self->priv->context;
+		_tmp64_ = vala_code_context_realpath (".");
+		_tmp65_ = _tmp64_;
+		vala_code_context_set_basedir (_tmp63_, _tmp65_);
+		_g_free0 (_tmp65_);
+	} else {
+		ValaCodeContext* _tmp66_ = NULL;
+		const gchar* _tmp67_ = NULL;
+		gchar* _tmp68_ = NULL;
+		gchar* _tmp69_ = NULL;
 		_tmp66_ = self->priv->context;
-		_tmp67_ = vala_code_context_realpath (".");
-		_tmp68_ = _tmp67_;
-		vala_code_context_set_basedir (_tmp66_, _tmp68_);
-		_g_free0 (_tmp68_);
-	} else {
-		ValaCodeContext* _tmp69_;
-		const gchar* _tmp70_;
-		gchar* _tmp71_ = NULL;
-		gchar* _tmp72_;
-		_tmp69_ = self->priv->context;
-		_tmp70_ = vala_compiler_basedir;
-		_tmp71_ = vala_code_context_realpath (_tmp70_);
-		_tmp72_ = _tmp71_;
-		vala_code_context_set_basedir (_tmp69_, _tmp72_);
-		_g_free0 (_tmp72_);
+		_tmp67_ = vala_compiler_basedir;
+		_tmp68_ = vala_code_context_realpath (_tmp67_);
+		_tmp69_ = _tmp68_;
+		vala_code_context_set_basedir (_tmp66_, _tmp69_);
+		_g_free0 (_tmp69_);
 	}
-	_tmp73_ = vala_compiler_directory;
-	if (_tmp73_ != NULL) {
-		ValaCodeContext* _tmp74_;
-		const gchar* _tmp75_;
-		gchar* _tmp76_ = NULL;
-		gchar* _tmp77_;
-		_tmp74_ = self->priv->context;
-		_tmp75_ = vala_compiler_directory;
-		_tmp76_ = vala_code_context_realpath (_tmp75_);
-		_tmp77_ = _tmp76_;
-		vala_code_context_set_directory (_tmp74_, _tmp77_);
-		_g_free0 (_tmp77_);
+	_tmp70_ = vala_compiler_directory;
+	if (_tmp70_ != NULL) {
+		ValaCodeContext* _tmp71_ = NULL;
+		const gchar* _tmp72_ = NULL;
+		gchar* _tmp73_ = NULL;
+		gchar* _tmp74_ = NULL;
+		_tmp71_ = self->priv->context;
+		_tmp72_ = vala_compiler_directory;
+		_tmp73_ = vala_code_context_realpath (_tmp72_);
+		_tmp74_ = _tmp73_;
+		vala_code_context_set_directory (_tmp71_, _tmp74_);
+		_g_free0 (_tmp74_);
 	} else {
-		ValaCodeContext* _tmp78_;
-		ValaCodeContext* _tmp79_;
-		const gchar* _tmp80_;
-		const gchar* _tmp81_;
-		_tmp78_ = self->priv->context;
-		_tmp79_ = self->priv->context;
-		_tmp80_ = vala_code_context_get_basedir (_tmp79_);
-		_tmp81_ = _tmp80_;
-		vala_code_context_set_directory (_tmp78_, _tmp81_);
+		ValaCodeContext* _tmp75_ = NULL;
+		ValaCodeContext* _tmp76_ = NULL;
+		const gchar* _tmp77_ = NULL;
+		const gchar* _tmp78_ = NULL;
+		_tmp75_ = self->priv->context;
+		_tmp76_ = self->priv->context;
+		_tmp77_ = vala_code_context_get_basedir (_tmp76_);
+		_tmp78_ = _tmp77_;
+		vala_code_context_set_directory (_tmp75_, _tmp78_);
 	}
+	_tmp79_ = self->priv->context;
+	_tmp80_ = vala_compiler_vapi_directories;
+	_tmp80__length1 = _vala_array_length (vala_compiler_vapi_directories);
+	_tmp81_ = (_tmp80_ != NULL) ? _vala_array_dup1 (_tmp80_, _tmp80__length1) : ((gpointer) _tmp80_);
+	_tmp81__length1 = _tmp80__length1;
+	_tmp79_->vapi_directories = (_vala_array_free (_tmp79_->vapi_directories, _tmp79_->vapi_directories_length1, (GDestroyNotify) g_free), NULL);
+	_tmp79_->vapi_directories = _tmp81_;
+	_tmp79_->vapi_directories_length1 = _tmp81__length1;
 	_tmp82_ = self->priv->context;
-	_tmp83_ = vala_compiler_vapi_directories;
-	_tmp83__length1 = _vala_array_length (vala_compiler_vapi_directories);
-	_tmp84_ = (_tmp83_ != NULL) ? _vala_array_dup1 (_tmp83_, _tmp83__length1) : ((gpointer) _tmp83_);
+	_tmp83_ = vala_compiler_gir_directories;
+	_tmp83__length1 = _vala_array_length (vala_compiler_gir_directories);
+	_tmp84_ = (_tmp83_ != NULL) ? _vala_array_dup2 (_tmp83_, _tmp83__length1) : ((gpointer) _tmp83_);
 	_tmp84__length1 = _tmp83__length1;
-	_tmp82_->vapi_directories = (_vala_array_free (_tmp82_->vapi_directories, _tmp82_->vapi_directories_length1, (GDestroyNotify) g_free), NULL);
-	_tmp82_->vapi_directories = _tmp84_;
-	_tmp82_->vapi_directories_length1 = _tmp84__length1;
+	_tmp82_->gir_directories = (_vala_array_free (_tmp82_->gir_directories, _tmp82_->gir_directories_length1, (GDestroyNotify) g_free), NULL);
+	_tmp82_->gir_directories = _tmp84_;
+	_tmp82_->gir_directories_length1 = _tmp84__length1;
 	_tmp85_ = self->priv->context;
-	_tmp86_ = vala_compiler_gir_directories;
-	_tmp86__length1 = _vala_array_length (vala_compiler_gir_directories);
-	_tmp87_ = (_tmp86_ != NULL) ? _vala_array_dup2 (_tmp86_, _tmp86__length1) : ((gpointer) _tmp86_);
+	_tmp86_ = vala_compiler_metadata_directories;
+	_tmp86__length1 = _vala_array_length (vala_compiler_metadata_directories);
+	_tmp87_ = (_tmp86_ != NULL) ? _vala_array_dup3 (_tmp86_, _tmp86__length1) : ((gpointer) _tmp86_);
 	_tmp87__length1 = _tmp86__length1;
-	_tmp85_->gir_directories = (_vala_array_free (_tmp85_->gir_directories, _tmp85_->gir_directories_length1, (GDestroyNotify) g_free), NULL);
-	_tmp85_->gir_directories = _tmp87_;
-	_tmp85_->gir_directories_length1 = _tmp87__length1;
+	_tmp85_->metadata_directories = (_vala_array_free (_tmp85_->metadata_directories, _tmp85_->metadata_directories_length1, (GDestroyNotify) g_free), NULL);
+	_tmp85_->metadata_directories = _tmp87_;
+	_tmp85_->metadata_directories_length1 = _tmp87__length1;
 	_tmp88_ = self->priv->context;
-	_tmp89_ = vala_compiler_metadata_directories;
-	_tmp89__length1 = _vala_array_length (vala_compiler_metadata_directories);
-	_tmp90_ = (_tmp89_ != NULL) ? _vala_array_dup3 (_tmp89_, _tmp89__length1) : ((gpointer) _tmp89_);
-	_tmp90__length1 = _tmp89__length1;
-	_tmp88_->metadata_directories = (_vala_array_free (_tmp88_->metadata_directories, _tmp88_->metadata_directories_length1, (GDestroyNotify) g_free), NULL);
-	_tmp88_->metadata_directories = _tmp90_;
-	_tmp88_->metadata_directories_length1 = _tmp90__length1;
-	_tmp91_ = self->priv->context;
-	_tmp92_ = vala_compiler_debug;
-	vala_code_context_set_debug (_tmp91_, _tmp92_);
-	_tmp93_ = self->priv->context;
-	_tmp94_ = vala_compiler_thread;
-	vala_code_context_set_thread (_tmp93_, _tmp94_);
-	_tmp95_ = self->priv->context;
-	_tmp96_ = vala_compiler_mem_profiler;
-	vala_code_context_set_mem_profiler (_tmp95_, _tmp96_);
-	_tmp97_ = self->priv->context;
-	_tmp98_ = vala_compiler_save_temps;
-	vala_code_context_set_save_temps (_tmp97_, _tmp98_);
-	_tmp101_ = vala_compiler_profile;
-	if (g_strcmp0 (_tmp101_, "gobject-2.0") == 0) {
-		_tmp100_ = TRUE;
+	_tmp89_ = vala_compiler_debug;
+	vala_code_context_set_debug (_tmp88_, _tmp89_);
+	_tmp90_ = self->priv->context;
+	_tmp91_ = vala_compiler_thread;
+	vala_code_context_set_thread (_tmp90_, _tmp91_);
+	_tmp92_ = self->priv->context;
+	_tmp93_ = vala_compiler_mem_profiler;
+	vala_code_context_set_mem_profiler (_tmp92_, _tmp93_);
+	_tmp94_ = self->priv->context;
+	_tmp95_ = vala_compiler_save_temps;
+	vala_code_context_set_save_temps (_tmp94_, _tmp95_);
+	_tmp98_ = vala_compiler_profile;
+	if (g_strcmp0 (_tmp98_, "gobject-2.0") == 0) {
+		_tmp97_ = TRUE;
 	} else {
-		const gchar* _tmp102_;
-		_tmp102_ = vala_compiler_profile;
-		_tmp100_ = g_strcmp0 (_tmp102_, "gobject") == 0;
+		const gchar* _tmp99_ = NULL;
+		_tmp99_ = vala_compiler_profile;
+		_tmp97_ = g_strcmp0 (_tmp99_, "gobject") == 0;
 	}
-	_tmp103_ = _tmp100_;
-	if (_tmp103_) {
-		_tmp99_ = TRUE;
+	if (_tmp97_) {
+		_tmp96_ = TRUE;
 	} else {
-		const gchar* _tmp104_;
-		_tmp104_ = vala_compiler_profile;
-		_tmp99_ = _tmp104_ == NULL;
+		const gchar* _tmp100_ = NULL;
+		_tmp100_ = vala_compiler_profile;
+		_tmp96_ = _tmp100_ == NULL;
 	}
-	_tmp105_ = _tmp99_;
-	if (_tmp105_) {
-		ValaCodeContext* _tmp106_;
-		ValaCodeContext* _tmp107_;
-		_tmp106_ = self->priv->context;
-		vala_code_context_set_profile (_tmp106_, VALA_PROFILE_GOBJECT);
-		_tmp107_ = self->priv->context;
-		vala_code_context_add_define (_tmp107_, "GOBJECT");
+	if (_tmp96_) {
+		ValaCodeContext* _tmp101_ = NULL;
+		ValaCodeContext* _tmp102_ = NULL;
+		_tmp101_ = self->priv->context;
+		vala_code_context_set_profile (_tmp101_, VALA_PROFILE_GOBJECT);
+		_tmp102_ = self->priv->context;
+		vala_code_context_add_define (_tmp102_, "GOBJECT");
 	} else {
-		const gchar* _tmp108_;
-		gchar* _tmp109_ = NULL;
-		gchar* _tmp110_;
-		_tmp108_ = vala_compiler_profile;
-		_tmp109_ = g_strdup_printf ("Unknown profile %s", _tmp108_);
-		_tmp110_ = _tmp109_;
-		vala_report_error (NULL, _tmp110_);
-		_g_free0 (_tmp110_);
+		const gchar* _tmp103_ = NULL;
+		gchar* _tmp104_ = NULL;
+		gchar* _tmp105_ = NULL;
+		_tmp103_ = vala_compiler_profile;
+		_tmp104_ = g_strdup_printf ("Unknown profile %s", _tmp103_);
+		_tmp105_ = _tmp104_;
+		vala_report_error (NULL, _tmp105_);
+		_g_free0 (_tmp105_);
 	}
-	_tmp111_ = vala_compiler_nostdpkg;
-	_tmp112_ = vala_compiler_fast_vapi_filename;
-	vala_compiler_nostdpkg = _tmp111_ | (_tmp112_ != NULL);
-	_tmp113_ = self->priv->context;
-	_tmp114_ = vala_compiler_nostdpkg;
-	vala_code_context_set_nostdpkg (_tmp113_, _tmp114_);
-	_tmp115_ = self->priv->context;
-	_tmp116_ = vala_compiler_entry_point;
-	vala_code_context_set_entry_point_name (_tmp115_, _tmp116_);
-	_tmp117_ = self->priv->context;
-	_tmp118_ = vala_compiler_run_output;
-	vala_code_context_set_run_output (_tmp117_, _tmp118_);
-	_tmp119_ = vala_compiler_defines;
-	_tmp119__length1 = _vala_array_length (vala_compiler_defines);
-	if (_tmp119_ != NULL) {
-		gchar** _tmp120_;
-		gint _tmp120__length1;
-		_tmp120_ = vala_compiler_defines;
-		_tmp120__length1 = _vala_array_length (vala_compiler_defines);
+	_tmp106_ = vala_compiler_nostdpkg;
+	_tmp107_ = vala_compiler_fast_vapi_filename;
+	vala_compiler_nostdpkg = _tmp106_ | (_tmp107_ != NULL);
+	_tmp108_ = self->priv->context;
+	_tmp109_ = vala_compiler_nostdpkg;
+	vala_code_context_set_nostdpkg (_tmp108_, _tmp109_);
+	_tmp110_ = self->priv->context;
+	_tmp111_ = vala_compiler_entry_point;
+	vala_code_context_set_entry_point_name (_tmp110_, _tmp111_);
+	_tmp112_ = self->priv->context;
+	_tmp113_ = vala_compiler_run_output;
+	vala_code_context_set_run_output (_tmp112_, _tmp113_);
+	_tmp114_ = vala_compiler_defines;
+	_tmp114__length1 = _vala_array_length (vala_compiler_defines);
+	if (_tmp114_ != NULL) {
+		gchar** _tmp115_ = NULL;
+		gint _tmp115__length1 = 0;
+		_tmp115_ = vala_compiler_defines;
+		_tmp115__length1 = _vala_array_length (vala_compiler_defines);
 		{
 			gchar** define_collection = NULL;
 			gint define_collection_length1 = 0;
 			gint _define_collection_size_ = 0;
 			gint define_it = 0;
-			define_collection = _tmp120_;
-			define_collection_length1 = _tmp120__length1;
-			for (define_it = 0; define_it < _tmp120__length1; define_it = define_it + 1) {
-				gchar* _tmp121_;
+			define_collection = _tmp115_;
+			define_collection_length1 = _tmp115__length1;
+			for (define_it = 0; define_it < _tmp115__length1; define_it = define_it + 1) {
+				gchar* _tmp116_ = NULL;
 				gchar* define = NULL;
-				_tmp121_ = g_strdup (define_collection[define_it]);
-				define = _tmp121_;
+				_tmp116_ = g_strdup (define_collection[define_it]);
+				define = _tmp116_;
 				{
-					ValaCodeContext* _tmp122_;
-					const gchar* _tmp123_;
-					_tmp122_ = self->priv->context;
-					_tmp123_ = define;
-					vala_code_context_add_define (_tmp122_, _tmp123_);
+					ValaCodeContext* _tmp117_ = NULL;
+					const gchar* _tmp118_ = NULL;
+					_tmp117_ = self->priv->context;
+					_tmp118_ = define;
+					vala_code_context_add_define (_tmp117_, _tmp118_);
 					_g_free0 (define);
 				}
 			}
 		}
 	}
 	{
-		gint i;
+		gint i = 0;
 		i = 2;
 		{
-			gboolean _tmp124_;
-			_tmp124_ = TRUE;
+			gboolean _tmp119_ = FALSE;
+			_tmp119_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp125_;
-				gint _tmp127_;
-				ValaCodeContext* _tmp128_;
-				gint _tmp129_;
-				gchar* _tmp130_ = NULL;
-				gchar* _tmp131_;
-				_tmp125_ = _tmp124_;
-				if (!_tmp125_) {
-					gint _tmp126_;
-					_tmp126_ = i;
-					i = _tmp126_ + 2;
+				gint _tmp121_ = 0;
+				ValaCodeContext* _tmp122_ = NULL;
+				gint _tmp123_ = 0;
+				gchar* _tmp124_ = NULL;
+				gchar* _tmp125_ = NULL;
+				if (!_tmp119_) {
+					gint _tmp120_ = 0;
+					_tmp120_ = i;
+					i = _tmp120_ + 2;
 				}
-				_tmp124_ = FALSE;
-				_tmp127_ = i;
-				if (!(_tmp127_ <= 20)) {
+				_tmp119_ = FALSE;
+				_tmp121_ = i;
+				if (!(_tmp121_ <= 24)) {
 					break;
 				}
-				_tmp128_ = self->priv->context;
-				_tmp129_ = i;
-				_tmp130_ = g_strdup_printf ("VALA_0_%d", _tmp129_);
-				_tmp131_ = _tmp130_;
-				vala_code_context_add_define (_tmp128_, _tmp131_);
-				_g_free0 (_tmp131_);
+				_tmp122_ = self->priv->context;
+				_tmp123_ = i;
+				_tmp124_ = g_strdup_printf ("VALA_0_%d", _tmp123_);
+				_tmp125_ = _tmp124_;
+				vala_code_context_add_define (_tmp122_, _tmp125_);
+				_g_free0 (_tmp125_);
 			}
 		}
 	}
 	glib_major = 2;
 	glib_minor = 18;
-	_tmp133_ = vala_compiler_target_glib;
-	if (_tmp133_ != NULL) {
-		const gchar* _tmp134_;
-		gint _tmp135_ = 0;
-		_tmp134_ = vala_compiler_target_glib;
-		_tmp135_ = sscanf (_tmp134_, "%d.%d", &glib_major, &glib_minor);
-		_tmp132_ = _tmp135_ != 2;
+	_tmp127_ = vala_compiler_target_glib;
+	if (_tmp127_ != NULL) {
+		const gchar* _tmp128_ = NULL;
+		gint _tmp129_ = 0;
+		_tmp128_ = vala_compiler_target_glib;
+		_tmp129_ = sscanf (_tmp128_, "%d.%d", &glib_major, &glib_minor);
+		_tmp126_ = _tmp129_ != 2;
 	} else {
-		_tmp132_ = FALSE;
+		_tmp126_ = FALSE;
 	}
-	_tmp136_ = _tmp132_;
-	if (_tmp136_) {
+	if (_tmp126_) {
 		vala_report_error (NULL, "Invalid format for --target-glib");
 	}
-	_tmp137_ = self->priv->context;
-	_tmp138_ = glib_major;
-	vala_code_context_set_target_glib_major (_tmp137_, _tmp138_);
-	_tmp139_ = self->priv->context;
-	_tmp140_ = glib_minor;
-	vala_code_context_set_target_glib_minor (_tmp139_, _tmp140_);
-	_tmp141_ = self->priv->context;
-	_tmp142_ = vala_code_context_get_target_glib_major (_tmp141_);
-	_tmp143_ = _tmp142_;
-	if (_tmp143_ != 2) {
+	_tmp130_ = self->priv->context;
+	_tmp131_ = glib_major;
+	vala_code_context_set_target_glib_major (_tmp130_, _tmp131_);
+	_tmp132_ = self->priv->context;
+	_tmp133_ = glib_minor;
+	vala_code_context_set_target_glib_minor (_tmp132_, _tmp133_);
+	_tmp134_ = self->priv->context;
+	_tmp135_ = vala_code_context_get_target_glib_major (_tmp134_);
+	_tmp136_ = _tmp135_;
+	if (_tmp136_ != 2) {
 		vala_report_error (NULL, "This version of valac only supports GLib 2");
 	}
 	{
-		gint i;
+		gint i = 0;
 		i = 16;
 		{
-			gboolean _tmp144_;
-			_tmp144_ = TRUE;
+			gboolean _tmp137_ = FALSE;
+			_tmp137_ = TRUE;
 			while (TRUE) {
-				gboolean _tmp145_;
-				gint _tmp147_;
-				gint _tmp148_;
-				ValaCodeContext* _tmp149_;
-				gint _tmp150_;
-				gchar* _tmp151_ = NULL;
-				gchar* _tmp152_;
-				_tmp145_ = _tmp144_;
-				if (!_tmp145_) {
-					gint _tmp146_;
-					_tmp146_ = i;
-					i = _tmp146_ + 2;
+				gint _tmp139_ = 0;
+				gint _tmp140_ = 0;
+				ValaCodeContext* _tmp141_ = NULL;
+				gint _tmp142_ = 0;
+				gchar* _tmp143_ = NULL;
+				gchar* _tmp144_ = NULL;
+				if (!_tmp137_) {
+					gint _tmp138_ = 0;
+					_tmp138_ = i;
+					i = _tmp138_ + 2;
 				}
-				_tmp144_ = FALSE;
-				_tmp147_ = i;
-				_tmp148_ = glib_minor;
-				if (!(_tmp147_ <= _tmp148_)) {
+				_tmp137_ = FALSE;
+				_tmp139_ = i;
+				_tmp140_ = glib_minor;
+				if (!(_tmp139_ <= _tmp140_)) {
 					break;
 				}
-				_tmp149_ = self->priv->context;
-				_tmp150_ = i;
-				_tmp151_ = g_strdup_printf ("GLIB_2_%d", _tmp150_);
-				_tmp152_ = _tmp151_;
-				vala_code_context_add_define (_tmp149_, _tmp152_);
-				_g_free0 (_tmp152_);
+				_tmp141_ = self->priv->context;
+				_tmp142_ = i;
+				_tmp143_ = g_strdup_printf ("GLIB_2_%d", _tmp142_);
+				_tmp144_ = _tmp143_;
+				vala_code_context_add_define (_tmp141_, _tmp144_);
+				_g_free0 (_tmp144_);
 			}
 		}
 	}
-	_tmp153_ = vala_compiler_nostdpkg;
-	if (!_tmp153_) {
-		ValaCodeContext* _tmp154_;
-		ValaCodeContext* _tmp155_;
-		_tmp154_ = self->priv->context;
-		vala_code_context_add_external_package (_tmp154_, "glib-2.0");
-		_tmp155_ = self->priv->context;
-		vala_code_context_add_external_package (_tmp155_, "gobject-2.0");
+	_tmp145_ = vala_compiler_nostdpkg;
+	if (!_tmp145_) {
+		ValaCodeContext* _tmp146_ = NULL;
+		ValaCodeContext* _tmp147_ = NULL;
+		_tmp146_ = self->priv->context;
+		vala_code_context_add_external_package (_tmp146_, "glib-2.0");
+		_tmp147_ = self->priv->context;
+		vala_code_context_add_external_package (_tmp147_, "gobject-2.0");
 	}
-	_tmp156_ = vala_compiler_packages;
-	_tmp156__length1 = _vala_array_length (vala_compiler_packages);
-	if (_tmp156_ != NULL) {
-		gchar** _tmp157_;
-		gint _tmp157__length1;
-		_tmp157_ = vala_compiler_packages;
-		_tmp157__length1 = _vala_array_length (vala_compiler_packages);
+	_tmp148_ = vala_compiler_packages;
+	_tmp148__length1 = _vala_array_length (vala_compiler_packages);
+	if (_tmp148_ != NULL) {
+		gchar** _tmp149_ = NULL;
+		gint _tmp149__length1 = 0;
+		_tmp149_ = vala_compiler_packages;
+		_tmp149__length1 = _vala_array_length (vala_compiler_packages);
 		{
 			gchar** package_collection = NULL;
 			gint package_collection_length1 = 0;
 			gint _package_collection_size_ = 0;
 			gint package_it = 0;
-			package_collection = _tmp157_;
-			package_collection_length1 = _tmp157__length1;
-			for (package_it = 0; package_it < _tmp157__length1; package_it = package_it + 1) {
-				gchar* _tmp158_;
+			package_collection = _tmp149_;
+			package_collection_length1 = _tmp149__length1;
+			for (package_it = 0; package_it < _tmp149__length1; package_it = package_it + 1) {
+				gchar* _tmp150_ = NULL;
 				gchar* package = NULL;
-				_tmp158_ = g_strdup (package_collection[package_it]);
-				package = _tmp158_;
+				_tmp150_ = g_strdup (package_collection[package_it]);
+				package = _tmp150_;
 				{
-					ValaCodeContext* _tmp159_;
-					const gchar* _tmp160_;
-					_tmp159_ = self->priv->context;
-					_tmp160_ = package;
-					vala_code_context_add_external_package (_tmp159_, _tmp160_);
+					ValaCodeContext* _tmp151_ = NULL;
+					const gchar* _tmp152_ = NULL;
+					_tmp151_ = self->priv->context;
+					_tmp152_ = package;
+					vala_code_context_add_external_package (_tmp151_, _tmp152_);
 					_g_free0 (package);
 				}
 			}
@@ -1135,124 +1123,129 @@ static gint vala_compiler_run (ValaCompiler* self) {
 		vala_compiler_packages = (_vala_array_free (vala_compiler_packages, _vala_array_length (vala_compiler_packages), (GDestroyNotify) g_free), NULL);
 		vala_compiler_packages = NULL;
 	}
-	_tmp161_ = vala_compiler_fast_vapis;
-	_tmp161__length1 = _vala_array_length (vala_compiler_fast_vapis);
-	if (_tmp161_ != NULL) {
-		gchar** _tmp162_;
-		gint _tmp162__length1;
-		ValaCodeContext* _tmp171_;
-		_tmp162_ = vala_compiler_fast_vapis;
-		_tmp162__length1 = _vala_array_length (vala_compiler_fast_vapis);
+	_tmp153_ = vala_compiler_fast_vapis;
+	_tmp153__length1 = _vala_array_length (vala_compiler_fast_vapis);
+	if (_tmp153_ != NULL) {
+		gchar** _tmp154_ = NULL;
+		gint _tmp154__length1 = 0;
+		ValaCodeContext* _tmp163_ = NULL;
+		_tmp154_ = vala_compiler_fast_vapis;
+		_tmp154__length1 = _vala_array_length (vala_compiler_fast_vapis);
 		{
 			gchar** vapi_collection = NULL;
 			gint vapi_collection_length1 = 0;
 			gint _vapi_collection_size_ = 0;
 			gint vapi_it = 0;
-			vapi_collection = _tmp162_;
-			vapi_collection_length1 = _tmp162__length1;
-			for (vapi_it = 0; vapi_it < _tmp162__length1; vapi_it = vapi_it + 1) {
-				gchar* _tmp163_;
+			vapi_collection = _tmp154_;
+			vapi_collection_length1 = _tmp154__length1;
+			for (vapi_it = 0; vapi_it < _tmp154__length1; vapi_it = vapi_it + 1) {
+				gchar* _tmp155_ = NULL;
 				gchar* vapi = NULL;
-				_tmp163_ = g_strdup (vapi_collection[vapi_it]);
-				vapi = _tmp163_;
+				_tmp155_ = g_strdup (vapi_collection[vapi_it]);
+				vapi = _tmp155_;
 				{
-					const gchar* _tmp164_;
-					gchar* _tmp165_ = NULL;
-					gchar* rpath;
-					ValaCodeContext* _tmp166_;
-					const gchar* _tmp167_;
-					ValaSourceFile* _tmp168_;
-					ValaSourceFile* source_file;
-					ValaCodeContext* _tmp169_;
-					ValaSourceFile* _tmp170_;
-					_tmp164_ = vapi;
-					_tmp165_ = vala_code_context_realpath (_tmp164_);
-					rpath = _tmp165_;
-					_tmp166_ = self->priv->context;
-					_tmp167_ = rpath;
-					_tmp168_ = vala_source_file_new (_tmp166_, VALA_SOURCE_FILE_TYPE_FAST, _tmp167_, NULL, FALSE);
-					source_file = _tmp168_;
-					_tmp169_ = self->priv->context;
-					_tmp170_ = source_file;
-					vala_code_context_add_source_file (_tmp169_, _tmp170_);
+					gchar* rpath = NULL;
+					const gchar* _tmp156_ = NULL;
+					gchar* _tmp157_ = NULL;
+					ValaSourceFile* source_file = NULL;
+					ValaCodeContext* _tmp158_ = NULL;
+					const gchar* _tmp159_ = NULL;
+					ValaSourceFile* _tmp160_ = NULL;
+					ValaCodeContext* _tmp161_ = NULL;
+					ValaSourceFile* _tmp162_ = NULL;
+					_tmp156_ = vapi;
+					_tmp157_ = vala_code_context_realpath (_tmp156_);
+					rpath = _tmp157_;
+					_tmp158_ = self->priv->context;
+					_tmp159_ = rpath;
+					_tmp160_ = vala_source_file_new (_tmp158_, VALA_SOURCE_FILE_TYPE_FAST, _tmp159_, NULL, FALSE);
+					source_file = _tmp160_;
+					_tmp161_ = self->priv->context;
+					_tmp162_ = source_file;
+					vala_code_context_add_source_file (_tmp161_, _tmp162_);
 					_vala_source_file_unref0 (source_file);
 					_g_free0 (rpath);
 					_g_free0 (vapi);
 				}
 			}
 		}
-		_tmp171_ = self->priv->context;
-		vala_code_context_set_use_fast_vapi (_tmp171_, TRUE);
+		_tmp163_ = self->priv->context;
+		vala_code_context_set_use_fast_vapi (_tmp163_, TRUE);
 	}
-	_tmp173_ = self->priv->context;
-	_tmp174_ = vala_code_context_get_report (_tmp173_);
-	_tmp175_ = _tmp174_;
-	_tmp176_ = vala_report_get_errors (_tmp175_);
-	if (_tmp176_ > 0) {
-		_tmp172_ = TRUE;
+	_tmp164_ = self->priv->context;
+	_tmp165_ = vala_compiler_gresources;
+	_tmp165__length1 = _vala_array_length (vala_compiler_gresources);
+	_tmp166_ = (_tmp165_ != NULL) ? _vala_array_dup4 (_tmp165_, _tmp165__length1) : ((gpointer) _tmp165_);
+	_tmp166__length1 = _tmp165__length1;
+	_tmp164_->gresources = (_vala_array_free (_tmp164_->gresources, _tmp164_->gresources_length1, (GDestroyNotify) g_free), NULL);
+	_tmp164_->gresources = _tmp166_;
+	_tmp164_->gresources_length1 = _tmp166__length1;
+	_tmp168_ = self->priv->context;
+	_tmp169_ = vala_code_context_get_report (_tmp168_);
+	_tmp170_ = _tmp169_;
+	_tmp171_ = vala_report_get_errors (_tmp170_);
+	if (_tmp171_ > 0) {
+		_tmp167_ = TRUE;
 	} else {
-		gboolean _tmp177_ = FALSE;
-		gboolean _tmp178_;
-		gboolean _tmp183_;
-		_tmp178_ = vala_compiler_fatal_warnings;
-		if (_tmp178_) {
-			ValaCodeContext* _tmp179_;
-			ValaReport* _tmp180_;
-			ValaReport* _tmp181_;
-			gint _tmp182_ = 0;
-			_tmp179_ = self->priv->context;
-			_tmp180_ = vala_code_context_get_report (_tmp179_);
-			_tmp181_ = _tmp180_;
-			_tmp182_ = vala_report_get_warnings (_tmp181_);
-			_tmp177_ = _tmp182_ > 0;
+		gboolean _tmp172_ = FALSE;
+		gboolean _tmp173_ = FALSE;
+		_tmp173_ = vala_compiler_fatal_warnings;
+		if (_tmp173_) {
+			ValaCodeContext* _tmp174_ = NULL;
+			ValaReport* _tmp175_ = NULL;
+			ValaReport* _tmp176_ = NULL;
+			gint _tmp177_ = 0;
+			_tmp174_ = self->priv->context;
+			_tmp175_ = vala_code_context_get_report (_tmp174_);
+			_tmp176_ = _tmp175_;
+			_tmp177_ = vala_report_get_warnings (_tmp176_);
+			_tmp172_ = _tmp177_ > 0;
 		} else {
-			_tmp177_ = FALSE;
+			_tmp172_ = FALSE;
 		}
-		_tmp183_ = _tmp177_;
-		_tmp172_ = _tmp183_;
+		_tmp167_ = _tmp172_;
 	}
-	_tmp184_ = _tmp172_;
-	if (_tmp184_) {
-		gint _tmp185_ = 0;
-		_tmp185_ = vala_compiler_quit (self);
-		result = _tmp185_;
+	if (_tmp167_) {
+		gint _tmp178_ = 0;
+		_tmp178_ = vala_compiler_quit (self);
+		result = _tmp178_;
 		return result;
 	}
-	_tmp186_ = self->priv->context;
-	_tmp187_ = vala_gd_bus_server_module_new ();
-	_tmp188_ = _tmp187_;
-	vala_code_context_set_codegen (_tmp186_, (ValaCodeGenerator*) _tmp188_);
-	_vala_code_visitor_unref0 (_tmp188_);
+	_tmp179_ = self->priv->context;
+	_tmp180_ = vala_gd_bus_server_module_new ();
+	_tmp181_ = _tmp180_;
+	vala_code_context_set_codegen (_tmp179_, (ValaCodeGenerator*) _tmp181_);
+	_vala_code_visitor_unref0 (_tmp181_);
 	has_c_files = FALSE;
-	_tmp189_ = vala_compiler_sources;
-	_tmp189__length1 = _vala_array_length (vala_compiler_sources);
+	_tmp182_ = vala_compiler_sources;
+	_tmp182__length1 = _vala_array_length (vala_compiler_sources);
 	{
 		gchar** source_collection = NULL;
 		gint source_collection_length1 = 0;
 		gint _source_collection_size_ = 0;
 		gint source_it = 0;
-		source_collection = _tmp189_;
-		source_collection_length1 = _tmp189__length1;
-		for (source_it = 0; source_it < _tmp189__length1; source_it = source_it + 1) {
-			gchar* _tmp190_;
+		source_collection = _tmp182_;
+		source_collection_length1 = _tmp182__length1;
+		for (source_it = 0; source_it < _tmp182__length1; source_it = source_it + 1) {
+			gchar* _tmp183_ = NULL;
 			gchar* source = NULL;
-			_tmp190_ = g_strdup (source_collection[source_it]);
-			source = _tmp190_;
+			_tmp183_ = g_strdup (source_collection[source_it]);
+			source = _tmp183_;
 			{
-				ValaCodeContext* _tmp191_;
-				const gchar* _tmp192_;
-				gboolean _tmp193_;
-				gboolean _tmp194_ = FALSE;
-				_tmp191_ = self->priv->context;
-				_tmp192_ = source;
-				_tmp193_ = vala_compiler_run_output;
-				_tmp194_ = vala_code_context_add_source_filename (_tmp191_, _tmp192_, _tmp193_, TRUE);
-				if (_tmp194_) {
-					const gchar* _tmp195_;
-					gboolean _tmp196_ = FALSE;
-					_tmp195_ = source;
-					_tmp196_ = g_str_has_suffix (_tmp195_, ".c");
-					if (_tmp196_) {
+				ValaCodeContext* _tmp184_ = NULL;
+				const gchar* _tmp185_ = NULL;
+				gboolean _tmp186_ = FALSE;
+				gboolean _tmp187_ = FALSE;
+				_tmp184_ = self->priv->context;
+				_tmp185_ = source;
+				_tmp186_ = vala_compiler_run_output;
+				_tmp187_ = vala_code_context_add_source_filename (_tmp184_, _tmp185_, _tmp186_, TRUE);
+				if (_tmp187_) {
+					const gchar* _tmp188_ = NULL;
+					gboolean _tmp189_ = FALSE;
+					_tmp188_ = source;
+					_tmp189_ = g_str_has_suffix (_tmp188_, ".c");
+					if (_tmp189_) {
 						has_c_files = TRUE;
 					}
 				}
@@ -1262,206 +1255,232 @@ static gint vala_compiler_run (ValaCompiler* self) {
 	}
 	vala_compiler_sources = (_vala_array_free (vala_compiler_sources, _vala_array_length (vala_compiler_sources), (GDestroyNotify) g_free), NULL);
 	vala_compiler_sources = NULL;
-	_tmp198_ = self->priv->context;
-	_tmp199_ = vala_code_context_get_report (_tmp198_);
-	_tmp200_ = _tmp199_;
-	_tmp201_ = vala_report_get_errors (_tmp200_);
-	if (_tmp201_ > 0) {
-		_tmp197_ = TRUE;
+	_tmp191_ = self->priv->context;
+	_tmp192_ = vala_code_context_get_report (_tmp191_);
+	_tmp193_ = _tmp192_;
+	_tmp194_ = vala_report_get_errors (_tmp193_);
+	if (_tmp194_ > 0) {
+		_tmp190_ = TRUE;
 	} else {
-		gboolean _tmp202_ = FALSE;
-		gboolean _tmp203_;
-		gboolean _tmp208_;
-		_tmp203_ = vala_compiler_fatal_warnings;
-		if (_tmp203_) {
-			ValaCodeContext* _tmp204_;
-			ValaReport* _tmp205_;
-			ValaReport* _tmp206_;
-			gint _tmp207_ = 0;
-			_tmp204_ = self->priv->context;
-			_tmp205_ = vala_code_context_get_report (_tmp204_);
-			_tmp206_ = _tmp205_;
-			_tmp207_ = vala_report_get_warnings (_tmp206_);
-			_tmp202_ = _tmp207_ > 0;
+		gboolean _tmp195_ = FALSE;
+		gboolean _tmp196_ = FALSE;
+		_tmp196_ = vala_compiler_fatal_warnings;
+		if (_tmp196_) {
+			ValaCodeContext* _tmp197_ = NULL;
+			ValaReport* _tmp198_ = NULL;
+			ValaReport* _tmp199_ = NULL;
+			gint _tmp200_ = 0;
+			_tmp197_ = self->priv->context;
+			_tmp198_ = vala_code_context_get_report (_tmp197_);
+			_tmp199_ = _tmp198_;
+			_tmp200_ = vala_report_get_warnings (_tmp199_);
+			_tmp195_ = _tmp200_ > 0;
 		} else {
-			_tmp202_ = FALSE;
+			_tmp195_ = FALSE;
 		}
-		_tmp208_ = _tmp202_;
-		_tmp197_ = _tmp208_;
+		_tmp190_ = _tmp195_;
 	}
-	_tmp209_ = _tmp197_;
-	if (_tmp209_) {
-		gint _tmp210_ = 0;
-		_tmp210_ = vala_compiler_quit (self);
-		result = _tmp210_;
+	if (_tmp190_) {
+		gint _tmp201_ = 0;
+		_tmp201_ = vala_compiler_quit (self);
+		result = _tmp201_;
 		return result;
 	}
-	_tmp211_ = vala_parser_new ();
-	parser = _tmp211_;
-	_tmp212_ = parser;
-	_tmp213_ = self->priv->context;
-	vala_parser_parse (_tmp212_, _tmp213_);
-	_tmp214_ = vala_genie_parser_new ();
-	genie_parser = _tmp214_;
-	_tmp215_ = genie_parser;
-	_tmp216_ = self->priv->context;
-	vala_genie_parser_parse (_tmp215_, _tmp216_);
-	_tmp217_ = vala_gir_parser_new ();
-	gir_parser = _tmp217_;
-	_tmp218_ = gir_parser;
-	_tmp219_ = self->priv->context;
-	vala_gir_parser_parse (_tmp218_, _tmp219_);
-	_tmp221_ = self->priv->context;
-	_tmp222_ = vala_code_context_get_report (_tmp221_);
-	_tmp223_ = _tmp222_;
-	_tmp224_ = vala_report_get_errors (_tmp223_);
-	if (_tmp224_ > 0) {
-		_tmp220_ = TRUE;
+	_tmp202_ = vala_parser_new ();
+	parser = _tmp202_;
+	_tmp203_ = parser;
+	_tmp204_ = self->priv->context;
+	vala_parser_parse (_tmp203_, _tmp204_);
+	_tmp205_ = vala_genie_parser_new ();
+	genie_parser = _tmp205_;
+	_tmp206_ = genie_parser;
+	_tmp207_ = self->priv->context;
+	vala_genie_parser_parse (_tmp206_, _tmp207_);
+	_tmp208_ = vala_gir_parser_new ();
+	gir_parser = _tmp208_;
+	_tmp209_ = gir_parser;
+	_tmp210_ = self->priv->context;
+	vala_gir_parser_parse (_tmp209_, _tmp210_);
+	_tmp212_ = self->priv->context;
+	_tmp213_ = vala_code_context_get_report (_tmp212_);
+	_tmp214_ = _tmp213_;
+	_tmp215_ = vala_report_get_errors (_tmp214_);
+	if (_tmp215_ > 0) {
+		_tmp211_ = TRUE;
 	} else {
-		gboolean _tmp225_ = FALSE;
-		gboolean _tmp226_;
-		gboolean _tmp231_;
-		_tmp226_ = vala_compiler_fatal_warnings;
-		if (_tmp226_) {
-			ValaCodeContext* _tmp227_;
-			ValaReport* _tmp228_;
-			ValaReport* _tmp229_;
-			gint _tmp230_ = 0;
-			_tmp227_ = self->priv->context;
-			_tmp228_ = vala_code_context_get_report (_tmp227_);
-			_tmp229_ = _tmp228_;
-			_tmp230_ = vala_report_get_warnings (_tmp229_);
-			_tmp225_ = _tmp230_ > 0;
+		gboolean _tmp216_ = FALSE;
+		gboolean _tmp217_ = FALSE;
+		_tmp217_ = vala_compiler_fatal_warnings;
+		if (_tmp217_) {
+			ValaCodeContext* _tmp218_ = NULL;
+			ValaReport* _tmp219_ = NULL;
+			ValaReport* _tmp220_ = NULL;
+			gint _tmp221_ = 0;
+			_tmp218_ = self->priv->context;
+			_tmp219_ = vala_code_context_get_report (_tmp218_);
+			_tmp220_ = _tmp219_;
+			_tmp221_ = vala_report_get_warnings (_tmp220_);
+			_tmp216_ = _tmp221_ > 0;
 		} else {
-			_tmp225_ = FALSE;
+			_tmp216_ = FALSE;
 		}
-		_tmp231_ = _tmp225_;
-		_tmp220_ = _tmp231_;
+		_tmp211_ = _tmp216_;
 	}
-	_tmp232_ = _tmp220_;
-	if (_tmp232_) {
-		gint _tmp233_ = 0;
-		_tmp233_ = vala_compiler_quit (self);
-		result = _tmp233_;
+	if (_tmp211_) {
+		gint _tmp222_ = 0;
+		_tmp222_ = vala_compiler_quit (self);
+		result = _tmp222_;
 		_vala_code_visitor_unref0 (gir_parser);
 		_vala_code_visitor_unref0 (genie_parser);
 		_vala_code_visitor_unref0 (parser);
 		return result;
 	}
-	_tmp234_ = vala_compiler_fast_vapi_filename;
-	if (_tmp234_ != NULL) {
-		ValaCodeWriter* _tmp235_;
-		ValaCodeWriter* interface_writer;
-		ValaCodeWriter* _tmp236_;
-		ValaCodeContext* _tmp237_;
-		const gchar* _tmp238_;
-		gint _tmp239_ = 0;
-		_tmp235_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_FAST);
-		interface_writer = _tmp235_;
-		_tmp236_ = interface_writer;
-		_tmp237_ = self->priv->context;
-		_tmp238_ = vala_compiler_fast_vapi_filename;
-		vala_code_writer_write_file (_tmp236_, _tmp237_, _tmp238_);
-		_tmp239_ = vala_compiler_quit (self);
-		result = _tmp239_;
+	_tmp223_ = vala_compiler_fast_vapi_filename;
+	if (_tmp223_ != NULL) {
+		ValaCodeWriter* interface_writer = NULL;
+		ValaCodeWriter* _tmp224_ = NULL;
+		ValaCodeWriter* _tmp225_ = NULL;
+		ValaCodeContext* _tmp226_ = NULL;
+		const gchar* _tmp227_ = NULL;
+		gint _tmp228_ = 0;
+		_tmp224_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_FAST);
+		interface_writer = _tmp224_;
+		_tmp225_ = interface_writer;
+		_tmp226_ = self->priv->context;
+		_tmp227_ = vala_compiler_fast_vapi_filename;
+		vala_code_writer_write_file (_tmp225_, _tmp226_, _tmp227_);
+		_tmp228_ = vala_compiler_quit (self);
+		result = _tmp228_;
 		_vala_code_visitor_unref0 (interface_writer);
 		_vala_code_visitor_unref0 (gir_parser);
 		_vala_code_visitor_unref0 (genie_parser);
 		_vala_code_visitor_unref0 (parser);
 		return result;
 	}
-	_tmp240_ = self->priv->context;
-	vala_code_context_check (_tmp240_);
-	_tmp242_ = self->priv->context;
-	_tmp243_ = vala_code_context_get_report (_tmp242_);
-	_tmp244_ = _tmp243_;
-	_tmp245_ = vala_report_get_errors (_tmp244_);
-	if (_tmp245_ > 0) {
-		_tmp241_ = TRUE;
+	_tmp229_ = self->priv->context;
+	vala_code_context_check (_tmp229_);
+	_tmp231_ = self->priv->context;
+	_tmp232_ = vala_code_context_get_report (_tmp231_);
+	_tmp233_ = _tmp232_;
+	_tmp234_ = vala_report_get_errors (_tmp233_);
+	if (_tmp234_ > 0) {
+		_tmp230_ = TRUE;
 	} else {
-		gboolean _tmp246_ = FALSE;
-		gboolean _tmp247_;
-		gboolean _tmp252_;
-		_tmp247_ = vala_compiler_fatal_warnings;
-		if (_tmp247_) {
-			ValaCodeContext* _tmp248_;
-			ValaReport* _tmp249_;
-			ValaReport* _tmp250_;
-			gint _tmp251_ = 0;
-			_tmp248_ = self->priv->context;
-			_tmp249_ = vala_code_context_get_report (_tmp248_);
-			_tmp250_ = _tmp249_;
-			_tmp251_ = vala_report_get_warnings (_tmp250_);
-			_tmp246_ = _tmp251_ > 0;
+		gboolean _tmp235_ = FALSE;
+		gboolean _tmp236_ = FALSE;
+		_tmp236_ = vala_compiler_fatal_warnings;
+		if (_tmp236_) {
+			ValaCodeContext* _tmp237_ = NULL;
+			ValaReport* _tmp238_ = NULL;
+			ValaReport* _tmp239_ = NULL;
+			gint _tmp240_ = 0;
+			_tmp237_ = self->priv->context;
+			_tmp238_ = vala_code_context_get_report (_tmp237_);
+			_tmp239_ = _tmp238_;
+			_tmp240_ = vala_report_get_warnings (_tmp239_);
+			_tmp235_ = _tmp240_ > 0;
 		} else {
-			_tmp246_ = FALSE;
+			_tmp235_ = FALSE;
 		}
-		_tmp252_ = _tmp246_;
-		_tmp241_ = _tmp252_;
+		_tmp230_ = _tmp235_;
 	}
-	_tmp253_ = _tmp241_;
-	if (_tmp253_) {
-		gint _tmp254_ = 0;
-		_tmp254_ = vala_compiler_quit (self);
-		result = _tmp254_;
+	if (_tmp230_) {
+		gint _tmp241_ = 0;
+		_tmp241_ = vala_compiler_quit (self);
+		result = _tmp241_;
 		_vala_code_visitor_unref0 (gir_parser);
 		_vala_code_visitor_unref0 (genie_parser);
 		_vala_code_visitor_unref0 (parser);
 		return result;
 	}
-	_tmp257_ = vala_compiler_ccode_only;
-	if (!_tmp257_) {
-		gboolean _tmp258_;
-		_tmp258_ = vala_compiler_compile_only;
-		_tmp256_ = !_tmp258_;
+	_tmp244_ = vala_compiler_ccode_only;
+	if (!_tmp244_) {
+		gboolean _tmp245_ = FALSE;
+		_tmp245_ = vala_compiler_compile_only;
+		_tmp243_ = !_tmp245_;
 	} else {
-		_tmp256_ = FALSE;
+		_tmp243_ = FALSE;
 	}
-	_tmp259_ = _tmp256_;
-	if (_tmp259_) {
-		const gchar* _tmp260_;
-		_tmp260_ = vala_compiler_library;
-		_tmp255_ = _tmp260_ == NULL;
+	if (_tmp243_) {
+		const gchar* _tmp246_ = NULL;
+		_tmp246_ = vala_compiler_library;
+		_tmp242_ = _tmp246_ == NULL;
 	} else {
-		_tmp255_ = FALSE;
+		_tmp242_ = FALSE;
 	}
-	_tmp261_ = _tmp255_;
-	if (_tmp261_) {
-		gboolean _tmp262_ = FALSE;
-		gboolean _tmp263_;
-		gboolean _tmp267_;
-		_tmp263_ = has_c_files;
-		if (!_tmp263_) {
-			ValaCodeContext* _tmp264_;
-			ValaMethod* _tmp265_;
-			ValaMethod* _tmp266_;
-			_tmp264_ = self->priv->context;
-			_tmp265_ = vala_code_context_get_entry_point (_tmp264_);
-			_tmp266_ = _tmp265_;
-			_tmp262_ = _tmp266_ == NULL;
+	if (_tmp242_) {
+		gboolean _tmp247_ = FALSE;
+		gboolean _tmp248_ = FALSE;
+		_tmp248_ = has_c_files;
+		if (!_tmp248_) {
+			ValaCodeContext* _tmp249_ = NULL;
+			ValaMethod* _tmp250_ = NULL;
+			ValaMethod* _tmp251_ = NULL;
+			_tmp249_ = self->priv->context;
+			_tmp250_ = vala_code_context_get_entry_point (_tmp249_);
+			_tmp251_ = _tmp250_;
+			_tmp247_ = _tmp251_ == NULL;
 		} else {
-			_tmp262_ = FALSE;
+			_tmp247_ = FALSE;
 		}
-		_tmp267_ = _tmp262_;
-		if (_tmp267_) {
+		if (_tmp247_) {
 			vala_report_error (NULL, "program does not contain a static `main' method");
 		}
 	}
-	_tmp268_ = vala_compiler_dump_tree;
-	if (_tmp268_ != NULL) {
-		ValaCodeWriter* _tmp269_;
-		ValaCodeWriter* code_writer;
-		ValaCodeWriter* _tmp270_;
-		ValaCodeContext* _tmp271_;
-		const gchar* _tmp272_;
-		_tmp269_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_DUMP);
-		code_writer = _tmp269_;
-		_tmp270_ = code_writer;
-		_tmp271_ = self->priv->context;
-		_tmp272_ = vala_compiler_dump_tree;
-		vala_code_writer_write_file (_tmp270_, _tmp271_, _tmp272_);
+	_tmp252_ = vala_compiler_dump_tree;
+	if (_tmp252_ != NULL) {
+		ValaCodeWriter* code_writer = NULL;
+		ValaCodeWriter* _tmp253_ = NULL;
+		ValaCodeWriter* _tmp254_ = NULL;
+		ValaCodeContext* _tmp255_ = NULL;
+		const gchar* _tmp256_ = NULL;
+		_tmp253_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_DUMP);
+		code_writer = _tmp253_;
+		_tmp254_ = code_writer;
+		_tmp255_ = self->priv->context;
+		_tmp256_ = vala_compiler_dump_tree;
+		vala_code_writer_write_file (_tmp254_, _tmp255_, _tmp256_);
 		_vala_code_visitor_unref0 (code_writer);
 	}
+	_tmp258_ = self->priv->context;
+	_tmp259_ = vala_code_context_get_report (_tmp258_);
+	_tmp260_ = _tmp259_;
+	_tmp261_ = vala_report_get_errors (_tmp260_);
+	if (_tmp261_ > 0) {
+		_tmp257_ = TRUE;
+	} else {
+		gboolean _tmp262_ = FALSE;
+		gboolean _tmp263_ = FALSE;
+		_tmp263_ = vala_compiler_fatal_warnings;
+		if (_tmp263_) {
+			ValaCodeContext* _tmp264_ = NULL;
+			ValaReport* _tmp265_ = NULL;
+			ValaReport* _tmp266_ = NULL;
+			gint _tmp267_ = 0;
+			_tmp264_ = self->priv->context;
+			_tmp265_ = vala_code_context_get_report (_tmp264_);
+			_tmp266_ = _tmp265_;
+			_tmp267_ = vala_report_get_warnings (_tmp266_);
+			_tmp262_ = _tmp267_ > 0;
+		} else {
+			_tmp262_ = FALSE;
+		}
+		_tmp257_ = _tmp262_;
+	}
+	if (_tmp257_) {
+		gint _tmp268_ = 0;
+		_tmp268_ = vala_compiler_quit (self);
+		result = _tmp268_;
+		_vala_code_visitor_unref0 (gir_parser);
+		_vala_code_visitor_unref0 (genie_parser);
+		_vala_code_visitor_unref0 (parser);
+		return result;
+	}
+	_tmp269_ = self->priv->context;
+	_tmp270_ = vala_code_context_get_codegen (_tmp269_);
+	_tmp271_ = _tmp270_;
+	_tmp272_ = self->priv->context;
+	vala_code_generator_emit (_tmp271_, _tmp272_);
 	_tmp274_ = self->priv->context;
 	_tmp275_ = vala_code_context_get_report (_tmp274_);
 	_tmp276_ = _tmp275_;
@@ -1470,13 +1489,12 @@ static gint vala_compiler_run (ValaCompiler* self) {
 		_tmp273_ = TRUE;
 	} else {
 		gboolean _tmp278_ = FALSE;
-		gboolean _tmp279_;
-		gboolean _tmp284_;
+		gboolean _tmp279_ = FALSE;
 		_tmp279_ = vala_compiler_fatal_warnings;
 		if (_tmp279_) {
-			ValaCodeContext* _tmp280_;
-			ValaReport* _tmp281_;
-			ValaReport* _tmp282_;
+			ValaCodeContext* _tmp280_ = NULL;
+			ValaReport* _tmp281_ = NULL;
+			ValaReport* _tmp282_ = NULL;
 			gint _tmp283_ = 0;
 			_tmp280_ = self->priv->context;
 			_tmp281_ = vala_code_context_get_report (_tmp280_);
@@ -1486,227 +1504,182 @@ static gint vala_compiler_run (ValaCompiler* self) {
 		} else {
 			_tmp278_ = FALSE;
 		}
-		_tmp284_ = _tmp278_;
-		_tmp273_ = _tmp284_;
+		_tmp273_ = _tmp278_;
 	}
-	_tmp285_ = _tmp273_;
+	if (_tmp273_) {
+		gint _tmp284_ = 0;
+		_tmp284_ = vala_compiler_quit (self);
+		result = _tmp284_;
+		_vala_code_visitor_unref0 (gir_parser);
+		_vala_code_visitor_unref0 (genie_parser);
+		_vala_code_visitor_unref0 (parser);
+		return result;
+	}
+	_tmp286_ = vala_compiler_vapi_filename;
+	if (_tmp286_ == NULL) {
+		const gchar* _tmp287_ = NULL;
+		_tmp287_ = vala_compiler_library;
+		_tmp285_ = _tmp287_ != NULL;
+	} else {
+		_tmp285_ = FALSE;
+	}
 	if (_tmp285_) {
-		gint _tmp286_ = 0;
-		_tmp286_ = vala_compiler_quit (self);
-		result = _tmp286_;
-		_vala_code_visitor_unref0 (gir_parser);
-		_vala_code_visitor_unref0 (genie_parser);
-		_vala_code_visitor_unref0 (parser);
-		return result;
-	}
-	_tmp287_ = self->priv->context;
-	_tmp288_ = vala_code_context_get_codegen (_tmp287_);
-	_tmp289_ = _tmp288_;
-	_tmp290_ = self->priv->context;
-	vala_code_generator_emit (_tmp289_, _tmp290_);
-	_tmp292_ = self->priv->context;
-	_tmp293_ = vala_code_context_get_report (_tmp292_);
-	_tmp294_ = _tmp293_;
-	_tmp295_ = vala_report_get_errors (_tmp294_);
-	if (_tmp295_ > 0) {
-		_tmp291_ = TRUE;
-	} else {
-		gboolean _tmp296_ = FALSE;
-		gboolean _tmp297_;
-		gboolean _tmp302_;
-		_tmp297_ = vala_compiler_fatal_warnings;
-		if (_tmp297_) {
-			ValaCodeContext* _tmp298_;
-			ValaReport* _tmp299_;
-			ValaReport* _tmp300_;
-			gint _tmp301_ = 0;
-			_tmp298_ = self->priv->context;
-			_tmp299_ = vala_code_context_get_report (_tmp298_);
-			_tmp300_ = _tmp299_;
-			_tmp301_ = vala_report_get_warnings (_tmp300_);
-			_tmp296_ = _tmp301_ > 0;
-		} else {
-			_tmp296_ = FALSE;
-		}
-		_tmp302_ = _tmp296_;
-		_tmp291_ = _tmp302_;
-	}
-	_tmp303_ = _tmp291_;
-	if (_tmp303_) {
-		gint _tmp304_ = 0;
-		_tmp304_ = vala_compiler_quit (self);
-		result = _tmp304_;
-		_vala_code_visitor_unref0 (gir_parser);
-		_vala_code_visitor_unref0 (genie_parser);
-		_vala_code_visitor_unref0 (parser);
-		return result;
-	}
-	_tmp306_ = vala_compiler_vapi_filename;
-	if (_tmp306_ == NULL) {
-		const gchar* _tmp307_;
-		_tmp307_ = vala_compiler_library;
-		_tmp305_ = _tmp307_ != NULL;
-	} else {
-		_tmp305_ = FALSE;
-	}
-	_tmp308_ = _tmp305_;
-	if (_tmp308_) {
-		const gchar* _tmp309_;
-		gchar* _tmp310_ = NULL;
-		_tmp309_ = vala_compiler_library;
-		_tmp310_ = g_strdup_printf ("%s.vapi", _tmp309_);
+		const gchar* _tmp288_ = NULL;
+		gchar* _tmp289_ = NULL;
+		_tmp288_ = vala_compiler_library;
+		_tmp289_ = g_strdup_printf ("%s.vapi", _tmp288_);
 		_g_free0 (vala_compiler_vapi_filename);
-		vala_compiler_vapi_filename = _tmp310_;
+		vala_compiler_vapi_filename = _tmp289_;
 	}
-	_tmp311_ = vala_compiler_library;
-	if (_tmp311_ != NULL) {
-		const gchar* _tmp312_;
-		_tmp312_ = vala_compiler_gir;
-		if (_tmp312_ != NULL) {
-			const gchar* _tmp313_;
-			gint _tmp314_;
-			gint _tmp315_;
-			glong gir_len;
-			const gchar* _tmp316_;
-			gint _tmp317_ = 0;
-			gint last_hyphen;
-			gboolean _tmp318_ = FALSE;
-			gint _tmp319_;
-			gboolean _tmp322_;
-			_tmp313_ = vala_compiler_gir;
-			_tmp314_ = strlen (_tmp313_);
-			_tmp315_ = _tmp314_;
-			gir_len = (glong) _tmp315_;
-			_tmp316_ = vala_compiler_gir;
-			_tmp317_ = string_last_index_of_char (_tmp316_, (gunichar) '-', 0);
-			last_hyphen = _tmp317_;
-			_tmp319_ = last_hyphen;
-			if (_tmp319_ == (-1)) {
-				_tmp318_ = TRUE;
+	_tmp290_ = vala_compiler_library;
+	if (_tmp290_ != NULL) {
+		const gchar* _tmp291_ = NULL;
+		_tmp291_ = vala_compiler_gir;
+		if (_tmp291_ != NULL) {
+			gchar* gir_base = NULL;
+			const gchar* _tmp292_ = NULL;
+			gchar* _tmp293_ = NULL;
+			glong gir_len = 0L;
+			const gchar* _tmp294_ = NULL;
+			gint _tmp295_ = 0;
+			gint _tmp296_ = 0;
+			gint last_hyphen = 0;
+			const gchar* _tmp297_ = NULL;
+			gint _tmp298_ = 0;
+			gboolean _tmp299_ = FALSE;
+			gint _tmp300_ = 0;
+			_tmp292_ = vala_compiler_gir;
+			_tmp293_ = g_path_get_basename (_tmp292_);
+			gir_base = _tmp293_;
+			_tmp294_ = gir_base;
+			_tmp295_ = strlen (_tmp294_);
+			_tmp296_ = _tmp295_;
+			gir_len = (glong) _tmp296_;
+			_tmp297_ = gir_base;
+			_tmp298_ = string_last_index_of_char (_tmp297_, (gunichar) '-', 0);
+			last_hyphen = _tmp298_;
+			_tmp300_ = last_hyphen;
+			if (_tmp300_ == (-1)) {
+				_tmp299_ = TRUE;
 			} else {
-				const gchar* _tmp320_;
-				gboolean _tmp321_ = FALSE;
-				_tmp320_ = vala_compiler_gir;
-				_tmp321_ = g_str_has_suffix (_tmp320_, ".gir");
-				_tmp318_ = !_tmp321_;
+				const gchar* _tmp301_ = NULL;
+				gboolean _tmp302_ = FALSE;
+				_tmp301_ = gir_base;
+				_tmp302_ = g_str_has_suffix (_tmp301_, ".gir");
+				_tmp299_ = !_tmp302_;
 			}
-			_tmp322_ = _tmp318_;
-			if (_tmp322_) {
-				const gchar* _tmp323_;
-				gchar* _tmp324_ = NULL;
-				gchar* _tmp325_;
-				_tmp323_ = vala_compiler_gir;
-				_tmp324_ = g_strdup_printf ("GIR file name `%s' is not well-formed, expected NAME-VERSION.gir", _tmp323_);
-				_tmp325_ = _tmp324_;
-				vala_report_error (NULL, _tmp325_);
-				_g_free0 (_tmp325_);
+			if (_tmp299_) {
+				const gchar* _tmp303_ = NULL;
+				gchar* _tmp304_ = NULL;
+				gchar* _tmp305_ = NULL;
+				_tmp303_ = vala_compiler_gir;
+				_tmp304_ = g_strdup_printf ("GIR file name `%s' is not well-formed, expected NAME-VERSION.gir", _tmp303_);
+				_tmp305_ = _tmp304_;
+				vala_report_error (NULL, _tmp305_);
+				_g_free0 (_tmp305_);
 			} else {
-				const gchar* _tmp326_;
-				gint _tmp327_;
-				gchar* _tmp328_ = NULL;
-				gchar* gir_namespace;
-				const gchar* _tmp329_;
-				gint _tmp330_;
-				glong _tmp331_;
-				gint _tmp332_;
-				gchar* _tmp333_ = NULL;
-				gchar* gir_version;
-				const gchar* _tmp334_;
-				gboolean _tmp335_ = FALSE;
-				gboolean _tmp336_ = FALSE;
-				gboolean _tmp337_ = FALSE;
-				const gchar* _tmp338_;
-				gboolean _tmp340_;
-				gboolean _tmp344_;
-				gboolean _tmp347_;
-				_tmp326_ = vala_compiler_gir;
-				_tmp327_ = last_hyphen;
-				_tmp328_ = string_substring (_tmp326_, (glong) 0, (glong) _tmp327_);
-				gir_namespace = _tmp328_;
-				_tmp329_ = vala_compiler_gir;
-				_tmp330_ = last_hyphen;
-				_tmp331_ = gir_len;
-				_tmp332_ = last_hyphen;
-				_tmp333_ = string_substring (_tmp329_, (glong) (_tmp330_ + 1), (_tmp331_ - _tmp332_) - 5);
-				gir_version = _tmp333_;
-				_tmp334_ = gir_version;
-				g_strcanon (_tmp334_, "0123456789.", '?');
-				_tmp338_ = gir_namespace;
-				if (g_strcmp0 (_tmp338_, "") == 0) {
-					_tmp337_ = TRUE;
+				gchar* gir_namespace = NULL;
+				const gchar* _tmp306_ = NULL;
+				gint _tmp307_ = 0;
+				gchar* _tmp308_ = NULL;
+				gchar* gir_version = NULL;
+				const gchar* _tmp309_ = NULL;
+				gint _tmp310_ = 0;
+				glong _tmp311_ = 0L;
+				gint _tmp312_ = 0;
+				gchar* _tmp313_ = NULL;
+				const gchar* _tmp314_ = NULL;
+				gboolean _tmp315_ = FALSE;
+				gboolean _tmp316_ = FALSE;
+				gboolean _tmp317_ = FALSE;
+				const gchar* _tmp318_ = NULL;
+				_tmp306_ = gir_base;
+				_tmp307_ = last_hyphen;
+				_tmp308_ = string_substring (_tmp306_, (glong) 0, (glong) _tmp307_);
+				gir_namespace = _tmp308_;
+				_tmp309_ = gir_base;
+				_tmp310_ = last_hyphen;
+				_tmp311_ = gir_len;
+				_tmp312_ = last_hyphen;
+				_tmp313_ = string_substring (_tmp309_, (glong) (_tmp310_ + 1), (_tmp311_ - _tmp312_) - 5);
+				gir_version = _tmp313_;
+				_tmp314_ = gir_version;
+				g_strcanon (_tmp314_, "0123456789.", '?');
+				_tmp318_ = gir_namespace;
+				if (g_strcmp0 (_tmp318_, "") == 0) {
+					_tmp317_ = TRUE;
 				} else {
-					const gchar* _tmp339_;
-					_tmp339_ = gir_version;
-					_tmp337_ = g_strcmp0 (_tmp339_, "") == 0;
+					const gchar* _tmp319_ = NULL;
+					_tmp319_ = gir_version;
+					_tmp317_ = g_strcmp0 (_tmp319_, "") == 0;
 				}
-				_tmp340_ = _tmp337_;
-				if (_tmp340_) {
-					_tmp336_ = TRUE;
+				if (_tmp317_) {
+					_tmp316_ = TRUE;
 				} else {
-					const gchar* _tmp341_;
-					gchar _tmp342_ = '\0';
-					gboolean _tmp343_ = FALSE;
-					_tmp341_ = gir_version;
-					_tmp342_ = string_get (_tmp341_, (glong) 0);
-					_tmp343_ = g_ascii_isdigit (_tmp342_);
-					_tmp336_ = !_tmp343_;
+					const gchar* _tmp320_ = NULL;
+					gchar _tmp321_ = '\0';
+					gboolean _tmp322_ = FALSE;
+					_tmp320_ = gir_version;
+					_tmp321_ = string_get (_tmp320_, (glong) 0);
+					_tmp322_ = g_ascii_isdigit (_tmp321_);
+					_tmp316_ = !_tmp322_;
 				}
-				_tmp344_ = _tmp336_;
-				if (_tmp344_) {
-					_tmp335_ = TRUE;
+				if (_tmp316_) {
+					_tmp315_ = TRUE;
 				} else {
-					const gchar* _tmp345_;
-					gboolean _tmp346_ = FALSE;
-					_tmp345_ = gir_version;
-					_tmp346_ = string_contains (_tmp345_, "?");
-					_tmp335_ = _tmp346_;
+					const gchar* _tmp323_ = NULL;
+					gboolean _tmp324_ = FALSE;
+					_tmp323_ = gir_version;
+					_tmp324_ = string_contains (_tmp323_, "?");
+					_tmp315_ = _tmp324_;
 				}
-				_tmp347_ = _tmp335_;
-				if (_tmp347_) {
-					const gchar* _tmp348_;
-					gchar* _tmp349_ = NULL;
-					gchar* _tmp350_;
-					_tmp348_ = vala_compiler_gir;
-					_tmp349_ = g_strdup_printf ("GIR file name `%s' is not well-formed, expected NAME-VERSION.gir", _tmp348_);
-					_tmp350_ = _tmp349_;
-					vala_report_error (NULL, _tmp350_);
-					_g_free0 (_tmp350_);
+				if (_tmp315_) {
+					const gchar* _tmp325_ = NULL;
+					gchar* _tmp326_ = NULL;
+					gchar* _tmp327_ = NULL;
+					_tmp325_ = vala_compiler_gir;
+					_tmp326_ = g_strdup_printf ("GIR file name `%s' is not well-formed, expected NAME-VERSION.gir", _tmp325_);
+					_tmp327_ = _tmp326_;
+					vala_report_error (NULL, _tmp327_);
+					_g_free0 (_tmp327_);
 				} else {
-					ValaGIRWriter* _tmp351_;
-					ValaGIRWriter* gir_writer;
-					gchar* _tmp352_;
-					gchar* gir_directory;
-					const gchar* _tmp353_;
-					ValaGIRWriter* _tmp358_;
-					ValaCodeContext* _tmp359_;
-					const gchar* _tmp360_;
-					const gchar* _tmp361_;
-					const gchar* _tmp362_;
-					const gchar* _tmp363_;
-					_tmp351_ = vala_gir_writer_new ();
-					gir_writer = _tmp351_;
-					_tmp352_ = g_strdup (".");
-					gir_directory = _tmp352_;
-					_tmp353_ = vala_compiler_directory;
-					if (_tmp353_ != NULL) {
-						ValaCodeContext* _tmp354_;
-						const gchar* _tmp355_;
-						const gchar* _tmp356_;
-						gchar* _tmp357_;
-						_tmp354_ = self->priv->context;
-						_tmp355_ = vala_code_context_get_directory (_tmp354_);
-						_tmp356_ = _tmp355_;
-						_tmp357_ = g_strdup (_tmp356_);
+					ValaGIRWriter* gir_writer = NULL;
+					ValaGIRWriter* _tmp328_ = NULL;
+					gchar* gir_directory = NULL;
+					gchar* _tmp329_ = NULL;
+					const gchar* _tmp330_ = NULL;
+					ValaGIRWriter* _tmp335_ = NULL;
+					ValaCodeContext* _tmp336_ = NULL;
+					const gchar* _tmp337_ = NULL;
+					const gchar* _tmp338_ = NULL;
+					const gchar* _tmp339_ = NULL;
+					const gchar* _tmp340_ = NULL;
+					const gchar* _tmp341_ = NULL;
+					_tmp328_ = vala_gir_writer_new ();
+					gir_writer = _tmp328_;
+					_tmp329_ = g_strdup (".");
+					gir_directory = _tmp329_;
+					_tmp330_ = vala_compiler_directory;
+					if (_tmp330_ != NULL) {
+						ValaCodeContext* _tmp331_ = NULL;
+						const gchar* _tmp332_ = NULL;
+						const gchar* _tmp333_ = NULL;
+						gchar* _tmp334_ = NULL;
+						_tmp331_ = self->priv->context;
+						_tmp332_ = vala_code_context_get_directory (_tmp331_);
+						_tmp333_ = _tmp332_;
+						_tmp334_ = g_strdup (_tmp333_);
 						_g_free0 (gir_directory);
-						gir_directory = _tmp357_;
+						gir_directory = _tmp334_;
 					}
-					_tmp358_ = gir_writer;
-					_tmp359_ = self->priv->context;
-					_tmp360_ = gir_directory;
-					_tmp361_ = gir_namespace;
-					_tmp362_ = gir_version;
-					_tmp363_ = vala_compiler_library;
-					vala_gir_writer_write_file (_tmp358_, _tmp359_, _tmp360_, _tmp361_, _tmp362_, _tmp363_);
+					_tmp335_ = gir_writer;
+					_tmp336_ = self->priv->context;
+					_tmp337_ = gir_directory;
+					_tmp338_ = vala_compiler_gir;
+					_tmp339_ = gir_namespace;
+					_tmp340_ = gir_version;
+					_tmp341_ = vala_compiler_library;
+					vala_gir_writer_write_file (_tmp335_, _tmp336_, _tmp337_, _tmp338_, _tmp339_, _tmp340_, _tmp341_);
 					_g_free0 (gir_directory);
 					_vala_code_visitor_unref0 (gir_writer);
 				}
@@ -1715,205 +1688,198 @@ static gint vala_compiler_run (ValaCompiler* self) {
 			}
 			_g_free0 (vala_compiler_gir);
 			vala_compiler_gir = NULL;
+			_g_free0 (gir_base);
 		}
 		_g_free0 (vala_compiler_library);
 		vala_compiler_library = NULL;
 	}
-	_tmp364_ = vala_compiler_vapi_filename;
-	if (_tmp364_ != NULL) {
-		ValaCodeWriter* _tmp365_;
-		ValaCodeWriter* interface_writer;
-		gboolean _tmp366_ = FALSE;
-		const gchar* _tmp367_;
-		gboolean _tmp370_;
-		ValaCodeWriter* _tmp376_;
-		ValaCodeContext* _tmp377_;
-		const gchar* _tmp378_;
-		_tmp365_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_EXTERNAL);
-		interface_writer = _tmp365_;
-		_tmp367_ = vala_compiler_directory;
-		if (_tmp367_ != NULL) {
-			const gchar* _tmp368_;
-			gboolean _tmp369_ = FALSE;
-			_tmp368_ = vala_compiler_vapi_filename;
-			_tmp369_ = g_path_is_absolute (_tmp368_);
-			_tmp366_ = !_tmp369_;
+	_tmp342_ = vala_compiler_vapi_filename;
+	if (_tmp342_ != NULL) {
+		ValaCodeWriter* interface_writer = NULL;
+		ValaCodeWriter* _tmp343_ = NULL;
+		gboolean _tmp344_ = FALSE;
+		const gchar* _tmp345_ = NULL;
+		ValaCodeWriter* _tmp353_ = NULL;
+		ValaCodeContext* _tmp354_ = NULL;
+		const gchar* _tmp355_ = NULL;
+		_tmp343_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_EXTERNAL);
+		interface_writer = _tmp343_;
+		_tmp345_ = vala_compiler_directory;
+		if (_tmp345_ != NULL) {
+			const gchar* _tmp346_ = NULL;
+			gboolean _tmp347_ = FALSE;
+			_tmp346_ = vala_compiler_vapi_filename;
+			_tmp347_ = g_path_is_absolute (_tmp346_);
+			_tmp344_ = !_tmp347_;
 		} else {
-			_tmp366_ = FALSE;
+			_tmp344_ = FALSE;
 		}
-		_tmp370_ = _tmp366_;
-		if (_tmp370_) {
-			ValaCodeContext* _tmp371_;
-			const gchar* _tmp372_;
-			const gchar* _tmp373_;
-			const gchar* _tmp374_;
-			gchar* _tmp375_ = NULL;
-			_tmp371_ = self->priv->context;
-			_tmp372_ = vala_code_context_get_directory (_tmp371_);
-			_tmp373_ = _tmp372_;
-			_tmp374_ = vala_compiler_vapi_filename;
-			_tmp375_ = g_strdup_printf ("%s%c%s", _tmp373_, (gint) G_DIR_SEPARATOR, _tmp374_);
+		if (_tmp344_) {
+			ValaCodeContext* _tmp348_ = NULL;
+			const gchar* _tmp349_ = NULL;
+			const gchar* _tmp350_ = NULL;
+			const gchar* _tmp351_ = NULL;
+			gchar* _tmp352_ = NULL;
+			_tmp348_ = self->priv->context;
+			_tmp349_ = vala_code_context_get_directory (_tmp348_);
+			_tmp350_ = _tmp349_;
+			_tmp351_ = vala_compiler_vapi_filename;
+			_tmp352_ = g_strdup_printf ("%s%c%s", _tmp350_, (gint) G_DIR_SEPARATOR, _tmp351_);
 			_g_free0 (vala_compiler_vapi_filename);
-			vala_compiler_vapi_filename = _tmp375_;
+			vala_compiler_vapi_filename = _tmp352_;
 		}
-		_tmp376_ = interface_writer;
-		_tmp377_ = self->priv->context;
-		_tmp378_ = vala_compiler_vapi_filename;
-		vala_code_writer_write_file (_tmp376_, _tmp377_, _tmp378_);
+		_tmp353_ = interface_writer;
+		_tmp354_ = self->priv->context;
+		_tmp355_ = vala_compiler_vapi_filename;
+		vala_code_writer_write_file (_tmp353_, _tmp354_, _tmp355_);
 		_vala_code_visitor_unref0 (interface_writer);
 	}
-	_tmp379_ = vala_compiler_internal_vapi_filename;
-	if (_tmp379_ != NULL) {
-		gboolean _tmp380_ = FALSE;
-		const gchar* _tmp381_;
-		gboolean _tmp383_;
-		ValaCodeWriter* _tmp385_;
-		ValaCodeWriter* interface_writer;
-		ValaCodeWriter* _tmp386_;
-		const gchar* _tmp387_;
-		const gchar* _tmp388_;
-		const gchar* _tmp389_;
-		gchar* _tmp390_;
-		gchar* vapi_filename;
-		gboolean _tmp391_ = FALSE;
-		const gchar* _tmp392_;
-		gboolean _tmp395_;
-		ValaCodeWriter* _tmp401_;
-		ValaCodeContext* _tmp402_;
-		const gchar* _tmp403_;
-		_tmp381_ = vala_compiler_internal_header_filename;
-		if (_tmp381_ == NULL) {
-			_tmp380_ = TRUE;
+	_tmp356_ = vala_compiler_internal_vapi_filename;
+	if (_tmp356_ != NULL) {
+		gboolean _tmp357_ = FALSE;
+		const gchar* _tmp358_ = NULL;
+		ValaCodeWriter* interface_writer = NULL;
+		ValaCodeWriter* _tmp361_ = NULL;
+		ValaCodeWriter* _tmp362_ = NULL;
+		const gchar* _tmp363_ = NULL;
+		const gchar* _tmp364_ = NULL;
+		gchar* vapi_filename = NULL;
+		const gchar* _tmp365_ = NULL;
+		gchar* _tmp366_ = NULL;
+		gboolean _tmp367_ = FALSE;
+		const gchar* _tmp368_ = NULL;
+		ValaCodeWriter* _tmp376_ = NULL;
+		ValaCodeContext* _tmp377_ = NULL;
+		const gchar* _tmp378_ = NULL;
+		_tmp358_ = vala_compiler_internal_header_filename;
+		if (_tmp358_ == NULL) {
+			_tmp357_ = TRUE;
 		} else {
-			const gchar* _tmp382_;
-			_tmp382_ = vala_compiler_header_filename;
-			_tmp380_ = _tmp382_ == NULL;
+			const gchar* _tmp359_ = NULL;
+			_tmp359_ = vala_compiler_header_filename;
+			_tmp357_ = _tmp359_ == NULL;
 		}
-		_tmp383_ = _tmp380_;
-		if (_tmp383_) {
-			gint _tmp384_ = 0;
+		if (_tmp357_) {
+			gint _tmp360_ = 0;
 			vala_report_error (NULL, "--internal-vapi may only be used in combination with --header and --in" \
 "ternal-header");
-			_tmp384_ = vala_compiler_quit (self);
-			result = _tmp384_;
+			_tmp360_ = vala_compiler_quit (self);
+			result = _tmp360_;
 			_vala_code_visitor_unref0 (gir_parser);
 			_vala_code_visitor_unref0 (genie_parser);
 			_vala_code_visitor_unref0 (parser);
 			return result;
 		}
-		_tmp385_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_INTERNAL);
-		interface_writer = _tmp385_;
-		_tmp386_ = interface_writer;
-		_tmp387_ = vala_compiler_header_filename;
-		_tmp388_ = vala_compiler_internal_header_filename;
-		vala_code_writer_set_cheader_override (_tmp386_, _tmp387_, _tmp388_);
-		_tmp389_ = vala_compiler_internal_vapi_filename;
-		_tmp390_ = g_strdup (_tmp389_);
-		vapi_filename = _tmp390_;
-		_tmp392_ = vala_compiler_directory;
-		if (_tmp392_ != NULL) {
-			const gchar* _tmp393_;
-			gboolean _tmp394_ = FALSE;
-			_tmp393_ = vapi_filename;
-			_tmp394_ = g_path_is_absolute (_tmp393_);
-			_tmp391_ = !_tmp394_;
+		_tmp361_ = vala_code_writer_new (VALA_CODE_WRITER_TYPE_INTERNAL);
+		interface_writer = _tmp361_;
+		_tmp362_ = interface_writer;
+		_tmp363_ = vala_compiler_header_filename;
+		_tmp364_ = vala_compiler_internal_header_filename;
+		vala_code_writer_set_cheader_override (_tmp362_, _tmp363_, _tmp364_);
+		_tmp365_ = vala_compiler_internal_vapi_filename;
+		_tmp366_ = g_strdup (_tmp365_);
+		vapi_filename = _tmp366_;
+		_tmp368_ = vala_compiler_directory;
+		if (_tmp368_ != NULL) {
+			const gchar* _tmp369_ = NULL;
+			gboolean _tmp370_ = FALSE;
+			_tmp369_ = vapi_filename;
+			_tmp370_ = g_path_is_absolute (_tmp369_);
+			_tmp367_ = !_tmp370_;
 		} else {
-			_tmp391_ = FALSE;
+			_tmp367_ = FALSE;
 		}
-		_tmp395_ = _tmp391_;
-		if (_tmp395_) {
-			ValaCodeContext* _tmp396_;
-			const gchar* _tmp397_;
-			const gchar* _tmp398_;
-			const gchar* _tmp399_;
-			gchar* _tmp400_ = NULL;
-			_tmp396_ = self->priv->context;
-			_tmp397_ = vala_code_context_get_directory (_tmp396_);
-			_tmp398_ = _tmp397_;
-			_tmp399_ = vapi_filename;
-			_tmp400_ = g_strdup_printf ("%s%c%s", _tmp398_, (gint) G_DIR_SEPARATOR, _tmp399_);
+		if (_tmp367_) {
+			ValaCodeContext* _tmp371_ = NULL;
+			const gchar* _tmp372_ = NULL;
+			const gchar* _tmp373_ = NULL;
+			const gchar* _tmp374_ = NULL;
+			gchar* _tmp375_ = NULL;
+			_tmp371_ = self->priv->context;
+			_tmp372_ = vala_code_context_get_directory (_tmp371_);
+			_tmp373_ = _tmp372_;
+			_tmp374_ = vapi_filename;
+			_tmp375_ = g_strdup_printf ("%s%c%s", _tmp373_, (gint) G_DIR_SEPARATOR, _tmp374_);
 			_g_free0 (vapi_filename);
-			vapi_filename = _tmp400_;
+			vapi_filename = _tmp375_;
 		}
-		_tmp401_ = interface_writer;
-		_tmp402_ = self->priv->context;
-		_tmp403_ = vapi_filename;
-		vala_code_writer_write_file (_tmp401_, _tmp402_, _tmp403_);
+		_tmp376_ = interface_writer;
+		_tmp377_ = self->priv->context;
+		_tmp378_ = vapi_filename;
+		vala_code_writer_write_file (_tmp376_, _tmp377_, _tmp378_);
 		_g_free0 (vala_compiler_internal_vapi_filename);
 		vala_compiler_internal_vapi_filename = NULL;
 		_g_free0 (vapi_filename);
 		_vala_code_visitor_unref0 (interface_writer);
 	}
-	_tmp404_ = vala_compiler_dependencies;
-	if (_tmp404_ != NULL) {
-		ValaCodeContext* _tmp405_;
-		const gchar* _tmp406_;
-		_tmp405_ = self->priv->context;
-		_tmp406_ = vala_compiler_dependencies;
-		vala_code_context_write_dependencies (_tmp405_, _tmp406_);
+	_tmp379_ = vala_compiler_dependencies;
+	if (_tmp379_ != NULL) {
+		ValaCodeContext* _tmp380_ = NULL;
+		const gchar* _tmp381_ = NULL;
+		_tmp380_ = self->priv->context;
+		_tmp381_ = vala_compiler_dependencies;
+		vala_code_context_write_dependencies (_tmp380_, _tmp381_);
 	}
-	_tmp407_ = vala_compiler_ccode_only;
-	if (!_tmp407_) {
-		ValaCCodeCompiler* _tmp408_;
-		ValaCCodeCompiler* ccompiler;
-		gboolean _tmp409_ = FALSE;
-		const gchar* _tmp410_;
-		gboolean _tmp412_;
-		gchar** _tmp415_;
-		gint _tmp415__length1;
-		_tmp408_ = vala_ccode_compiler_new ();
-		ccompiler = _tmp408_;
-		_tmp410_ = vala_compiler_cc_command;
-		if (_tmp410_ == NULL) {
-			const gchar* _tmp411_ = NULL;
-			_tmp411_ = g_getenv ("CC");
-			_tmp409_ = _tmp411_ != NULL;
+	_tmp382_ = vala_compiler_ccode_only;
+	if (!_tmp382_) {
+		ValaCCodeCompiler* ccompiler = NULL;
+		ValaCCodeCompiler* _tmp383_ = NULL;
+		gboolean _tmp384_ = FALSE;
+		const gchar* _tmp385_ = NULL;
+		gchar** _tmp389_ = NULL;
+		gint _tmp389__length1 = 0;
+		_tmp383_ = vala_ccode_compiler_new ();
+		ccompiler = _tmp383_;
+		_tmp385_ = vala_compiler_cc_command;
+		if (_tmp385_ == NULL) {
+			const gchar* _tmp386_ = NULL;
+			_tmp386_ = g_getenv ("CC");
+			_tmp384_ = _tmp386_ != NULL;
 		} else {
-			_tmp409_ = FALSE;
+			_tmp384_ = FALSE;
 		}
-		_tmp412_ = _tmp409_;
-		if (_tmp412_) {
-			const gchar* _tmp413_ = NULL;
-			gchar* _tmp414_;
-			_tmp413_ = g_getenv ("CC");
-			_tmp414_ = g_strdup (_tmp413_);
+		if (_tmp384_) {
+			const gchar* _tmp387_ = NULL;
+			gchar* _tmp388_ = NULL;
+			_tmp387_ = g_getenv ("CC");
+			_tmp388_ = g_strdup (_tmp387_);
 			_g_free0 (vala_compiler_cc_command);
-			vala_compiler_cc_command = _tmp414_;
+			vala_compiler_cc_command = _tmp388_;
 		}
-		_tmp415_ = vala_compiler_cc_options;
-		_tmp415__length1 = _vala_array_length (vala_compiler_cc_options);
-		if (_tmp415_ == NULL) {
-			ValaCCodeCompiler* _tmp416_;
-			ValaCodeContext* _tmp417_;
-			const gchar* _tmp418_;
-			gchar** _tmp419_ = NULL;
-			gchar** _tmp420_;
-			gint _tmp420__length1;
-			_tmp416_ = ccompiler;
-			_tmp417_ = self->priv->context;
-			_tmp418_ = vala_compiler_cc_command;
-			_tmp419_ = g_new0 (gchar*, 0 + 1);
-			_tmp420_ = _tmp419_;
-			_tmp420__length1 = 0;
-			vala_ccode_compiler_compile (_tmp416_, _tmp417_, _tmp418_, _tmp420_, 0);
-			_tmp420_ = (_vala_array_free (_tmp420_, _tmp420__length1, (GDestroyNotify) g_free), NULL);
+		_tmp389_ = vala_compiler_cc_options;
+		_tmp389__length1 = _vala_array_length (vala_compiler_cc_options);
+		if (_tmp389_ == NULL) {
+			ValaCCodeCompiler* _tmp390_ = NULL;
+			ValaCodeContext* _tmp391_ = NULL;
+			const gchar* _tmp392_ = NULL;
+			gchar** _tmp393_ = NULL;
+			gchar** _tmp394_ = NULL;
+			gint _tmp394__length1 = 0;
+			_tmp390_ = ccompiler;
+			_tmp391_ = self->priv->context;
+			_tmp392_ = vala_compiler_cc_command;
+			_tmp393_ = g_new0 (gchar*, 0 + 1);
+			_tmp394_ = _tmp393_;
+			_tmp394__length1 = 0;
+			vala_ccode_compiler_compile (_tmp390_, _tmp391_, _tmp392_, _tmp394_, 0);
+			_tmp394_ = (_vala_array_free (_tmp394_, _tmp394__length1, (GDestroyNotify) g_free), NULL);
 		} else {
-			ValaCCodeCompiler* _tmp421_;
-			ValaCodeContext* _tmp422_;
-			const gchar* _tmp423_;
-			gchar** _tmp424_;
-			gint _tmp424__length1;
-			_tmp421_ = ccompiler;
-			_tmp422_ = self->priv->context;
-			_tmp423_ = vala_compiler_cc_command;
-			_tmp424_ = vala_compiler_cc_options;
-			_tmp424__length1 = _vala_array_length (vala_compiler_cc_options);
-			vala_ccode_compiler_compile (_tmp421_, _tmp422_, _tmp423_, _tmp424_, _tmp424__length1);
+			ValaCCodeCompiler* _tmp395_ = NULL;
+			ValaCodeContext* _tmp396_ = NULL;
+			const gchar* _tmp397_ = NULL;
+			gchar** _tmp398_ = NULL;
+			gint _tmp398__length1 = 0;
+			_tmp395_ = ccompiler;
+			_tmp396_ = self->priv->context;
+			_tmp397_ = vala_compiler_cc_command;
+			_tmp398_ = vala_compiler_cc_options;
+			_tmp398__length1 = _vala_array_length (vala_compiler_cc_options);
+			vala_ccode_compiler_compile (_tmp395_, _tmp396_, _tmp397_, _tmp398_, _tmp398__length1);
 		}
 		_vala_ccode_compiler_unref0 (ccompiler);
 	}
-	_tmp425_ = vala_compiler_quit (self);
-	result = _tmp425_;
+	_tmp399_ = vala_compiler_quit (self);
+	result = _tmp399_;
 	_vala_code_visitor_unref0 (gir_parser);
 	_vala_code_visitor_unref0 (genie_parser);
 	_vala_code_visitor_unref0 (parser);
@@ -1947,9 +1913,9 @@ static void block1_data_unref (void * _userdata_) {
 }
 
 
-static void ___lambda2_ (Block1Data* _data1_, GPid pid, gint status) {
-	gint _tmp0_;
-	GMainLoop* _tmp1_;
+static void ___lambda3_ (Block1Data* _data1_, GPid pid, gint status) {
+	gint _tmp0_ = 0;
+	GMainLoop* _tmp1_ = NULL;
 	_tmp0_ = status;
 	_data1_->child_status = (_tmp0_ & 0xff00) >> 8;
 	_tmp1_ = _data1_->loop;
@@ -1957,57 +1923,57 @@ static void ___lambda2_ (Block1Data* _data1_, GPid pid, gint status) {
 }
 
 
-static void ____lambda2__gchild_watch_func (GPid pid, gint status, gpointer self) {
-	___lambda2_ (self, pid, status);
+static void ____lambda3__gchild_watch_func (GPid pid, gint status, gpointer self) {
+	___lambda3_ (self, pid, status);
 }
 
 
 static gint vala_compiler_run_source (gchar** args, int args_length1) {
 	gint result = 0;
-	gint i;
+	gint i = 0;
 	gboolean _tmp0_ = FALSE;
-	gchar** _tmp1_;
-	gint _tmp1__length1;
-	gint _tmp2_;
-	const gchar* _tmp3_;
-	gboolean _tmp8_;
-	gchar** _tmp30_;
-	gint _tmp30__length1;
-	gint _tmp31_;
-	const gchar* _tmp32_;
-	gchar** _tmp34_;
-	gint _tmp34__length1;
-	gint _tmp35_;
-	const gchar* _tmp36_;
-	gchar* _tmp37_;
-	gchar** _tmp38_ = NULL;
-	const gchar* _tmp39_ = NULL;
-	gchar** _tmp40_;
-	gint _tmp40__length1;
-	gint _tmp41_;
-	const gchar* _tmp42_;
-	gchar* _tmp43_ = NULL;
-	gchar* _tmp44_;
-	gchar* _tmp45_ = NULL;
-	const gchar* _tmp46_;
-	gint _tmp47_ = 0;
-	gint outputfd;
-	gint _tmp48_;
-	ValaCompiler* _tmp49_;
-	ValaCompiler* compiler;
-	ValaCompiler* _tmp50_;
-	gint _tmp51_ = 0;
-	gint ret;
-	gint _tmp52_;
-	gint _tmp53_;
-	const gchar* _tmp54_;
-	gint _tmp55_ = 0;
-	const gchar* _tmp57_;
-	gchar* _tmp58_;
-	gchar** _tmp59_ = NULL;
-	gchar** target_args;
-	gint target_args_length1;
-	gint _target_args_size_;
+	gchar** _tmp1_ = NULL;
+	gint _tmp1__length1 = 0;
+	gint _tmp2_ = 0;
+	const gchar* _tmp3_ = NULL;
+	gboolean _tmp29_ = FALSE;
+	gchar** _tmp35_ = NULL;
+	gint _tmp35__length1 = 0;
+	gint _tmp36_ = 0;
+	const gchar* _tmp37_ = NULL;
+	gchar** _tmp39_ = NULL;
+	gint _tmp39__length1 = 0;
+	gint _tmp40_ = 0;
+	const gchar* _tmp41_ = NULL;
+	gchar* _tmp42_ = NULL;
+	gchar** _tmp43_ = NULL;
+	const gchar* _tmp44_ = NULL;
+	gchar** _tmp45_ = NULL;
+	gint _tmp45__length1 = 0;
+	gint _tmp46_ = 0;
+	const gchar* _tmp47_ = NULL;
+	gchar* _tmp48_ = NULL;
+	gchar* _tmp49_ = NULL;
+	gchar* _tmp50_ = NULL;
+	gint outputfd = 0;
+	const gchar* _tmp51_ = NULL;
+	gint _tmp52_ = 0;
+	gint _tmp53_ = 0;
+	ValaCompiler* compiler = NULL;
+	ValaCompiler* _tmp54_ = NULL;
+	gint ret = 0;
+	ValaCompiler* _tmp55_ = NULL;
+	gint _tmp56_ = 0;
+	gint _tmp57_ = 0;
+	gint _tmp58_ = 0;
+	const gchar* _tmp59_ = NULL;
+	gint _tmp60_ = 0;
+	gchar** target_args = NULL;
+	const gchar* _tmp62_ = NULL;
+	gchar* _tmp63_ = NULL;
+	gchar** _tmp64_ = NULL;
+	gint target_args_length1 = 0;
+	gint _target_args_size_ = 0;
 	GError * _inner_error_ = NULL;
 	i = 1;
 	_tmp1_ = args;
@@ -2015,10 +1981,10 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 	_tmp2_ = i;
 	_tmp3_ = _tmp1_[_tmp2_];
 	if (_tmp3_ != NULL) {
-		gchar** _tmp4_;
-		gint _tmp4__length1;
-		gint _tmp5_;
-		const gchar* _tmp6_;
+		gchar** _tmp4_ = NULL;
+		gint _tmp4__length1 = 0;
+		gint _tmp5_ = 0;
+		const gchar* _tmp6_ = NULL;
 		gboolean _tmp7_ = FALSE;
 		_tmp4_ = args;
 		_tmp4__length1 = args_length1;
@@ -2029,41 +1995,40 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 	} else {
 		_tmp0_ = FALSE;
 	}
-	_tmp8_ = _tmp0_;
-	if (_tmp8_) {
-		gint _tmp29_;
+	if (_tmp0_) {
+		gint _tmp28_ = 0;
 		{
 			gchar** compile_args = NULL;
 			gint compile_args_length1 = 0;
 			gint _compile_args_size_ = 0;
-			gchar** _tmp9_;
-			gint _tmp9__length1;
-			const gchar* _tmp10_;
-			gchar* _tmp11_;
-			gchar* _tmp12_;
-			gchar** _tmp13_ = NULL;
-			gint _tmp14_ = 0;
-			GOptionContext* _tmp15_;
-			GOptionContext* opt_context;
-			GOptionContext* _tmp16_;
-			GOptionContext* _tmp17_;
-			gchar** _tmp18_;
-			gint _tmp18__length1;
-			gchar** temp_args;
-			gint temp_args_length1;
-			gint _temp_args_size_;
-			GOptionContext* _tmp19_;
-			_tmp9_ = args;
-			_tmp9__length1 = args_length1;
-			_tmp10_ = _tmp9_[1];
-			_tmp11_ = g_strconcat ("valac ", _tmp10_, NULL);
-			_tmp12_ = _tmp11_;
-			g_shell_parse_argv (_tmp12_, &_tmp14_, &_tmp13_, &_inner_error_);
+			gchar** _tmp8_ = NULL;
+			gint _tmp8__length1 = 0;
+			const gchar* _tmp9_ = NULL;
+			gchar* _tmp10_ = NULL;
+			gchar* _tmp11_ = NULL;
+			gchar** _tmp12_ = NULL;
+			gint _tmp13_ = 0;
+			GOptionContext* opt_context = NULL;
+			GOptionContext* _tmp14_ = NULL;
+			GOptionContext* _tmp15_ = NULL;
+			GOptionContext* _tmp16_ = NULL;
+			gchar** temp_args = NULL;
+			gchar** _tmp17_ = NULL;
+			gint _tmp17__length1 = 0;
+			gint temp_args_length1 = 0;
+			gint _temp_args_size_ = 0;
+			GOptionContext* _tmp18_ = NULL;
+			_tmp8_ = args;
+			_tmp8__length1 = args_length1;
+			_tmp9_ = _tmp8_[1];
+			_tmp10_ = g_strconcat ("valac ", _tmp9_, NULL);
+			_tmp11_ = _tmp10_;
+			g_shell_parse_argv (_tmp11_, &_tmp13_, &_tmp12_, &_inner_error_);
 			compile_args = (_vala_array_free (compile_args, compile_args_length1, (GDestroyNotify) g_free), NULL);
-			compile_args = _tmp13_;
-			compile_args_length1 = _tmp14_;
+			compile_args = _tmp12_;
+			compile_args_length1 = _tmp13_;
 			_compile_args_size_ = compile_args_length1;
-			_g_free0 (_tmp12_);
+			_g_free0 (_tmp11_);
 			if (_inner_error_ != NULL) {
 				compile_args = (_vala_array_free (compile_args, compile_args_length1, (GDestroyNotify) g_free), NULL);
 				if (_inner_error_->domain == G_SHELL_ERROR) {
@@ -2077,19 +2042,19 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 				g_clear_error (&_inner_error_);
 				return 0;
 			}
-			_tmp15_ = g_option_context_new ("- Vala");
-			opt_context = _tmp15_;
+			_tmp14_ = g_option_context_new ("- Vala");
+			opt_context = _tmp14_;
+			_tmp15_ = opt_context;
+			g_option_context_set_help_enabled (_tmp15_, TRUE);
 			_tmp16_ = opt_context;
-			g_option_context_set_help_enabled (_tmp16_, TRUE);
-			_tmp17_ = opt_context;
-			g_option_context_add_main_entries (_tmp17_, VALA_COMPILER_options, NULL);
-			_tmp18_ = compile_args;
-			_tmp18__length1 = compile_args_length1;
-			temp_args = _tmp18_;
-			temp_args_length1 = _tmp18__length1;
+			g_option_context_add_main_entries (_tmp16_, VALA_COMPILER_options, NULL);
+			_tmp17_ = compile_args;
+			_tmp17__length1 = compile_args_length1;
+			temp_args = _tmp17_;
+			temp_args_length1 = _tmp17__length1;
 			_temp_args_size_ = temp_args_length1;
-			_tmp19_ = opt_context;
-			g_option_context_parse (_tmp19_, &temp_args_length1, &temp_args, &_inner_error_);
+			_tmp18_ = opt_context;
+			g_option_context_parse (_tmp18_, &temp_args_length1, &temp_args, &_inner_error_);
 			if (_inner_error_ != NULL) {
 				_g_option_context_free0 (opt_context);
 				compile_args = (_vala_array_free (compile_args, compile_args_length1, (GDestroyNotify) g_free), NULL);
@@ -2112,15 +2077,15 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 		__catch0_g_shell_error:
 		{
 			GError* e = NULL;
-			FILE* _tmp20_;
-			GError* _tmp21_;
-			const gchar* _tmp22_;
+			FILE* _tmp19_ = NULL;
+			GError* _tmp20_ = NULL;
+			const gchar* _tmp21_ = NULL;
 			e = _inner_error_;
 			_inner_error_ = NULL;
-			_tmp20_ = stdout;
-			_tmp21_ = e;
-			_tmp22_ = _tmp21_->message;
-			fprintf (_tmp20_, "%s\n", _tmp22_);
+			_tmp19_ = stdout;
+			_tmp20_ = e;
+			_tmp21_ = _tmp20_->message;
+			fprintf (_tmp19_, "%s\n", _tmp21_);
 			result = 1;
 			_g_error_free0 (e);
 			return result;
@@ -2129,24 +2094,24 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 		__catch0_g_option_error:
 		{
 			GError* e = NULL;
-			FILE* _tmp23_;
-			GError* _tmp24_;
-			const gchar* _tmp25_;
-			FILE* _tmp26_;
-			gchar** _tmp27_;
-			gint _tmp27__length1;
-			const gchar* _tmp28_;
+			FILE* _tmp22_ = NULL;
+			GError* _tmp23_ = NULL;
+			const gchar* _tmp24_ = NULL;
+			FILE* _tmp25_ = NULL;
+			gchar** _tmp26_ = NULL;
+			gint _tmp26__length1 = 0;
+			const gchar* _tmp27_ = NULL;
 			e = _inner_error_;
 			_inner_error_ = NULL;
-			_tmp23_ = stdout;
-			_tmp24_ = e;
-			_tmp25_ = _tmp24_->message;
-			fprintf (_tmp23_, "%s\n", _tmp25_);
-			_tmp26_ = stdout;
-			_tmp27_ = args;
-			_tmp27__length1 = args_length1;
-			_tmp28_ = _tmp27_[0];
-			fprintf (_tmp26_, "Run '%s --help' to see a full list of available command line options.\n", _tmp28_);
+			_tmp22_ = stdout;
+			_tmp23_ = e;
+			_tmp24_ = _tmp23_->message;
+			fprintf (_tmp22_, "%s\n", _tmp24_);
+			_tmp25_ = stdout;
+			_tmp26_ = args;
+			_tmp26__length1 = args_length1;
+			_tmp27_ = _tmp26_[0];
+			fprintf (_tmp25_, "Run '%s --help' to see a full list of available command line options.\n", _tmp27_);
 			result = 1;
 			_g_error_free0 (e);
 			return result;
@@ -2157,130 +2122,153 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 			g_clear_error (&_inner_error_);
 			return 0;
 		}
-		_tmp29_ = i;
-		i = _tmp29_ + 1;
+		_tmp28_ = i;
+		i = _tmp28_ + 1;
 	}
-	_tmp30_ = args;
-	_tmp30__length1 = args_length1;
-	_tmp31_ = i;
-	_tmp32_ = _tmp30_[_tmp31_];
-	if (_tmp32_ == NULL) {
-		FILE* _tmp33_;
-		_tmp33_ = stderr;
-		fprintf (_tmp33_, "No source file specified.\n");
+	_tmp29_ = vala_compiler_version;
+	if (_tmp29_) {
+		FILE* _tmp30_ = NULL;
+		_tmp30_ = stdout;
+		fprintf (_tmp30_, "Vala %s\n", BUILD_VERSION);
+		result = 0;
+		return result;
+	} else {
+		gboolean _tmp31_ = FALSE;
+		_tmp31_ = vala_compiler_api_version;
+		if (_tmp31_) {
+			FILE* _tmp32_ = NULL;
+			gchar* _tmp33_ = NULL;
+			gchar* _tmp34_ = NULL;
+			_tmp32_ = stdout;
+			_tmp33_ = string_substring (PACKAGE_SUFFIX, (glong) 1, (glong) (-1));
+			_tmp34_ = _tmp33_;
+			fprintf (_tmp32_, "%s\n", _tmp34_);
+			_g_free0 (_tmp34_);
+			result = 0;
+			return result;
+		}
+	}
+	_tmp35_ = args;
+	_tmp35__length1 = args_length1;
+	_tmp36_ = i;
+	_tmp37_ = _tmp35_[_tmp36_];
+	if (_tmp37_ == NULL) {
+		FILE* _tmp38_ = NULL;
+		_tmp38_ = stderr;
+		fprintf (_tmp38_, "No source file specified.\n");
 		result = 1;
 		return result;
 	}
-	_tmp34_ = args;
-	_tmp34__length1 = args_length1;
-	_tmp35_ = i;
-	_tmp36_ = _tmp34_[_tmp35_];
-	_tmp37_ = g_strdup (_tmp36_);
-	_tmp38_ = g_new0 (gchar*, 1 + 1);
-	_tmp38_[0] = _tmp37_;
+	_tmp39_ = args;
+	_tmp39__length1 = args_length1;
+	_tmp40_ = i;
+	_tmp41_ = _tmp39_[_tmp40_];
+	_tmp42_ = g_strdup (_tmp41_);
+	_tmp43_ = g_new0 (gchar*, 1 + 1);
+	_tmp43_[0] = _tmp42_;
 	vala_compiler_sources = (_vala_array_free (vala_compiler_sources, _vala_array_length (vala_compiler_sources), (GDestroyNotify) g_free), NULL);
-	vala_compiler_sources = _tmp38_;
-	_tmp39_ = g_get_tmp_dir ();
-	_tmp40_ = args;
-	_tmp40__length1 = args_length1;
-	_tmp41_ = i;
-	_tmp42_ = _tmp40_[_tmp41_];
-	_tmp43_ = g_path_get_basename (_tmp42_);
-	_tmp44_ = _tmp43_;
-	_tmp45_ = g_strdup_printf ("%s/%s.XXXXXX", _tmp39_, _tmp44_);
+	vala_compiler_sources = _tmp43_;
+	_tmp44_ = g_get_tmp_dir ();
+	_tmp45_ = args;
+	_tmp45__length1 = args_length1;
+	_tmp46_ = i;
+	_tmp47_ = _tmp45_[_tmp46_];
+	_tmp48_ = g_path_get_basename (_tmp47_);
+	_tmp49_ = _tmp48_;
+	_tmp50_ = g_strdup_printf ("%s/%s.XXXXXX", _tmp44_, _tmp49_);
 	_g_free0 (vala_compiler_output);
-	vala_compiler_output = _tmp45_;
-	_g_free0 (_tmp44_);
-	_tmp46_ = vala_compiler_output;
-	_tmp47_ = g_mkstemp (_tmp46_);
-	outputfd = _tmp47_;
-	_tmp48_ = outputfd;
-	if (_tmp48_ < 0) {
+	vala_compiler_output = _tmp50_;
+	_g_free0 (_tmp49_);
+	_tmp51_ = vala_compiler_output;
+	_tmp52_ = g_mkstemp (_tmp51_);
+	outputfd = _tmp52_;
+	_tmp53_ = outputfd;
+	if (_tmp53_ < 0) {
 		result = 1;
 		return result;
 	}
 	vala_compiler_run_output = TRUE;
 	vala_compiler_disable_warnings = TRUE;
 	vala_compiler_quiet_mode = TRUE;
-	_tmp49_ = vala_compiler_new ();
-	compiler = _tmp49_;
-	_tmp50_ = compiler;
-	_tmp51_ = vala_compiler_run (_tmp50_);
-	ret = _tmp51_;
-	_tmp52_ = ret;
-	if (_tmp52_ != 0) {
+	_tmp54_ = vala_compiler_new ();
+	compiler = _tmp54_;
+	_tmp55_ = compiler;
+	_tmp56_ = vala_compiler_run (_tmp55_);
+	ret = _tmp56_;
+	_tmp57_ = ret;
+	if (_tmp57_ != 0) {
 		result = ret;
 		_vala_compiler_unref0 (compiler);
 		return result;
 	}
-	_tmp53_ = outputfd;
-	close (_tmp53_);
-	_tmp54_ = vala_compiler_output;
-	_tmp55_ = g_chmod (_tmp54_, 0700);
-	if (_tmp55_ != 0) {
-		const gchar* _tmp56_;
-		_tmp56_ = vala_compiler_output;
-		g_unlink (_tmp56_);
+	_tmp58_ = outputfd;
+	close (_tmp58_);
+	_tmp59_ = vala_compiler_output;
+	_tmp60_ = g_chmod (_tmp59_, 0700);
+	if (_tmp60_ != 0) {
+		const gchar* _tmp61_ = NULL;
+		_tmp61_ = vala_compiler_output;
+		g_unlink (_tmp61_);
 		result = 1;
 		_vala_compiler_unref0 (compiler);
 		return result;
 	}
-	_tmp57_ = vala_compiler_output;
-	_tmp58_ = g_strdup (_tmp57_);
-	_tmp59_ = g_new0 (gchar*, 1 + 1);
-	_tmp59_[0] = _tmp58_;
-	target_args = _tmp59_;
+	_tmp62_ = vala_compiler_output;
+	_tmp63_ = g_strdup (_tmp62_);
+	_tmp64_ = g_new0 (gchar*, 1 + 1);
+	_tmp64_[0] = _tmp63_;
+	target_args = _tmp64_;
 	target_args_length1 = 1;
 	_target_args_size_ = target_args_length1;
 	while (TRUE) {
-		gint _tmp60_;
-		gchar** _tmp61_;
-		gint _tmp61__length1;
-		gchar** _tmp62_;
-		gint _tmp62__length1;
-		gchar** _tmp63_;
-		gint _tmp63__length1;
-		gint _tmp64_;
-		const gchar* _tmp65_;
-		gchar* _tmp66_;
-		gint _tmp67_;
-		_tmp60_ = i;
-		_tmp61_ = args;
-		_tmp61__length1 = args_length1;
-		if (!(_tmp60_ < _tmp61__length1)) {
+		gint _tmp65_ = 0;
+		gchar** _tmp66_ = NULL;
+		gint _tmp66__length1 = 0;
+		gchar** _tmp67_ = NULL;
+		gint _tmp67__length1 = 0;
+		gchar** _tmp68_ = NULL;
+		gint _tmp68__length1 = 0;
+		gint _tmp69_ = 0;
+		const gchar* _tmp70_ = NULL;
+		gchar* _tmp71_ = NULL;
+		gint _tmp72_ = 0;
+		_tmp65_ = i;
+		_tmp66_ = args;
+		_tmp66__length1 = args_length1;
+		if (!(_tmp65_ < _tmp66__length1)) {
 			break;
 		}
-		_tmp62_ = target_args;
-		_tmp62__length1 = target_args_length1;
-		_tmp63_ = args;
-		_tmp63__length1 = args_length1;
-		_tmp64_ = i;
-		_tmp65_ = _tmp63_[_tmp64_];
-		_tmp66_ = g_strdup (_tmp65_);
-		_vala_array_add1 (&target_args, &target_args_length1, &_target_args_size_, _tmp66_);
-		_tmp67_ = i;
-		i = _tmp67_ + 1;
+		_tmp67_ = target_args;
+		_tmp67__length1 = target_args_length1;
+		_tmp68_ = args;
+		_tmp68__length1 = args_length1;
+		_tmp69_ = i;
+		_tmp70_ = _tmp68_[_tmp69_];
+		_tmp71_ = g_strdup (_tmp70_);
+		_vala_array_add1 (&target_args, &target_args_length1, &_target_args_size_, _tmp71_);
+		_tmp72_ = i;
+		i = _tmp72_ + 1;
 	}
 	{
 		Block1Data* _data1_;
 		GPid pid = 0;
-		GMainLoop* _tmp68_;
-		gchar** _tmp69_;
-		gint _tmp69__length1;
-		GPid _tmp70_ = 0;
-		const gchar* _tmp71_;
-		GPid _tmp72_;
-		GMainLoop* _tmp73_;
-		gint _tmp74_;
+		GMainLoop* _tmp73_ = NULL;
+		gchar** _tmp74_ = NULL;
+		gint _tmp74__length1 = 0;
+		GPid _tmp75_ = 0;
+		const gchar* _tmp76_ = NULL;
+		GPid _tmp77_ = 0;
+		GMainLoop* _tmp78_ = NULL;
+		gint _tmp79_ = 0;
 		_data1_ = g_slice_new0 (Block1Data);
 		_data1_->_ref_count_ = 1;
-		_tmp68_ = g_main_loop_new (NULL, FALSE);
-		_data1_->loop = _tmp68_;
+		_tmp73_ = g_main_loop_new (NULL, FALSE);
+		_data1_->loop = _tmp73_;
 		_data1_->child_status = 0;
-		_tmp69_ = target_args;
-		_tmp69__length1 = target_args_length1;
-		g_spawn_async (NULL, _tmp69_, NULL, (G_SPAWN_CHILD_INHERITS_STDIN | G_SPAWN_DO_NOT_REAP_CHILD) | G_SPAWN_FILE_AND_ARGV_ZERO, NULL, NULL, &_tmp70_, &_inner_error_);
-		pid = _tmp70_;
+		_tmp74_ = target_args;
+		_tmp74__length1 = target_args_length1;
+		g_spawn_async (NULL, _tmp74_, NULL, (G_SPAWN_CHILD_INHERITS_STDIN | G_SPAWN_DO_NOT_REAP_CHILD) | G_SPAWN_FILE_AND_ARGV_ZERO, NULL, NULL, &_tmp75_, &_inner_error_);
+		pid = _tmp75_;
 		if (_inner_error_ != NULL) {
 			block1_data_unref (_data1_);
 			_data1_ = NULL;
@@ -2295,14 +2283,14 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 			g_clear_error (&_inner_error_);
 			return 0;
 		}
-		_tmp71_ = vala_compiler_output;
-		g_unlink (_tmp71_);
-		_tmp72_ = pid;
-		g_child_watch_add_full (G_PRIORITY_DEFAULT_IDLE, _tmp72_, ____lambda2__gchild_watch_func, block1_data_ref (_data1_), block1_data_unref);
-		_tmp73_ = _data1_->loop;
-		g_main_loop_run (_tmp73_);
-		_tmp74_ = _data1_->child_status;
-		result = _tmp74_;
+		_tmp76_ = vala_compiler_output;
+		g_unlink (_tmp76_);
+		_tmp77_ = pid;
+		g_child_watch_add_full (G_PRIORITY_DEFAULT_IDLE, _tmp77_, ____lambda3__gchild_watch_func, block1_data_ref (_data1_), block1_data_unref);
+		_tmp78_ = _data1_->loop;
+		g_main_loop_run (_tmp78_);
+		_tmp79_ = _data1_->child_status;
+		result = _tmp79_;
 		block1_data_unref (_data1_);
 		_data1_ = NULL;
 		target_args = (_vala_array_free (target_args, target_args_length1, (GDestroyNotify) g_free), NULL);
@@ -2313,15 +2301,15 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 	__catch1_g_spawn_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp75_;
-		GError* _tmp76_;
-		const gchar* _tmp77_;
+		FILE* _tmp80_ = NULL;
+		GError* _tmp81_ = NULL;
+		const gchar* _tmp82_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp75_ = stdout;
-		_tmp76_ = e;
-		_tmp77_ = _tmp76_->message;
-		fprintf (_tmp75_, "%s\n", _tmp77_);
+		_tmp80_ = stdout;
+		_tmp81_ = e;
+		_tmp82_ = _tmp81_->message;
+		fprintf (_tmp80_, "%s\n", _tmp82_);
 		result = 1;
 		_g_error_free0 (e);
 		target_args = (_vala_array_free (target_args, target_args_length1, (GDestroyNotify) g_free), NULL);
@@ -2340,22 +2328,20 @@ static gint vala_compiler_run_source (gchar** args, int args_length1) {
 static gint vala_compiler_main (gchar** args, int args_length1) {
 	gint result = 0;
 	gboolean _tmp0_ = FALSE;
-	gchar** _tmp1_;
-	gint _tmp1__length1;
-	const gchar* _tmp2_;
+	gchar** _tmp1_ = NULL;
+	gint _tmp1__length1 = 0;
+	const gchar* _tmp2_ = NULL;
 	gchar* _tmp3_ = NULL;
-	gchar* _tmp4_;
-	gboolean _tmp5_;
-	gboolean _tmp10_;
-	gboolean _tmp23_;
-	gboolean _tmp29_ = FALSE;
-	gchar** _tmp30_;
-	gint _tmp30__length1;
-	gboolean _tmp32_;
-	ValaCompiler* _tmp34_;
-	ValaCompiler* compiler;
-	ValaCompiler* _tmp35_;
-	gint _tmp36_ = 0;
+	gchar* _tmp4_ = NULL;
+	gboolean _tmp5_ = FALSE;
+	gboolean _tmp22_ = FALSE;
+	gboolean _tmp28_ = FALSE;
+	gchar** _tmp29_ = NULL;
+	gint _tmp29__length1 = 0;
+	ValaCompiler* compiler = NULL;
+	ValaCompiler* _tmp32_ = NULL;
+	ValaCompiler* _tmp33_ = NULL;
+	gint _tmp34_ = 0;
 	GError * _inner_error_ = NULL;
 	setlocale (LC_ALL, "");
 	_tmp1_ = args;
@@ -2368,11 +2354,11 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 	if (_tmp5_) {
 		_tmp0_ = TRUE;
 	} else {
-		gchar** _tmp6_;
-		gint _tmp6__length1;
-		const gchar* _tmp7_;
+		gchar** _tmp6_ = NULL;
+		gint _tmp6__length1 = 0;
+		const gchar* _tmp7_ = NULL;
 		gchar* _tmp8_ = NULL;
-		gchar* _tmp9_;
+		gchar* _tmp9_ = NULL;
 		_tmp6_ = args;
 		_tmp6__length1 = args_length1;
 		_tmp7_ = _tmp6_[0];
@@ -2381,31 +2367,30 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 		_tmp0_ = g_strcmp0 (_tmp9_, "vala" PACKAGE_SUFFIX) == 0;
 		_g_free0 (_tmp9_);
 	}
-	_tmp10_ = _tmp0_;
-	if (_tmp10_) {
-		gchar** _tmp11_;
-		gint _tmp11__length1;
-		gint _tmp12_ = 0;
-		_tmp11_ = args;
-		_tmp11__length1 = args_length1;
-		_tmp12_ = vala_compiler_run_source (_tmp11_, _tmp11__length1);
-		result = _tmp12_;
+	if (_tmp0_) {
+		gchar** _tmp10_ = NULL;
+		gint _tmp10__length1 = 0;
+		gint _tmp11_ = 0;
+		_tmp10_ = args;
+		_tmp10__length1 = args_length1;
+		_tmp11_ = vala_compiler_run_source (_tmp10_, _tmp10__length1);
+		result = _tmp11_;
 		return result;
 	}
 	{
-		GOptionContext* _tmp13_;
-		GOptionContext* opt_context;
-		GOptionContext* _tmp14_;
-		GOptionContext* _tmp15_;
-		GOptionContext* _tmp16_;
-		_tmp13_ = g_option_context_new ("- Vala Compiler");
-		opt_context = _tmp13_;
+		GOptionContext* opt_context = NULL;
+		GOptionContext* _tmp12_ = NULL;
+		GOptionContext* _tmp13_ = NULL;
+		GOptionContext* _tmp14_ = NULL;
+		GOptionContext* _tmp15_ = NULL;
+		_tmp12_ = g_option_context_new ("- Vala Compiler");
+		opt_context = _tmp12_;
+		_tmp13_ = opt_context;
+		g_option_context_set_help_enabled (_tmp13_, TRUE);
 		_tmp14_ = opt_context;
-		g_option_context_set_help_enabled (_tmp14_, TRUE);
+		g_option_context_add_main_entries (_tmp14_, VALA_COMPILER_options, NULL);
 		_tmp15_ = opt_context;
-		g_option_context_add_main_entries (_tmp15_, VALA_COMPILER_options, NULL);
-		_tmp16_ = opt_context;
-		g_option_context_parse (_tmp16_, &args_length1, &args, &_inner_error_);
+		g_option_context_parse (_tmp15_, &args_length1, &args, &_inner_error_);
 		if (_inner_error_ != NULL) {
 			_g_option_context_free0 (opt_context);
 			if (_inner_error_->domain == G_OPTION_ERROR) {
@@ -2422,24 +2407,24 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 	__catch2_g_option_error:
 	{
 		GError* e = NULL;
-		FILE* _tmp17_;
-		GError* _tmp18_;
-		const gchar* _tmp19_;
-		FILE* _tmp20_;
-		gchar** _tmp21_;
-		gint _tmp21__length1;
-		const gchar* _tmp22_;
+		FILE* _tmp16_ = NULL;
+		GError* _tmp17_ = NULL;
+		const gchar* _tmp18_ = NULL;
+		FILE* _tmp19_ = NULL;
+		gchar** _tmp20_ = NULL;
+		gint _tmp20__length1 = 0;
+		const gchar* _tmp21_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp17_ = stdout;
-		_tmp18_ = e;
-		_tmp19_ = _tmp18_->message;
-		fprintf (_tmp17_, "%s\n", _tmp19_);
-		_tmp20_ = stdout;
-		_tmp21_ = args;
-		_tmp21__length1 = args_length1;
-		_tmp22_ = _tmp21_[0];
-		fprintf (_tmp20_, "Run '%s --help' to see a full list of available command line options.\n", _tmp22_);
+		_tmp16_ = stdout;
+		_tmp17_ = e;
+		_tmp18_ = _tmp17_->message;
+		fprintf (_tmp16_, "%s\n", _tmp18_);
+		_tmp19_ = stdout;
+		_tmp20_ = args;
+		_tmp20__length1 = args_length1;
+		_tmp21_ = _tmp20_[0];
+		fprintf (_tmp19_, "Run '%s --help' to see a full list of available command line options.\n", _tmp21_);
 		result = 1;
 		_g_error_free0 (e);
 		return result;
@@ -2450,60 +2435,61 @@ static gint vala_compiler_main (gchar** args, int args_length1) {
 		g_clear_error (&_inner_error_);
 		return 0;
 	}
-	_tmp23_ = vala_compiler_version;
-	if (_tmp23_) {
-		FILE* _tmp24_;
-		_tmp24_ = stdout;
-		fprintf (_tmp24_, "Vala %s\n", BUILD_VERSION);
+	_tmp22_ = vala_compiler_version;
+	if (_tmp22_) {
+		FILE* _tmp23_ = NULL;
+		_tmp23_ = stdout;
+		fprintf (_tmp23_, "Vala %s\n", BUILD_VERSION);
 		result = 0;
 		return result;
 	} else {
-		gboolean _tmp25_;
-		_tmp25_ = vala_compiler_api_version;
-		if (_tmp25_) {
-			FILE* _tmp26_;
+		gboolean _tmp24_ = FALSE;
+		_tmp24_ = vala_compiler_api_version;
+		if (_tmp24_) {
+			FILE* _tmp25_ = NULL;
+			gchar* _tmp26_ = NULL;
 			gchar* _tmp27_ = NULL;
-			gchar* _tmp28_;
-			_tmp26_ = stdout;
-			_tmp27_ = string_substring (PACKAGE_SUFFIX, (glong) 1, (glong) (-1));
-			_tmp28_ = _tmp27_;
-			fprintf (_tmp26_, "%s\n", _tmp28_);
-			_g_free0 (_tmp28_);
+			_tmp25_ = stdout;
+			_tmp26_ = string_substring (PACKAGE_SUFFIX, (glong) 1, (glong) (-1));
+			_tmp27_ = _tmp26_;
+			fprintf (_tmp25_, "%s\n", _tmp27_);
+			_g_free0 (_tmp27_);
 			result = 0;
 			return result;
 		}
 	}
-	_tmp30_ = vala_compiler_sources;
-	_tmp30__length1 = _vala_array_length (vala_compiler_sources);
-	if (_tmp30_ == NULL) {
-		gchar** _tmp31_;
-		gint _tmp31__length1;
-		_tmp31_ = vala_compiler_fast_vapis;
-		_tmp31__length1 = _vala_array_length (vala_compiler_fast_vapis);
-		_tmp29_ = _tmp31_ == NULL;
+	_tmp29_ = vala_compiler_sources;
+	_tmp29__length1 = _vala_array_length (vala_compiler_sources);
+	if (_tmp29_ == NULL) {
+		gchar** _tmp30_ = NULL;
+		gint _tmp30__length1 = 0;
+		_tmp30_ = vala_compiler_fast_vapis;
+		_tmp30__length1 = _vala_array_length (vala_compiler_fast_vapis);
+		_tmp28_ = _tmp30_ == NULL;
 	} else {
-		_tmp29_ = FALSE;
+		_tmp28_ = FALSE;
 	}
-	_tmp32_ = _tmp29_;
-	if (_tmp32_) {
-		FILE* _tmp33_;
-		_tmp33_ = stderr;
-		fprintf (_tmp33_, "No source file specified.\n");
+	if (_tmp28_) {
+		FILE* _tmp31_ = NULL;
+		_tmp31_ = stderr;
+		fprintf (_tmp31_, "No source file specified.\n");
 		result = 1;
 		return result;
 	}
-	_tmp34_ = vala_compiler_new ();
-	compiler = _tmp34_;
-	_tmp35_ = compiler;
-	_tmp36_ = vala_compiler_run (_tmp35_);
-	result = _tmp36_;
+	_tmp32_ = vala_compiler_new ();
+	compiler = _tmp32_;
+	_tmp33_ = compiler;
+	_tmp34_ = vala_compiler_run (_tmp33_);
+	result = _tmp34_;
 	_vala_compiler_unref0 (compiler);
 	return result;
 }
 
 
 int main (int argc, char ** argv) {
+#if !GLIB_CHECK_VERSION (2,35,0)
 	g_type_init ();
+#endif
 	return vala_compiler_main (argv, argc);
 }
 

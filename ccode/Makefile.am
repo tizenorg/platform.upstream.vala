@@ -9,7 +9,7 @@ AM_CPPFLAGS = \
 BUILT_SOURCES = ccode.vala.stamp
 
 noinst_LTLIBRARIES = \
-	libvalaccode.la
+	libvalaccode.la \
 	$(NULL)
 
 libvalaccode_la_VALASOURCES = \
@@ -46,6 +46,7 @@ libvalaccode_la_VALASOURCES = \
 	valaccodeinvalidexpression.vala \
 	valaccodelabel.vala \
 	valaccodelinedirective.vala \
+	valaccodeifsection.vala \
 	valaccodemacroreplacement.vala \
 	valaccodememberaccess.vala \
 	valaccodemodifiers.vala \

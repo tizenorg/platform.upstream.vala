@@ -2,7 +2,7 @@
 
 [CCode (cprefix = "Json", gir_namespace = "Json", gir_version = "1.0", lower_case_cprefix = "json_")]
 namespace Json {
-	[CCode (cheader_filename = "json-glib/json-glib.h", copy_function = "g_boxed_copy", free_function = "g_boxed_free", type_id = "json_array_get_type ()")]
+	[CCode (cheader_filename = "json-glib/json-glib.h", ref_function = "json_array_ref", type_id = "json_array_get_type ()", unref_function = "json_array_unref")]
 	[Compact]
 	public class Array {
 		[CCode (has_construct_function = false)]
@@ -113,7 +113,7 @@ namespace Json {
 		public void take_object (owned Json.Object object);
 		public unowned string type_name ();
 	}
-	[CCode (cheader_filename = "json-glib/json-glib.h", copy_function = "g_boxed_copy", free_function = "g_boxed_free", type_id = "json_object_get_type ()")]
+	[CCode (cheader_filename = "json-glib/json-glib.h", ref_function = "json_object_ref", type_id = "json_object_get_type ()", unref_function = "json_object_unref")]
 	[Compact]
 	public class Object {
 		[CCode (has_construct_function = false)]
@@ -291,10 +291,10 @@ namespace Json {
 	public static Json.Node gobject_serialize (GLib.Object gobject);
 	[CCode (cheader_filename = "json-glib/json-glib.h")]
 	public static string gobject_to_data (GLib.Object gobject, out size_t length);
-	[CCode (cheader_filename = "json-glib/json-glib.h")]
-	public static unowned GLib.Variant gvariant_deserialize (Json.Node json_node, string? signature) throws GLib.Error;
-	[CCode (cheader_filename = "json-glib/json-glib.h")]
-	public static unowned GLib.Variant gvariant_deserialize_data (string json, ssize_t length, string? signature) throws GLib.Error;
+	[CCode (cheader_filename = "json-glib/json-glib.h", returns_floating_reference = true)]
+	public static GLib.Variant gvariant_deserialize (Json.Node json_node, string? signature) throws GLib.Error;
+	[CCode (cheader_filename = "json-glib/json-glib.h", returns_floating_reference = true)]
+	public static GLib.Variant gvariant_deserialize_data (string json, ssize_t length, string? signature) throws GLib.Error;
 	[CCode (cheader_filename = "json-glib/json-glib.h")]
 	public static Json.Node gvariant_serialize (GLib.Variant variant);
 	[CCode (cheader_filename = "json-glib/json-glib.h")]

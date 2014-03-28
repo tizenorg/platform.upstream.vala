@@ -112,7 +112,7 @@ ValaCCodeNode* vala_ccode_node_construct (GType object_type);
 
 static void vala_ccode_newline_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeNewline * self;
-	ValaCCodeWriter* _tmp0_;
+	ValaCCodeWriter* _tmp0_ = NULL;
 	self = (ValaCCodeNewline*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;

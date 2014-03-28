@@ -44,6 +44,8 @@ class Vala.Compiler {
 	[CCode (array_length = false, array_null_terminated = true)]
 	static string[] fast_vapis;
 	static string target_glib;
+	[CCode (array_length = false, array_null_terminated = true)]
+	static string[] gresources;
 
 	static bool ccode_only;
 	static string header_filename;
@@ -133,6 +135,7 @@ class Vala.Compiler {
 		{ "quiet", 'q', 0, OptionArg.NONE, ref quiet_mode, "Do not print messages to the console", null },
 		{ "verbose", 'v', 0, OptionArg.NONE, ref verbose_mode, "Print additional messages to the console", null },
 		{ "target-glib", 0, 0, OptionArg.STRING, ref target_glib, "Target version of glib for code generation", "MAJOR.MINOR" },
+		{ "gresources", 0, 0, OptionArg.STRING_ARRAY, ref gresources, "XML of gresources", "FILE..." },
 		{ "enable-version-header", 0, 0, OptionArg.NONE, ref enable_version_header, "Write vala build version in generated files", null },
 		{ "disable-version-header", 0, 0, OptionArg.NONE, ref disable_version_header, "Do not write vala build version in generated files", null },
 		{ "", 0, 0, OptionArg.FILENAME_ARRAY, ref sources, null, "FILE..." },
@@ -229,7 +232,7 @@ class Vala.Compiler {
 			}
 		}
 
-		for (int i = 2; i <= 20; i += 2) {
+		for (int i = 2; i <= 24; i += 2) {
 			context.add_define ("VALA_0_%d".printf (i));
 		}
 
@@ -270,6 +273,8 @@ class Vala.Compiler {
 			}
 			context.use_fast_vapi = true;
 		}
+
+		context.gresources = gresources;
 		
 		if (context.report.get_errors () > 0 || (fatal_warnings && context.report.get_warnings () > 0)) {
 			return quit ();
@@ -346,14 +351,15 @@ class Vala.Compiler {
 
 		if (library != null) {
 			if (gir != null) {
-				long gir_len = gir.length;
-				int last_hyphen = gir.last_index_of_char ('-');
+				string gir_base = Path.get_basename(gir);
+				long gir_len = gir_base.length;
+				int last_hyphen = gir_base.last_index_of_char ('-');
 
-				if (last_hyphen == -1 || !gir.has_suffix (".gir")) {
+				if (last_hyphen == -1 || !gir_base.has_suffix (".gir")) {
 					Report.error (null, "GIR file name `%s' is not well-formed, expected NAME-VERSION.gir".printf (gir));
 				} else {
-					string gir_namespace = gir.substring (0, last_hyphen);
-					string gir_version = gir.substring (last_hyphen + 1, gir_len - last_hyphen - 5);
+					string gir_namespace = gir_base.substring (0, last_hyphen);
+					string gir_version = gir_base.substring (last_hyphen + 1, gir_len - last_hyphen - 5);
 					gir_version.canon ("0123456789.", '?');
 					if (gir_namespace == "" || gir_version == "" || !gir_version[0].isdigit () || gir_version.contains ("?")) {
 						Report.error (null, "GIR file name `%s' is not well-formed, expected NAME-VERSION.gir".printf (gir));
@@ -366,7 +372,7 @@ class Vala.Compiler {
 							gir_directory = context.directory;
 						}
 
-						gir_writer.write_file (context, gir_directory, gir_namespace, gir_version, library);
+						gir_writer.write_file (context, gir_directory, gir, gir_namespace, gir_version, library);
 					}
 				}
 
@@ -452,6 +458,14 @@ class Vala.Compiler {
 			i++;
 		}
 
+		if (version) {
+			stdout.printf ("Vala %s\n", Config.BUILD_VERSION);
+			return 0;
+		} else if (api_version) {
+			stdout.printf ("%s\n", Config.PACKAGE_SUFFIX.substring (1));
+			return 0;
+		}
+		
 		if (args[i] == null) {
 			stderr.printf ("No source file specified.\n");
 			return 1;

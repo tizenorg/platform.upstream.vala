@@ -219,7 +219,7 @@ static void vala_ccode_declaration_finalize (ValaCCodeNode* obj);
 
 ValaCCodeDeclaration* vala_ccode_declaration_construct (GType object_type, const gchar* type_name) {
 	ValaCCodeDeclaration* self = NULL;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (type_name != NULL, NULL);
 	self = (ValaCCodeDeclaration*) vala_ccode_statement_construct (object_type);
 	_tmp0_ = type_name;
@@ -239,8 +239,8 @@ ValaCCodeDeclaration* vala_ccode_declaration_new (const gchar* type_name) {
  * @param decl a declarator
  */
 void vala_ccode_declaration_add_declarator (ValaCCodeDeclaration* self, ValaCCodeDeclarator* decl) {
-	ValaList* _tmp0_;
-	ValaCCodeDeclarator* _tmp1_;
+	ValaList* _tmp0_ = NULL;
+	ValaCCodeDeclarator* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (decl != NULL);
 	_tmp0_ = self->priv->declarators;
@@ -256,20 +256,20 @@ static gpointer _vala_iterable_ref0 (gpointer self) {
 
 static void vala_ccode_declaration_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeDeclaration * self;
-	ValaCCodeModifiers _tmp0_;
+	ValaCCodeModifiers _tmp0_ = 0;
 	self = (ValaCCodeDeclaration*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = self->priv->_modifiers;
 	if ((_tmp0_ & (VALA_CCODE_MODIFIERS_STATIC | VALA_CCODE_MODIFIERS_EXTERN)) == 0) {
 		{
-			ValaList* _tmp1_;
-			ValaList* _tmp2_;
-			ValaList* _decl_list;
-			ValaList* _tmp3_;
-			gint _tmp4_;
-			gint _tmp5_;
-			gint _decl_size;
-			gint _decl_index;
+			ValaList* _decl_list = NULL;
+			ValaList* _tmp1_ = NULL;
+			ValaList* _tmp2_ = NULL;
+			gint _decl_size = 0;
+			ValaList* _tmp3_ = NULL;
+			gint _tmp4_ = 0;
+			gint _tmp5_ = 0;
+			gint _decl_index = 0;
 			_tmp1_ = self->priv->declarators;
 			_tmp2_ = _vala_iterable_ref0 (_tmp1_);
 			_decl_list = _tmp2_;
@@ -279,15 +279,15 @@ static void vala_ccode_declaration_real_write (ValaCCodeNode* base, ValaCCodeWri
 			_decl_size = _tmp5_;
 			_decl_index = -1;
 			while (TRUE) {
-				gint _tmp6_;
-				gint _tmp7_;
-				gint _tmp8_;
-				ValaList* _tmp9_;
-				gint _tmp10_;
+				gint _tmp6_ = 0;
+				gint _tmp7_ = 0;
+				gint _tmp8_ = 0;
+				ValaCCodeDeclarator* decl = NULL;
+				ValaList* _tmp9_ = NULL;
+				gint _tmp10_ = 0;
 				gpointer _tmp11_ = NULL;
-				ValaCCodeDeclarator* decl;
-				ValaCCodeDeclarator* _tmp12_;
-				ValaCCodeWriter* _tmp13_;
+				ValaCCodeDeclarator* _tmp12_ = NULL;
+				ValaCCodeWriter* _tmp13_ = NULL;
 				_tmp6_ = _decl_index;
 				_decl_index = _tmp6_ + 1;
 				_tmp7_ = _decl_index;
@@ -319,14 +319,14 @@ static gboolean vala_ccode_declaration_has_initializer (ValaCCodeDeclaration* se
 	gboolean result = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	{
-		ValaList* _tmp0_;
-		ValaList* _tmp1_;
-		ValaList* _decl_list;
-		ValaList* _tmp2_;
-		gint _tmp3_;
-		gint _tmp4_;
-		gint _decl_size;
-		gint _decl_index;
+		ValaList* _decl_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _decl_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _decl_index = 0;
 		_tmp0_ = self->priv->declarators;
 		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
 		_decl_list = _tmp1_;
@@ -336,19 +336,18 @@ static gboolean vala_ccode_declaration_has_initializer (ValaCCodeDeclaration* se
 		_decl_size = _tmp4_;
 		_decl_index = -1;
 		while (TRUE) {
-			gint _tmp5_;
-			gint _tmp6_;
-			gint _tmp7_;
-			ValaList* _tmp8_;
-			gint _tmp9_;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaCCodeDeclarator* decl = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
 			gpointer _tmp10_ = NULL;
-			ValaCCodeDeclarator* decl;
-			ValaCCodeDeclarator* _tmp11_;
-			ValaCCodeVariableDeclarator* _tmp12_;
-			ValaCCodeVariableDeclarator* var_decl;
+			ValaCCodeVariableDeclarator* var_decl = NULL;
+			ValaCCodeDeclarator* _tmp11_ = NULL;
+			ValaCCodeVariableDeclarator* _tmp12_ = NULL;
 			gboolean _tmp13_ = FALSE;
-			ValaCCodeVariableDeclarator* _tmp14_;
-			gboolean _tmp18_;
+			ValaCCodeVariableDeclarator* _tmp14_ = NULL;
 			_tmp5_ = _decl_index;
 			_decl_index = _tmp5_ + 1;
 			_tmp6_ = _decl_index;
@@ -365,9 +364,9 @@ static gboolean vala_ccode_declaration_has_initializer (ValaCCodeDeclaration* se
 			var_decl = _tmp12_;
 			_tmp14_ = var_decl;
 			if (_tmp14_ != NULL) {
-				ValaCCodeVariableDeclarator* _tmp15_;
-				ValaCCodeExpression* _tmp16_;
-				ValaCCodeExpression* _tmp17_;
+				ValaCCodeVariableDeclarator* _tmp15_ = NULL;
+				ValaCCodeExpression* _tmp16_ = NULL;
+				ValaCCodeExpression* _tmp17_ = NULL;
 				_tmp15_ = var_decl;
 				_tmp16_ = vala_ccode_variable_declarator_get_initializer (_tmp15_);
 				_tmp17_ = _tmp16_;
@@ -375,8 +374,7 @@ static gboolean vala_ccode_declaration_has_initializer (ValaCCodeDeclaration* se
 			} else {
 				_tmp13_ = FALSE;
 			}
-			_tmp18_ = _tmp13_;
-			if (_tmp18_) {
+			if (_tmp13_) {
 				result = FALSE;
 				_vala_ccode_node_unref0 (var_decl);
 				_vala_ccode_node_unref0 (decl);
@@ -395,48 +393,47 @@ static gboolean vala_ccode_declaration_has_initializer (ValaCCodeDeclaration* se
 
 static void vala_ccode_declaration_real_write_declaration (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeDeclaration * self;
-	ValaCCodeModifiers _tmp0_;
-	ValaCCodeWriter* _tmp37_;
-	ValaCCodeModifiers _tmp38_;
-	ValaCCodeWriter* _tmp40_;
-	const gchar* _tmp41_;
-	ValaCCodeWriter* _tmp42_;
-	gboolean first;
-	ValaCCodeWriter* _tmp58_;
-	ValaCCodeWriter* _tmp59_;
+	ValaCCodeModifiers _tmp0_ = 0;
+	ValaCCodeWriter* _tmp36_ = NULL;
+	ValaCCodeModifiers _tmp37_ = 0;
+	ValaCCodeWriter* _tmp39_ = NULL;
+	const gchar* _tmp40_ = NULL;
+	ValaCCodeWriter* _tmp41_ = NULL;
+	gboolean first = FALSE;
+	ValaCCodeWriter* _tmp57_ = NULL;
+	ValaCCodeWriter* _tmp58_ = NULL;
 	self = (ValaCCodeDeclaration*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = self->priv->_modifiers;
 	if ((_tmp0_ & (VALA_CCODE_MODIFIERS_STATIC | VALA_CCODE_MODIFIERS_EXTERN)) != 0) {
-		ValaCCodeWriter* _tmp1_;
-		ValaCCodeLineDirective* _tmp2_;
-		ValaCCodeLineDirective* _tmp3_;
-		ValaCCodeModifiers _tmp4_;
-		ValaCCodeModifiers _tmp6_;
+		ValaCCodeWriter* _tmp1_ = NULL;
+		ValaCCodeLineDirective* _tmp2_ = NULL;
+		ValaCCodeLineDirective* _tmp3_ = NULL;
+		ValaCCodeModifiers _tmp4_ = 0;
+		ValaCCodeModifiers _tmp6_ = 0;
 		gboolean _tmp8_ = FALSE;
-		ValaCCodeModifiers _tmp9_;
-		gboolean _tmp11_;
-		ValaCCodeModifiers _tmp13_;
-		ValaCCodeWriter* _tmp15_;
-		const gchar* _tmp16_;
-		ValaCCodeWriter* _tmp17_;
-		gboolean first;
-		ValaCCodeModifiers _tmp33_;
-		ValaCCodeWriter* _tmp35_;
-		ValaCCodeWriter* _tmp36_;
+		ValaCCodeModifiers _tmp9_ = 0;
+		ValaCCodeModifiers _tmp12_ = 0;
+		ValaCCodeWriter* _tmp14_ = NULL;
+		const gchar* _tmp15_ = NULL;
+		ValaCCodeWriter* _tmp16_ = NULL;
+		gboolean first = FALSE;
+		ValaCCodeModifiers _tmp32_ = 0;
+		ValaCCodeWriter* _tmp34_ = NULL;
+		ValaCCodeWriter* _tmp35_ = NULL;
 		_tmp1_ = writer;
 		_tmp2_ = vala_ccode_node_get_line ((ValaCCodeNode*) self);
 		_tmp3_ = _tmp2_;
 		vala_ccode_writer_write_indent (_tmp1_, _tmp3_);
 		_tmp4_ = self->priv->_modifiers;
 		if ((_tmp4_ & VALA_CCODE_MODIFIERS_STATIC) != 0) {
-			ValaCCodeWriter* _tmp5_;
+			ValaCCodeWriter* _tmp5_ = NULL;
 			_tmp5_ = writer;
 			vala_ccode_writer_write_string (_tmp5_, "static ");
 		}
 		_tmp6_ = self->priv->_modifiers;
 		if ((_tmp6_ & VALA_CCODE_MODIFIERS_VOLATILE) != 0) {
-			ValaCCodeWriter* _tmp7_;
+			ValaCCodeWriter* _tmp7_ = NULL;
 			_tmp7_ = writer;
 			vala_ccode_writer_write_string (_tmp7_, "volatile ");
 		}
@@ -448,168 +445,167 @@ static void vala_ccode_declaration_real_write_declaration (ValaCCodeNode* base, 
 		} else {
 			_tmp8_ = FALSE;
 		}
-		_tmp11_ = _tmp8_;
-		if (_tmp11_) {
-			ValaCCodeWriter* _tmp12_;
-			_tmp12_ = writer;
-			vala_ccode_writer_write_string (_tmp12_, "extern ");
+		if (_tmp8_) {
+			ValaCCodeWriter* _tmp11_ = NULL;
+			_tmp11_ = writer;
+			vala_ccode_writer_write_string (_tmp11_, "extern ");
 		}
-		_tmp13_ = self->priv->_modifiers;
-		if ((_tmp13_ & VALA_CCODE_MODIFIERS_THREAD_LOCAL) != 0) {
-			ValaCCodeWriter* _tmp14_;
-			_tmp14_ = writer;
-			vala_ccode_writer_write_string (_tmp14_, "thread_local ");
+		_tmp12_ = self->priv->_modifiers;
+		if ((_tmp12_ & VALA_CCODE_MODIFIERS_THREAD_LOCAL) != 0) {
+			ValaCCodeWriter* _tmp13_ = NULL;
+			_tmp13_ = writer;
+			vala_ccode_writer_write_string (_tmp13_, "thread_local ");
 		}
-		_tmp15_ = writer;
-		_tmp16_ = self->priv->_type_name;
-		vala_ccode_writer_write_string (_tmp15_, _tmp16_);
-		_tmp17_ = writer;
-		vala_ccode_writer_write_string (_tmp17_, " ");
+		_tmp14_ = writer;
+		_tmp15_ = self->priv->_type_name;
+		vala_ccode_writer_write_string (_tmp14_, _tmp15_);
+		_tmp16_ = writer;
+		vala_ccode_writer_write_string (_tmp16_, " ");
 		first = TRUE;
 		{
-			ValaList* _tmp18_;
-			ValaList* _tmp19_;
-			ValaList* _decl_list;
-			ValaList* _tmp20_;
-			gint _tmp21_;
-			gint _tmp22_;
-			gint _decl_size;
-			gint _decl_index;
-			_tmp18_ = self->priv->declarators;
-			_tmp19_ = _vala_iterable_ref0 (_tmp18_);
-			_decl_list = _tmp19_;
-			_tmp20_ = _decl_list;
-			_tmp21_ = vala_collection_get_size ((ValaCollection*) _tmp20_);
-			_tmp22_ = _tmp21_;
-			_decl_size = _tmp22_;
+			ValaList* _decl_list = NULL;
+			ValaList* _tmp17_ = NULL;
+			ValaList* _tmp18_ = NULL;
+			gint _decl_size = 0;
+			ValaList* _tmp19_ = NULL;
+			gint _tmp20_ = 0;
+			gint _tmp21_ = 0;
+			gint _decl_index = 0;
+			_tmp17_ = self->priv->declarators;
+			_tmp18_ = _vala_iterable_ref0 (_tmp17_);
+			_decl_list = _tmp18_;
+			_tmp19_ = _decl_list;
+			_tmp20_ = vala_collection_get_size ((ValaCollection*) _tmp19_);
+			_tmp21_ = _tmp20_;
+			_decl_size = _tmp21_;
 			_decl_index = -1;
 			while (TRUE) {
-				gint _tmp23_;
-				gint _tmp24_;
-				gint _tmp25_;
-				ValaList* _tmp26_;
-				gint _tmp27_;
-				gpointer _tmp28_ = NULL;
-				ValaCCodeDeclarator* decl;
-				gboolean _tmp29_;
-				ValaCCodeDeclarator* _tmp31_;
-				ValaCCodeWriter* _tmp32_;
+				gint _tmp22_ = 0;
+				gint _tmp23_ = 0;
+				gint _tmp24_ = 0;
+				ValaCCodeDeclarator* decl = NULL;
+				ValaList* _tmp25_ = NULL;
+				gint _tmp26_ = 0;
+				gpointer _tmp27_ = NULL;
+				gboolean _tmp28_ = FALSE;
+				ValaCCodeDeclarator* _tmp30_ = NULL;
+				ValaCCodeWriter* _tmp31_ = NULL;
+				_tmp22_ = _decl_index;
+				_decl_index = _tmp22_ + 1;
 				_tmp23_ = _decl_index;
-				_decl_index = _tmp23_ + 1;
-				_tmp24_ = _decl_index;
-				_tmp25_ = _decl_size;
-				if (!(_tmp24_ < _tmp25_)) {
+				_tmp24_ = _decl_size;
+				if (!(_tmp23_ < _tmp24_)) {
 					break;
 				}
-				_tmp26_ = _decl_list;
-				_tmp27_ = _decl_index;
-				_tmp28_ = vala_list_get (_tmp26_, _tmp27_);
-				decl = (ValaCCodeDeclarator*) _tmp28_;
-				_tmp29_ = first;
-				if (!_tmp29_) {
-					ValaCCodeWriter* _tmp30_;
-					_tmp30_ = writer;
-					vala_ccode_writer_write_string (_tmp30_, ", ");
+				_tmp25_ = _decl_list;
+				_tmp26_ = _decl_index;
+				_tmp27_ = vala_list_get (_tmp25_, _tmp26_);
+				decl = (ValaCCodeDeclarator*) _tmp27_;
+				_tmp28_ = first;
+				if (!_tmp28_) {
+					ValaCCodeWriter* _tmp29_ = NULL;
+					_tmp29_ = writer;
+					vala_ccode_writer_write_string (_tmp29_, ", ");
 				} else {
 					first = FALSE;
 				}
-				_tmp31_ = decl;
-				_tmp32_ = writer;
-				vala_ccode_node_write ((ValaCCodeNode*) _tmp31_, _tmp32_);
+				_tmp30_ = decl;
+				_tmp31_ = writer;
+				vala_ccode_node_write ((ValaCCodeNode*) _tmp30_, _tmp31_);
 				_vala_ccode_node_unref0 (decl);
 			}
 			_vala_iterable_unref0 (_decl_list);
 		}
-		_tmp33_ = self->priv->_modifiers;
-		if ((_tmp33_ & VALA_CCODE_MODIFIERS_DEPRECATED) == VALA_CCODE_MODIFIERS_DEPRECATED) {
-			ValaCCodeWriter* _tmp34_;
-			_tmp34_ = writer;
-			vala_ccode_writer_write_string (_tmp34_, " G_GNUC_DEPRECATED");
+		_tmp32_ = self->priv->_modifiers;
+		if ((_tmp32_ & VALA_CCODE_MODIFIERS_DEPRECATED) == VALA_CCODE_MODIFIERS_DEPRECATED) {
+			ValaCCodeWriter* _tmp33_ = NULL;
+			_tmp33_ = writer;
+			vala_ccode_writer_write_string (_tmp33_, " G_GNUC_DEPRECATED");
 		}
+		_tmp34_ = writer;
+		vala_ccode_writer_write_string (_tmp34_, ";");
 		_tmp35_ = writer;
-		vala_ccode_writer_write_string (_tmp35_, ";");
-		_tmp36_ = writer;
-		vala_ccode_writer_write_newline (_tmp36_);
+		vala_ccode_writer_write_newline (_tmp35_);
 		return;
 	}
-	_tmp37_ = writer;
-	vala_ccode_writer_write_indent (_tmp37_, NULL);
-	_tmp38_ = self->priv->_modifiers;
-	if ((_tmp38_ & VALA_CCODE_MODIFIERS_REGISTER) == VALA_CCODE_MODIFIERS_REGISTER) {
-		ValaCCodeWriter* _tmp39_;
-		_tmp39_ = writer;
-		vala_ccode_writer_write_string (_tmp39_, "register ");
+	_tmp36_ = writer;
+	vala_ccode_writer_write_indent (_tmp36_, NULL);
+	_tmp37_ = self->priv->_modifiers;
+	if ((_tmp37_ & VALA_CCODE_MODIFIERS_REGISTER) == VALA_CCODE_MODIFIERS_REGISTER) {
+		ValaCCodeWriter* _tmp38_ = NULL;
+		_tmp38_ = writer;
+		vala_ccode_writer_write_string (_tmp38_, "register ");
 	}
-	_tmp40_ = writer;
-	_tmp41_ = self->priv->_type_name;
-	vala_ccode_writer_write_string (_tmp40_, _tmp41_);
-	_tmp42_ = writer;
-	vala_ccode_writer_write_string (_tmp42_, " ");
+	_tmp39_ = writer;
+	_tmp40_ = self->priv->_type_name;
+	vala_ccode_writer_write_string (_tmp39_, _tmp40_);
+	_tmp41_ = writer;
+	vala_ccode_writer_write_string (_tmp41_, " ");
 	first = TRUE;
 	{
-		ValaList* _tmp43_;
-		ValaList* _tmp44_;
-		ValaList* _decl_list;
-		ValaList* _tmp45_;
-		gint _tmp46_;
-		gint _tmp47_;
-		gint _decl_size;
-		gint _decl_index;
-		_tmp43_ = self->priv->declarators;
-		_tmp44_ = _vala_iterable_ref0 (_tmp43_);
-		_decl_list = _tmp44_;
-		_tmp45_ = _decl_list;
-		_tmp46_ = vala_collection_get_size ((ValaCollection*) _tmp45_);
-		_tmp47_ = _tmp46_;
-		_decl_size = _tmp47_;
+		ValaList* _decl_list = NULL;
+		ValaList* _tmp42_ = NULL;
+		ValaList* _tmp43_ = NULL;
+		gint _decl_size = 0;
+		ValaList* _tmp44_ = NULL;
+		gint _tmp45_ = 0;
+		gint _tmp46_ = 0;
+		gint _decl_index = 0;
+		_tmp42_ = self->priv->declarators;
+		_tmp43_ = _vala_iterable_ref0 (_tmp42_);
+		_decl_list = _tmp43_;
+		_tmp44_ = _decl_list;
+		_tmp45_ = vala_collection_get_size ((ValaCollection*) _tmp44_);
+		_tmp46_ = _tmp45_;
+		_decl_size = _tmp46_;
 		_decl_index = -1;
 		while (TRUE) {
-			gint _tmp48_;
-			gint _tmp49_;
-			gint _tmp50_;
-			ValaList* _tmp51_;
-			gint _tmp52_;
-			gpointer _tmp53_ = NULL;
-			ValaCCodeDeclarator* decl;
-			gboolean _tmp54_;
-			ValaCCodeDeclarator* _tmp56_;
-			ValaCCodeWriter* _tmp57_;
+			gint _tmp47_ = 0;
+			gint _tmp48_ = 0;
+			gint _tmp49_ = 0;
+			ValaCCodeDeclarator* decl = NULL;
+			ValaList* _tmp50_ = NULL;
+			gint _tmp51_ = 0;
+			gpointer _tmp52_ = NULL;
+			gboolean _tmp53_ = FALSE;
+			ValaCCodeDeclarator* _tmp55_ = NULL;
+			ValaCCodeWriter* _tmp56_ = NULL;
+			_tmp47_ = _decl_index;
+			_decl_index = _tmp47_ + 1;
 			_tmp48_ = _decl_index;
-			_decl_index = _tmp48_ + 1;
-			_tmp49_ = _decl_index;
-			_tmp50_ = _decl_size;
-			if (!(_tmp49_ < _tmp50_)) {
+			_tmp49_ = _decl_size;
+			if (!(_tmp48_ < _tmp49_)) {
 				break;
 			}
-			_tmp51_ = _decl_list;
-			_tmp52_ = _decl_index;
-			_tmp53_ = vala_list_get (_tmp51_, _tmp52_);
-			decl = (ValaCCodeDeclarator*) _tmp53_;
-			_tmp54_ = first;
-			if (!_tmp54_) {
-				ValaCCodeWriter* _tmp55_;
-				_tmp55_ = writer;
-				vala_ccode_writer_write_string (_tmp55_, ", ");
+			_tmp50_ = _decl_list;
+			_tmp51_ = _decl_index;
+			_tmp52_ = vala_list_get (_tmp50_, _tmp51_);
+			decl = (ValaCCodeDeclarator*) _tmp52_;
+			_tmp53_ = first;
+			if (!_tmp53_) {
+				ValaCCodeWriter* _tmp54_ = NULL;
+				_tmp54_ = writer;
+				vala_ccode_writer_write_string (_tmp54_, ", ");
 			} else {
 				first = FALSE;
 			}
-			_tmp56_ = decl;
-			_tmp57_ = writer;
-			vala_ccode_node_write_declaration ((ValaCCodeNode*) _tmp56_, _tmp57_);
+			_tmp55_ = decl;
+			_tmp56_ = writer;
+			vala_ccode_node_write_declaration ((ValaCCodeNode*) _tmp55_, _tmp56_);
 			_vala_ccode_node_unref0 (decl);
 		}
 		_vala_iterable_unref0 (_decl_list);
 	}
+	_tmp57_ = writer;
+	vala_ccode_writer_write_string (_tmp57_, ";");
 	_tmp58_ = writer;
-	vala_ccode_writer_write_string (_tmp58_, ";");
-	_tmp59_ = writer;
-	vala_ccode_writer_write_newline (_tmp59_);
+	vala_ccode_writer_write_newline (_tmp58_);
 }
 
 
 const gchar* vala_ccode_declaration_get_type_name (ValaCCodeDeclaration* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_type_name;
 	result = _tmp0_;
@@ -618,8 +614,8 @@ const gchar* vala_ccode_declaration_get_type_name (ValaCCodeDeclaration* self) {
 
 
 void vala_ccode_declaration_set_type_name (ValaCCodeDeclaration* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);
@@ -630,7 +626,7 @@ void vala_ccode_declaration_set_type_name (ValaCCodeDeclaration* self, const gch
 
 ValaCCodeModifiers vala_ccode_declaration_get_modifiers (ValaCCodeDeclaration* self) {
 	ValaCCodeModifiers result;
-	ValaCCodeModifiers _tmp0_;
+	ValaCCodeModifiers _tmp0_ = 0;
 	g_return_val_if_fail (self != NULL, 0);
 	_tmp0_ = self->priv->_modifiers;
 	result = _tmp0_;
@@ -639,7 +635,7 @@ ValaCCodeModifiers vala_ccode_declaration_get_modifiers (ValaCCodeDeclaration* s
 
 
 void vala_ccode_declaration_set_modifiers (ValaCCodeDeclaration* self, ValaCCodeModifiers value) {
-	ValaCCodeModifiers _tmp0_;
+	ValaCCodeModifiers _tmp0_ = 0;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_modifiers = _tmp0_;
@@ -656,8 +652,8 @@ static void vala_ccode_declaration_class_init (ValaCCodeDeclarationClass * klass
 
 
 static void vala_ccode_declaration_instance_init (ValaCCodeDeclaration * self) {
-	GEqualFunc _tmp0_;
-	ValaArrayList* _tmp1_;
+	GEqualFunc _tmp0_ = NULL;
+	ValaArrayList* _tmp1_ = NULL;
 	self->priv = VALA_CCODE_DECLARATION_GET_PRIVATE (self);
 	_tmp0_ = g_direct_equal;
 	_tmp1_ = vala_array_list_new (VALA_TYPE_CCODE_DECLARATOR, (GBoxedCopyFunc) vala_ccode_node_ref, vala_ccode_node_unref, _tmp0_);

@@ -185,9 +185,9 @@ static void vala_ccode_variable_declarator_finalize (ValaCCodeNode* obj);
 
 ValaCCodeVariableDeclarator* vala_ccode_variable_declarator_construct (GType object_type, const gchar* name, ValaCCodeExpression* initializer, const gchar* declarator_suffix) {
 	ValaCCodeVariableDeclarator* self = NULL;
-	const gchar* _tmp0_;
-	ValaCCodeExpression* _tmp1_;
-	const gchar* _tmp2_;
+	const gchar* _tmp0_ = NULL;
+	ValaCCodeExpression* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
 	g_return_val_if_fail (name != NULL, NULL);
 	self = (ValaCCodeVariableDeclarator*) vala_ccode_declarator_construct (object_type);
 	_tmp0_ = name;
@@ -207,9 +207,9 @@ ValaCCodeVariableDeclarator* vala_ccode_variable_declarator_new (const gchar* na
 
 ValaCCodeVariableDeclarator* vala_ccode_variable_declarator_construct_zero (GType object_type, const gchar* name, ValaCCodeExpression* initializer, const gchar* declarator_suffix) {
 	ValaCCodeVariableDeclarator* self = NULL;
-	const gchar* _tmp0_;
-	ValaCCodeExpression* _tmp1_;
-	const gchar* _tmp2_;
+	const gchar* _tmp0_ = NULL;
+	ValaCCodeExpression* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
 	g_return_val_if_fail (name != NULL, NULL);
 	self = (ValaCCodeVariableDeclarator*) vala_ccode_declarator_construct (object_type);
 	_tmp0_ = name;
@@ -230,10 +230,10 @@ ValaCCodeVariableDeclarator* vala_ccode_variable_declarator_new_zero (const gcha
 
 static void vala_ccode_variable_declarator_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeVariableDeclarator * self;
-	ValaCCodeWriter* _tmp0_;
-	const gchar* _tmp1_;
-	const gchar* _tmp2_;
-	ValaCCodeExpression* _tmp5_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
+	ValaCCodeExpression* _tmp5_ = NULL;
 	self = (ValaCCodeVariableDeclarator*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;
@@ -241,17 +241,17 @@ static void vala_ccode_variable_declarator_real_write (ValaCCodeNode* base, Vala
 	vala_ccode_writer_write_string (_tmp0_, _tmp1_);
 	_tmp2_ = self->priv->_declarator_suffix;
 	if (_tmp2_ != NULL) {
-		ValaCCodeWriter* _tmp3_;
-		const gchar* _tmp4_;
+		ValaCCodeWriter* _tmp3_ = NULL;
+		const gchar* _tmp4_ = NULL;
 		_tmp3_ = writer;
 		_tmp4_ = self->priv->_declarator_suffix;
 		vala_ccode_writer_write_string (_tmp3_, _tmp4_);
 	}
 	_tmp5_ = self->priv->_initializer;
 	if (_tmp5_ != NULL) {
-		ValaCCodeWriter* _tmp6_;
-		ValaCCodeExpression* _tmp7_;
-		ValaCCodeWriter* _tmp8_;
+		ValaCCodeWriter* _tmp6_ = NULL;
+		ValaCCodeExpression* _tmp7_ = NULL;
+		ValaCCodeWriter* _tmp8_ = NULL;
 		_tmp6_ = writer;
 		vala_ccode_writer_write_string (_tmp6_, " = ");
 		_tmp7_ = self->priv->_initializer;
@@ -263,12 +263,11 @@ static void vala_ccode_variable_declarator_real_write (ValaCCodeNode* base, Vala
 
 static void vala_ccode_variable_declarator_real_write_declaration (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeVariableDeclarator * self;
-	ValaCCodeWriter* _tmp0_;
-	const gchar* _tmp1_;
-	const gchar* _tmp2_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	const gchar* _tmp1_ = NULL;
+	const gchar* _tmp2_ = NULL;
 	gboolean _tmp5_ = FALSE;
-	ValaCCodeExpression* _tmp6_;
-	gboolean _tmp8_;
+	ValaCCodeExpression* _tmp6_ = NULL;
 	self = (ValaCCodeVariableDeclarator*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;
@@ -276,30 +275,29 @@ static void vala_ccode_variable_declarator_real_write_declaration (ValaCCodeNode
 	vala_ccode_writer_write_string (_tmp0_, _tmp1_);
 	_tmp2_ = self->priv->_declarator_suffix;
 	if (_tmp2_ != NULL) {
-		ValaCCodeWriter* _tmp3_;
-		const gchar* _tmp4_;
+		ValaCCodeWriter* _tmp3_ = NULL;
+		const gchar* _tmp4_ = NULL;
 		_tmp3_ = writer;
 		_tmp4_ = self->priv->_declarator_suffix;
 		vala_ccode_writer_write_string (_tmp3_, _tmp4_);
 	}
 	_tmp6_ = self->priv->_initializer;
 	if (_tmp6_ != NULL) {
-		gboolean _tmp7_;
+		gboolean _tmp7_ = FALSE;
 		_tmp7_ = self->priv->_init0;
 		_tmp5_ = _tmp7_;
 	} else {
 		_tmp5_ = FALSE;
 	}
-	_tmp8_ = _tmp5_;
-	if (_tmp8_) {
-		ValaCCodeWriter* _tmp9_;
-		ValaCCodeExpression* _tmp10_;
-		ValaCCodeWriter* _tmp11_;
-		_tmp9_ = writer;
-		vala_ccode_writer_write_string (_tmp9_, " = ");
-		_tmp10_ = self->priv->_initializer;
-		_tmp11_ = writer;
-		vala_ccode_node_write ((ValaCCodeNode*) _tmp10_, _tmp11_);
+	if (_tmp5_) {
+		ValaCCodeWriter* _tmp8_ = NULL;
+		ValaCCodeExpression* _tmp9_ = NULL;
+		ValaCCodeWriter* _tmp10_ = NULL;
+		_tmp8_ = writer;
+		vala_ccode_writer_write_string (_tmp8_, " = ");
+		_tmp9_ = self->priv->_initializer;
+		_tmp10_ = writer;
+		vala_ccode_node_write ((ValaCCodeNode*) _tmp9_, _tmp10_);
 	}
 }
 
@@ -307,53 +305,51 @@ static void vala_ccode_variable_declarator_real_write_declaration (ValaCCodeNode
 static void vala_ccode_variable_declarator_real_write_initialization (ValaCCodeDeclarator* base, ValaCCodeWriter* writer) {
 	ValaCCodeVariableDeclarator * self;
 	gboolean _tmp0_ = FALSE;
-	ValaCCodeExpression* _tmp1_;
-	gboolean _tmp3_;
+	ValaCCodeExpression* _tmp1_ = NULL;
 	self = (ValaCCodeVariableDeclarator*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp1_ = self->priv->_initializer;
 	if (_tmp1_ != NULL) {
-		gboolean _tmp2_;
+		gboolean _tmp2_ = FALSE;
 		_tmp2_ = self->priv->_init0;
 		_tmp0_ = !_tmp2_;
 	} else {
 		_tmp0_ = FALSE;
 	}
-	_tmp3_ = _tmp0_;
-	if (_tmp3_) {
-		ValaCCodeWriter* _tmp4_;
-		ValaCCodeLineDirective* _tmp5_;
-		ValaCCodeLineDirective* _tmp6_;
-		ValaCCodeWriter* _tmp7_;
-		const gchar* _tmp8_;
-		ValaCCodeWriter* _tmp9_;
-		ValaCCodeExpression* _tmp10_;
-		ValaCCodeWriter* _tmp11_;
-		ValaCCodeWriter* _tmp12_;
-		ValaCCodeWriter* _tmp13_;
-		_tmp4_ = writer;
-		_tmp5_ = vala_ccode_node_get_line ((ValaCCodeNode*) self);
-		_tmp6_ = _tmp5_;
-		vala_ccode_writer_write_indent (_tmp4_, _tmp6_);
-		_tmp7_ = writer;
-		_tmp8_ = self->priv->_name;
-		vala_ccode_writer_write_string (_tmp7_, _tmp8_);
-		_tmp9_ = writer;
-		vala_ccode_writer_write_string (_tmp9_, " = ");
-		_tmp10_ = self->priv->_initializer;
+	if (_tmp0_) {
+		ValaCCodeWriter* _tmp3_ = NULL;
+		ValaCCodeLineDirective* _tmp4_ = NULL;
+		ValaCCodeLineDirective* _tmp5_ = NULL;
+		ValaCCodeWriter* _tmp6_ = NULL;
+		const gchar* _tmp7_ = NULL;
+		ValaCCodeWriter* _tmp8_ = NULL;
+		ValaCCodeExpression* _tmp9_ = NULL;
+		ValaCCodeWriter* _tmp10_ = NULL;
+		ValaCCodeWriter* _tmp11_ = NULL;
+		ValaCCodeWriter* _tmp12_ = NULL;
+		_tmp3_ = writer;
+		_tmp4_ = vala_ccode_node_get_line ((ValaCCodeNode*) self);
+		_tmp5_ = _tmp4_;
+		vala_ccode_writer_write_indent (_tmp3_, _tmp5_);
+		_tmp6_ = writer;
+		_tmp7_ = self->priv->_name;
+		vala_ccode_writer_write_string (_tmp6_, _tmp7_);
+		_tmp8_ = writer;
+		vala_ccode_writer_write_string (_tmp8_, " = ");
+		_tmp9_ = self->priv->_initializer;
+		_tmp10_ = writer;
+		vala_ccode_node_write ((ValaCCodeNode*) _tmp9_, _tmp10_);
 		_tmp11_ = writer;
-		vala_ccode_node_write ((ValaCCodeNode*) _tmp10_, _tmp11_);
+		vala_ccode_writer_write_string (_tmp11_, ";");
 		_tmp12_ = writer;
-		vala_ccode_writer_write_string (_tmp12_, ";");
-		_tmp13_ = writer;
-		vala_ccode_writer_write_newline (_tmp13_);
+		vala_ccode_writer_write_newline (_tmp12_);
 	}
 }
 
 
 const gchar* vala_ccode_variable_declarator_get_name (ValaCCodeVariableDeclarator* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_name;
 	result = _tmp0_;
@@ -362,8 +358,8 @@ const gchar* vala_ccode_variable_declarator_get_name (ValaCCodeVariableDeclarato
 
 
 void vala_ccode_variable_declarator_set_name (ValaCCodeVariableDeclarator* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);
@@ -374,7 +370,7 @@ void vala_ccode_variable_declarator_set_name (ValaCCodeVariableDeclarator* self,
 
 ValaCCodeExpression* vala_ccode_variable_declarator_get_initializer (ValaCCodeVariableDeclarator* self) {
 	ValaCCodeExpression* result;
-	ValaCCodeExpression* _tmp0_;
+	ValaCCodeExpression* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_initializer;
 	result = _tmp0_;
@@ -388,8 +384,8 @@ static gpointer _vala_ccode_node_ref0 (gpointer self) {
 
 
 void vala_ccode_variable_declarator_set_initializer (ValaCCodeVariableDeclarator* self, ValaCCodeExpression* value) {
-	ValaCCodeExpression* _tmp0_;
-	ValaCCodeExpression* _tmp1_;
+	ValaCCodeExpression* _tmp0_ = NULL;
+	ValaCCodeExpression* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_ccode_node_ref0 (_tmp0_);
@@ -400,7 +396,7 @@ void vala_ccode_variable_declarator_set_initializer (ValaCCodeVariableDeclarator
 
 const gchar* vala_ccode_variable_declarator_get_declarator_suffix (ValaCCodeVariableDeclarator* self) {
 	const gchar* result;
-	const gchar* _tmp0_;
+	const gchar* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_declarator_suffix;
 	result = _tmp0_;
@@ -409,8 +405,8 @@ const gchar* vala_ccode_variable_declarator_get_declarator_suffix (ValaCCodeVari
 
 
 void vala_ccode_variable_declarator_set_declarator_suffix (ValaCCodeVariableDeclarator* self, const gchar* value) {
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = g_strdup (_tmp0_);
@@ -421,7 +417,7 @@ void vala_ccode_variable_declarator_set_declarator_suffix (ValaCCodeVariableDecl
 
 gboolean vala_ccode_variable_declarator_get_init0 (ValaCCodeVariableDeclarator* self) {
 	gboolean result;
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_val_if_fail (self != NULL, FALSE);
 	_tmp0_ = self->priv->_init0;
 	result = _tmp0_;
@@ -430,7 +426,7 @@ gboolean vala_ccode_variable_declarator_get_init0 (ValaCCodeVariableDeclarator* 
 
 
 void vala_ccode_variable_declarator_set_init0 (ValaCCodeVariableDeclarator* self, gboolean value) {
-	gboolean _tmp0_;
+	gboolean _tmp0_ = FALSE;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_init0 = _tmp0_;

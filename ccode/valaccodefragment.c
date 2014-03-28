@@ -131,8 +131,8 @@ static void vala_ccode_fragment_finalize (ValaCCodeNode* obj);
  * @param node a C code node
  */
 void vala_ccode_fragment_append (ValaCCodeFragment* self, ValaCCodeNode* node) {
-	ValaList* _tmp0_;
-	ValaCCodeNode* _tmp1_;
+	ValaList* _tmp0_ = NULL;
+	ValaCCodeNode* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (node != NULL);
 	_tmp0_ = self->priv->children;
@@ -153,8 +153,8 @@ static gpointer _vala_iterable_ref0 (gpointer self) {
 
 ValaList* vala_ccode_fragment_get_children (ValaCCodeFragment* self) {
 	ValaList* result = NULL;
-	ValaList* _tmp0_;
-	ValaList* _tmp1_;
+	ValaList* _tmp0_ = NULL;
+	ValaList* _tmp1_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->children;
 	_tmp1_ = _vala_iterable_ref0 (_tmp0_);
@@ -168,14 +168,14 @@ static void vala_ccode_fragment_real_write (ValaCCodeNode* base, ValaCCodeWriter
 	self = (ValaCCodeFragment*) base;
 	g_return_if_fail (writer != NULL);
 	{
-		ValaList* _tmp0_;
-		ValaList* _tmp1_;
-		ValaList* _node_list;
-		ValaList* _tmp2_;
-		gint _tmp3_;
-		gint _tmp4_;
-		gint _node_size;
-		gint _node_index;
+		ValaList* _node_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _node_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _node_index = 0;
 		_tmp0_ = self->priv->children;
 		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
 		_node_list = _tmp1_;
@@ -185,15 +185,15 @@ static void vala_ccode_fragment_real_write (ValaCCodeNode* base, ValaCCodeWriter
 		_node_size = _tmp4_;
 		_node_index = -1;
 		while (TRUE) {
-			gint _tmp5_;
-			gint _tmp6_;
-			gint _tmp7_;
-			ValaList* _tmp8_;
-			gint _tmp9_;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaCCodeNode* node = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
 			gpointer _tmp10_ = NULL;
-			ValaCCodeNode* node;
-			ValaCCodeNode* _tmp11_;
-			ValaCCodeWriter* _tmp12_;
+			ValaCCodeNode* _tmp11_ = NULL;
+			ValaCCodeWriter* _tmp12_ = NULL;
 			_tmp5_ = _node_index;
 			_node_index = _tmp5_ + 1;
 			_tmp6_ = _node_index;
@@ -220,14 +220,14 @@ static void vala_ccode_fragment_real_write_declaration (ValaCCodeNode* base, Val
 	self = (ValaCCodeFragment*) base;
 	g_return_if_fail (writer != NULL);
 	{
-		ValaList* _tmp0_;
-		ValaList* _tmp1_;
-		ValaList* _node_list;
-		ValaList* _tmp2_;
-		gint _tmp3_;
-		gint _tmp4_;
-		gint _node_size;
-		gint _node_index;
+		ValaList* _node_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _node_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _node_index = 0;
 		_tmp0_ = self->priv->children;
 		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
 		_node_list = _tmp1_;
@@ -237,15 +237,15 @@ static void vala_ccode_fragment_real_write_declaration (ValaCCodeNode* base, Val
 		_node_size = _tmp4_;
 		_node_index = -1;
 		while (TRUE) {
-			gint _tmp5_;
-			gint _tmp6_;
-			gint _tmp7_;
-			ValaList* _tmp8_;
-			gint _tmp9_;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaCCodeNode* node = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
 			gpointer _tmp10_ = NULL;
-			ValaCCodeNode* node;
-			ValaCCodeNode* _tmp11_;
-			ValaCCodeWriter* _tmp12_;
+			ValaCCodeNode* _tmp11_ = NULL;
+			ValaCCodeWriter* _tmp12_ = NULL;
 			_tmp5_ = _node_index;
 			_node_index = _tmp5_ + 1;
 			_tmp6_ = _node_index;
@@ -272,14 +272,14 @@ static void vala_ccode_fragment_real_write_combined (ValaCCodeNode* base, ValaCC
 	self = (ValaCCodeFragment*) base;
 	g_return_if_fail (writer != NULL);
 	{
-		ValaList* _tmp0_;
-		ValaList* _tmp1_;
-		ValaList* _node_list;
-		ValaList* _tmp2_;
-		gint _tmp3_;
-		gint _tmp4_;
-		gint _node_size;
-		gint _node_index;
+		ValaList* _node_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _node_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _node_index = 0;
 		_tmp0_ = self->priv->children;
 		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
 		_node_list = _tmp1_;
@@ -289,15 +289,15 @@ static void vala_ccode_fragment_real_write_combined (ValaCCodeNode* base, ValaCC
 		_node_size = _tmp4_;
 		_node_index = -1;
 		while (TRUE) {
-			gint _tmp5_;
-			gint _tmp6_;
-			gint _tmp7_;
-			ValaList* _tmp8_;
-			gint _tmp9_;
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaCCodeNode* node = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
 			gpointer _tmp10_ = NULL;
-			ValaCCodeNode* node;
-			ValaCCodeNode* _tmp11_;
-			ValaCCodeWriter* _tmp12_;
+			ValaCCodeNode* _tmp11_ = NULL;
+			ValaCCodeWriter* _tmp12_ = NULL;
 			_tmp5_ = _node_index;
 			_node_index = _tmp5_ + 1;
 			_tmp6_ = _node_index;
@@ -342,8 +342,8 @@ static void vala_ccode_fragment_class_init (ValaCCodeFragmentClass * klass) {
 
 
 static void vala_ccode_fragment_instance_init (ValaCCodeFragment * self) {
-	GEqualFunc _tmp0_;
-	ValaArrayList* _tmp1_;
+	GEqualFunc _tmp0_ = NULL;
+	ValaArrayList* _tmp1_ = NULL;
 	self->priv = VALA_CCODE_FRAGMENT_GET_PRIVATE (self);
 	_tmp0_ = g_direct_equal;
 	_tmp1_ = vala_array_list_new (VALA_TYPE_CCODE_NODE, (GBoxedCopyFunc) vala_ccode_node_ref, vala_ccode_node_unref, _tmp0_);

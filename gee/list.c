@@ -191,10 +191,10 @@ void vala_list_set (ValaList* self, gint index, gconstpointer item) {
 
 
 /**
- * Returns the index of the first occurence of the specified item in
+ * Returns the index of the first occurrence of the specified item in
  * this list.
  *
- * @return the index of the first occurence of the specified item, or
+ * @return the index of the first occurrence of the specified item, or
  *         -1 if the item could not be found
  */
 static gint vala_list_real_index_of (ValaList* self, gconstpointer item) {

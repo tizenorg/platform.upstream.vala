@@ -99,9 +99,9 @@ ValaCCodeCompiler* vala_ccode_compiler_new (void) {
 
 static gboolean vala_ccode_compiler_package_exists (const gchar* package_name) {
 	gboolean result = FALSE;
-	const gchar* _tmp0_;
-	gchar* _tmp1_;
-	gchar* pc;
+	gchar* pc = NULL;
+	const gchar* _tmp0_ = NULL;
+	gchar* _tmp1_ = NULL;
 	gint exit_status = 0;
 	GError * _inner_error_ = NULL;
 	g_return_val_if_fail (package_name != NULL, FALSE);
@@ -129,8 +129,8 @@ static gboolean vala_ccode_compiler_package_exists (const gchar* package_name) {
 	__catch1_g_spawn_error:
 	{
 		GError* e = NULL;
-		GError* _tmp3_;
-		const gchar* _tmp4_;
+		GError* _tmp3_ = NULL;
+		const gchar* _tmp4_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp3_ = e;
@@ -162,9 +162,9 @@ static gpointer _vala_iterable_ref0 (gpointer self) {
 
 static gchar* string_strip (const gchar* self) {
 	gchar* result = NULL;
+	gchar* _result_ = NULL;
 	gchar* _tmp0_ = NULL;
-	gchar* _result_;
-	const gchar* _tmp1_;
+	const gchar* _tmp1_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = g_strdup (self);
 	_result_ = _tmp0_;
@@ -176,48 +176,48 @@ static gchar* string_strip (const gchar* self) {
 
 
 void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* context, const gchar* cc_command, gchar** cc_options, int cc_options_length1) {
-	gboolean use_pkgconfig;
-	gchar* _tmp0_;
-	gchar* pc;
-	ValaCodeContext* _tmp1_;
-	gboolean _tmp2_;
-	gboolean _tmp3_;
-	const gchar* _tmp6_;
-	gchar* _tmp7_;
-	ValaCodeContext* _tmp8_;
-	gboolean _tmp9_;
-	gboolean _tmp10_;
-	gchar* _tmp31_;
-	gchar* pkgflags;
-	gboolean _tmp32_;
-	const gchar* _tmp42_;
-	const gchar* _tmp43_;
-	gchar* _tmp44_;
-	gchar* cmdline;
-	ValaCodeContext* _tmp45_;
-	gboolean _tmp46_;
-	gboolean _tmp47_;
-	ValaCodeContext* _tmp50_;
-	gboolean _tmp51_;
-	gboolean _tmp52_;
-	ValaCodeContext* _tmp90_;
-	ValaList* _tmp91_ = NULL;
-	ValaList* source_files;
-	ValaCodeContext* _tmp115_;
-	ValaList* _tmp116_ = NULL;
-	ValaList* c_source_files;
-	const gchar* _tmp135_;
-	const gchar* _tmp136_;
+	gboolean use_pkgconfig = FALSE;
+	gchar* pc = NULL;
+	gchar* _tmp0_ = NULL;
+	ValaCodeContext* _tmp1_ = NULL;
+	gboolean _tmp2_ = FALSE;
+	gboolean _tmp3_ = FALSE;
+	const gchar* _tmp6_ = NULL;
+	gchar* _tmp7_ = NULL;
+	ValaCodeContext* _tmp8_ = NULL;
+	gboolean _tmp9_ = FALSE;
+	gboolean _tmp10_ = FALSE;
+	gchar* pkgflags = NULL;
+	gchar* _tmp31_ = NULL;
+	gboolean _tmp32_ = FALSE;
+	const gchar* _tmp42_ = NULL;
+	gchar* cmdline = NULL;
+	const gchar* _tmp43_ = NULL;
+	gchar* _tmp44_ = NULL;
+	ValaCodeContext* _tmp45_ = NULL;
+	gboolean _tmp46_ = FALSE;
+	gboolean _tmp47_ = FALSE;
+	ValaCodeContext* _tmp50_ = NULL;
+	gboolean _tmp51_ = FALSE;
+	gboolean _tmp52_ = FALSE;
+	ValaList* source_files = NULL;
+	ValaCodeContext* _tmp88_ = NULL;
+	ValaList* _tmp89_ = NULL;
+	ValaList* c_source_files = NULL;
+	ValaCodeContext* _tmp113_ = NULL;
+	ValaList* _tmp114_ = NULL;
+	const gchar* _tmp133_ = NULL;
+	const gchar* _tmp134_ = NULL;
+	gchar* _tmp135_ = NULL;
+	gchar* _tmp136_ = NULL;
 	gchar* _tmp137_ = NULL;
-	gchar* _tmp138_;
-	gchar* _tmp139_;
-	gchar* _tmp140_;
-	gchar* _tmp141_;
-	gchar** _tmp142_;
-	gint _tmp142__length1;
-	ValaCodeContext* _tmp151_;
-	gboolean _tmp152_;
-	gboolean _tmp153_;
+	gchar* _tmp138_ = NULL;
+	gchar* _tmp139_ = NULL;
+	gchar** _tmp140_ = NULL;
+	gint _tmp140__length1 = 0;
+	ValaCodeContext* _tmp149_ = NULL;
+	gboolean _tmp150_ = FALSE;
+	gboolean _tmp151_ = FALSE;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (context != NULL);
@@ -228,8 +228,8 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 	_tmp2_ = vala_code_context_get_compile_only (_tmp1_);
 	_tmp3_ = _tmp2_;
 	if (!_tmp3_) {
-		const gchar* _tmp4_;
-		gchar* _tmp5_;
+		const gchar* _tmp4_ = NULL;
+		gchar* _tmp5_ = NULL;
 		_tmp4_ = pc;
 		_tmp5_ = g_strconcat (_tmp4_, " --libs", NULL);
 		_g_free0 (pc);
@@ -244,22 +244,22 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 	_tmp9_ = vala_code_context_get_thread (_tmp8_);
 	_tmp10_ = _tmp9_;
 	if (_tmp10_) {
-		const gchar* _tmp11_;
-		gchar* _tmp12_;
+		const gchar* _tmp11_ = NULL;
+		gchar* _tmp12_ = NULL;
 		_tmp11_ = pc;
 		_tmp12_ = g_strconcat (_tmp11_, " gthread-2.0", NULL);
 		_g_free0 (pc);
 		pc = _tmp12_;
 	}
 	{
-		ValaCodeContext* _tmp13_;
+		ValaList* _pkg_list = NULL;
+		ValaCodeContext* _tmp13_ = NULL;
 		ValaList* _tmp14_ = NULL;
-		ValaList* _pkg_list;
-		ValaList* _tmp15_;
-		gint _tmp16_;
-		gint _tmp17_;
-		gint _pkg_size;
-		gint _pkg_index;
+		gint _pkg_size = 0;
+		ValaList* _tmp15_ = NULL;
+		gint _tmp16_ = 0;
+		gint _tmp17_ = 0;
+		gint _pkg_index = 0;
 		_tmp13_ = context;
 		_tmp14_ = vala_code_context_get_packages (_tmp13_);
 		_pkg_list = _tmp14_;
@@ -269,14 +269,14 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 		_pkg_size = _tmp17_;
 		_pkg_index = -1;
 		while (TRUE) {
-			gint _tmp18_;
-			gint _tmp19_;
-			gint _tmp20_;
-			ValaList* _tmp21_;
-			gint _tmp22_;
+			gint _tmp18_ = 0;
+			gint _tmp19_ = 0;
+			gint _tmp20_ = 0;
+			gchar* pkg = NULL;
+			ValaList* _tmp21_ = NULL;
+			gint _tmp22_ = 0;
 			gpointer _tmp23_ = NULL;
-			gchar* pkg;
-			const gchar* _tmp24_;
+			const gchar* _tmp24_ = NULL;
 			gboolean _tmp25_ = FALSE;
 			_tmp18_ = _pkg_index;
 			_pkg_index = _tmp18_ + 1;
@@ -292,11 +292,11 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 			_tmp24_ = pkg;
 			_tmp25_ = vala_ccode_compiler_package_exists (_tmp24_);
 			if (_tmp25_) {
-				const gchar* _tmp26_;
-				const gchar* _tmp27_;
-				gchar* _tmp28_;
-				gchar* _tmp29_;
-				gchar* _tmp30_;
+				const gchar* _tmp26_ = NULL;
+				const gchar* _tmp27_ = NULL;
+				gchar* _tmp28_ = NULL;
+				gchar* _tmp29_ = NULL;
+				gchar* _tmp30_ = NULL;
 				use_pkgconfig = TRUE;
 				_tmp26_ = pc;
 				_tmp27_ = pkg;
@@ -317,10 +317,10 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 	if (_tmp32_) {
 		{
 			gint exit_status = 0;
-			const gchar* _tmp33_;
+			const gchar* _tmp33_ = NULL;
 			gchar* _tmp34_ = NULL;
 			gint _tmp35_ = 0;
-			gint _tmp36_;
+			gint _tmp36_ = 0;
 			_tmp33_ = pc;
 			g_spawn_command_line_sync (_tmp33_, &_tmp34_, NULL, &_tmp35_, &_inner_error_);
 			_g_free0 (pkgflags);
@@ -338,9 +338,9 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 			}
 			_tmp36_ = exit_status;
 			if (_tmp36_ != 0) {
-				gint _tmp37_;
+				gint _tmp37_ = 0;
 				gchar* _tmp38_ = NULL;
-				gchar* _tmp39_;
+				gchar* _tmp39_ = NULL;
 				_tmp37_ = exit_status;
 				_tmp38_ = g_strdup_printf ("pkg-config exited with status %d", _tmp37_);
 				_tmp39_ = _tmp38_;
@@ -355,8 +355,8 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 		__catch2_g_spawn_error:
 		{
 			GError* e = NULL;
-			GError* _tmp40_;
-			const gchar* _tmp41_;
+			GError* _tmp40_ = NULL;
+			const gchar* _tmp41_ = NULL;
 			e = _inner_error_;
 			_inner_error_ = NULL;
 			_tmp40_ = e;
@@ -387,8 +387,8 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 	_tmp46_ = vala_code_context_get_debug (_tmp45_);
 	_tmp47_ = _tmp46_;
 	if (_tmp47_) {
-		const gchar* _tmp48_;
-		gchar* _tmp49_;
+		const gchar* _tmp48_ = NULL;
+		gchar* _tmp49_ = NULL;
 		_tmp48_ = cmdline;
 		_tmp49_ = g_strconcat (_tmp48_, " -g", NULL);
 		_g_free0 (cmdline);
@@ -398,39 +398,37 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 	_tmp51_ = vala_code_context_get_compile_only (_tmp50_);
 	_tmp52_ = _tmp51_;
 	if (_tmp52_) {
-		const gchar* _tmp53_;
-		gchar* _tmp54_;
+		const gchar* _tmp53_ = NULL;
+		gchar* _tmp54_ = NULL;
 		_tmp53_ = cmdline;
 		_tmp54_ = g_strconcat (_tmp53_, " -c", NULL);
 		_g_free0 (cmdline);
 		cmdline = _tmp54_;
 	} else {
-		ValaCodeContext* _tmp55_;
-		const gchar* _tmp56_;
-		const gchar* _tmp57_;
+		ValaCodeContext* _tmp55_ = NULL;
+		const gchar* _tmp56_ = NULL;
+		const gchar* _tmp57_ = NULL;
 		_tmp55_ = context;
 		_tmp56_ = vala_code_context_get_output (_tmp55_);
 		_tmp57_ = _tmp56_;
 		if (_tmp57_ != NULL) {
-			ValaCodeContext* _tmp58_;
-			const gchar* _tmp59_;
-			const gchar* _tmp60_;
-			gchar* _tmp61_;
-			gchar* output;
+			gchar* output = NULL;
+			ValaCodeContext* _tmp58_ = NULL;
+			const gchar* _tmp59_ = NULL;
+			const gchar* _tmp60_ = NULL;
+			gchar* _tmp61_ = NULL;
 			gboolean _tmp62_ = FALSE;
 			gboolean _tmp63_ = FALSE;
-			ValaCodeContext* _tmp64_;
-			const gchar* _tmp65_;
-			const gchar* _tmp66_;
-			gboolean _tmp70_;
-			gboolean _tmp75_;
-			const gchar* _tmp83_;
-			const gchar* _tmp84_;
+			ValaCodeContext* _tmp64_ = NULL;
+			const gchar* _tmp65_ = NULL;
+			const gchar* _tmp66_ = NULL;
+			const gchar* _tmp81_ = NULL;
+			const gchar* _tmp82_ = NULL;
+			gchar* _tmp83_ = NULL;
+			gchar* _tmp84_ = NULL;
 			gchar* _tmp85_ = NULL;
-			gchar* _tmp86_;
-			gchar* _tmp87_;
-			gchar* _tmp88_;
-			gchar* _tmp89_;
+			gchar* _tmp86_ = NULL;
+			gchar* _tmp87_ = NULL;
 			_tmp58_ = context;
 			_tmp59_ = vala_code_context_get_output (_tmp58_);
 			_tmp60_ = _tmp59_;
@@ -440,9 +438,9 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 			_tmp65_ = vala_code_context_get_directory (_tmp64_);
 			_tmp66_ = _tmp65_;
 			if (_tmp66_ != NULL) {
-				ValaCodeContext* _tmp67_;
-				const gchar* _tmp68_;
-				const gchar* _tmp69_;
+				ValaCodeContext* _tmp67_ = NULL;
+				const gchar* _tmp68_ = NULL;
+				const gchar* _tmp69_ = NULL;
 				_tmp67_ = context;
 				_tmp68_ = vala_code_context_get_directory (_tmp67_);
 				_tmp69_ = _tmp68_;
@@ -450,254 +448,252 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 			} else {
 				_tmp63_ = FALSE;
 			}
-			_tmp70_ = _tmp63_;
-			if (_tmp70_) {
-				ValaCodeContext* _tmp71_;
-				const gchar* _tmp72_;
-				const gchar* _tmp73_;
-				gboolean _tmp74_ = FALSE;
-				_tmp71_ = context;
-				_tmp72_ = vala_code_context_get_output (_tmp71_);
-				_tmp73_ = _tmp72_;
-				_tmp74_ = g_path_is_absolute (_tmp73_);
-				_tmp62_ = !_tmp74_;
+			if (_tmp63_) {
+				ValaCodeContext* _tmp70_ = NULL;
+				const gchar* _tmp71_ = NULL;
+				const gchar* _tmp72_ = NULL;
+				gboolean _tmp73_ = FALSE;
+				_tmp70_ = context;
+				_tmp71_ = vala_code_context_get_output (_tmp70_);
+				_tmp72_ = _tmp71_;
+				_tmp73_ = g_path_is_absolute (_tmp72_);
+				_tmp62_ = !_tmp73_;
 			} else {
 				_tmp62_ = FALSE;
 			}
-			_tmp75_ = _tmp62_;
-			if (_tmp75_) {
-				ValaCodeContext* _tmp76_;
-				const gchar* _tmp77_;
-				const gchar* _tmp78_;
-				ValaCodeContext* _tmp79_;
-				const gchar* _tmp80_;
-				const gchar* _tmp81_;
-				gchar* _tmp82_ = NULL;
-				_tmp76_ = context;
-				_tmp77_ = vala_code_context_get_directory (_tmp76_);
-				_tmp78_ = _tmp77_;
-				_tmp79_ = context;
-				_tmp80_ = vala_code_context_get_output (_tmp79_);
-				_tmp81_ = _tmp80_;
-				_tmp82_ = g_strdup_printf ("%s%c%s", _tmp78_, (gint) G_DIR_SEPARATOR, _tmp81_);
+			if (_tmp62_) {
+				ValaCodeContext* _tmp74_ = NULL;
+				const gchar* _tmp75_ = NULL;
+				const gchar* _tmp76_ = NULL;
+				ValaCodeContext* _tmp77_ = NULL;
+				const gchar* _tmp78_ = NULL;
+				const gchar* _tmp79_ = NULL;
+				gchar* _tmp80_ = NULL;
+				_tmp74_ = context;
+				_tmp75_ = vala_code_context_get_directory (_tmp74_);
+				_tmp76_ = _tmp75_;
+				_tmp77_ = context;
+				_tmp78_ = vala_code_context_get_output (_tmp77_);
+				_tmp79_ = _tmp78_;
+				_tmp80_ = g_strdup_printf ("%s%c%s", _tmp76_, (gint) G_DIR_SEPARATOR, _tmp79_);
 				_g_free0 (output);
-				output = _tmp82_;
+				output = _tmp80_;
 			}
-			_tmp83_ = cmdline;
-			_tmp84_ = output;
-			_tmp85_ = g_shell_quote (_tmp84_);
+			_tmp81_ = cmdline;
+			_tmp82_ = output;
+			_tmp83_ = g_shell_quote (_tmp82_);
+			_tmp84_ = _tmp83_;
+			_tmp85_ = g_strconcat (" -o ", _tmp84_, NULL);
 			_tmp86_ = _tmp85_;
-			_tmp87_ = g_strconcat (" -o ", _tmp86_, NULL);
-			_tmp88_ = _tmp87_;
-			_tmp89_ = g_strconcat (_tmp83_, _tmp88_, NULL);
+			_tmp87_ = g_strconcat (_tmp81_, _tmp86_, NULL);
 			_g_free0 (cmdline);
-			cmdline = _tmp89_;
-			_g_free0 (_tmp88_);
+			cmdline = _tmp87_;
 			_g_free0 (_tmp86_);
+			_g_free0 (_tmp84_);
 			_g_free0 (output);
 		}
 	}
-	_tmp90_ = context;
-	_tmp91_ = vala_code_context_get_source_files (_tmp90_);
-	source_files = _tmp91_;
+	_tmp88_ = context;
+	_tmp89_ = vala_code_context_get_source_files (_tmp88_);
+	source_files = _tmp89_;
 	{
-		ValaList* _tmp92_;
-		ValaList* _tmp93_;
-		ValaList* _file_list;
-		ValaList* _tmp94_;
-		gint _tmp95_;
-		gint _tmp96_;
-		gint _file_size;
-		gint _file_index;
-		_tmp92_ = source_files;
-		_tmp93_ = _vala_iterable_ref0 (_tmp92_);
-		_file_list = _tmp93_;
-		_tmp94_ = _file_list;
-		_tmp95_ = vala_collection_get_size ((ValaCollection*) _tmp94_);
-		_tmp96_ = _tmp95_;
-		_file_size = _tmp96_;
+		ValaList* _file_list = NULL;
+		ValaList* _tmp90_ = NULL;
+		ValaList* _tmp91_ = NULL;
+		gint _file_size = 0;
+		ValaList* _tmp92_ = NULL;
+		gint _tmp93_ = 0;
+		gint _tmp94_ = 0;
+		gint _file_index = 0;
+		_tmp90_ = source_files;
+		_tmp91_ = _vala_iterable_ref0 (_tmp90_);
+		_file_list = _tmp91_;
+		_tmp92_ = _file_list;
+		_tmp93_ = vala_collection_get_size ((ValaCollection*) _tmp92_);
+		_tmp94_ = _tmp93_;
+		_file_size = _tmp94_;
 		_file_index = -1;
 		while (TRUE) {
-			gint _tmp97_;
-			gint _tmp98_;
-			gint _tmp99_;
-			ValaList* _tmp100_;
-			gint _tmp101_;
-			gpointer _tmp102_ = NULL;
-			ValaSourceFile* file;
-			ValaSourceFile* _tmp103_;
-			ValaSourceFileType _tmp104_;
-			ValaSourceFileType _tmp105_;
-			_tmp97_ = _file_index;
-			_file_index = _tmp97_ + 1;
-			_tmp98_ = _file_index;
-			_tmp99_ = _file_size;
-			if (!(_tmp98_ < _tmp99_)) {
+			gint _tmp95_ = 0;
+			gint _tmp96_ = 0;
+			gint _tmp97_ = 0;
+			ValaSourceFile* file = NULL;
+			ValaList* _tmp98_ = NULL;
+			gint _tmp99_ = 0;
+			gpointer _tmp100_ = NULL;
+			ValaSourceFile* _tmp101_ = NULL;
+			ValaSourceFileType _tmp102_ = 0;
+			ValaSourceFileType _tmp103_ = 0;
+			_tmp95_ = _file_index;
+			_file_index = _tmp95_ + 1;
+			_tmp96_ = _file_index;
+			_tmp97_ = _file_size;
+			if (!(_tmp96_ < _tmp97_)) {
 				break;
 			}
-			_tmp100_ = _file_list;
-			_tmp101_ = _file_index;
-			_tmp102_ = vala_list_get (_tmp100_, _tmp101_);
-			file = (ValaSourceFile*) _tmp102_;
-			_tmp103_ = file;
-			_tmp104_ = vala_source_file_get_file_type (_tmp103_);
-			_tmp105_ = _tmp104_;
-			if (_tmp105_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
-				const gchar* _tmp106_;
-				ValaSourceFile* _tmp107_;
+			_tmp98_ = _file_list;
+			_tmp99_ = _file_index;
+			_tmp100_ = vala_list_get (_tmp98_, _tmp99_);
+			file = (ValaSourceFile*) _tmp100_;
+			_tmp101_ = file;
+			_tmp102_ = vala_source_file_get_file_type (_tmp101_);
+			_tmp103_ = _tmp102_;
+			if (_tmp103_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
+				const gchar* _tmp104_ = NULL;
+				ValaSourceFile* _tmp105_ = NULL;
+				gchar* _tmp106_ = NULL;
+				gchar* _tmp107_ = NULL;
 				gchar* _tmp108_ = NULL;
-				gchar* _tmp109_;
+				gchar* _tmp109_ = NULL;
 				gchar* _tmp110_ = NULL;
-				gchar* _tmp111_;
-				gchar* _tmp112_;
-				gchar* _tmp113_;
-				gchar* _tmp114_;
-				_tmp106_ = cmdline;
-				_tmp107_ = file;
-				_tmp108_ = vala_source_file_get_csource_filename (_tmp107_);
+				gchar* _tmp111_ = NULL;
+				gchar* _tmp112_ = NULL;
+				_tmp104_ = cmdline;
+				_tmp105_ = file;
+				_tmp106_ = vala_source_file_get_csource_filename (_tmp105_);
+				_tmp107_ = _tmp106_;
+				_tmp108_ = g_shell_quote (_tmp107_);
 				_tmp109_ = _tmp108_;
-				_tmp110_ = g_shell_quote (_tmp109_);
+				_tmp110_ = g_strconcat (" ", _tmp109_, NULL);
 				_tmp111_ = _tmp110_;
-				_tmp112_ = g_strconcat (" ", _tmp111_, NULL);
-				_tmp113_ = _tmp112_;
-				_tmp114_ = g_strconcat (_tmp106_, _tmp113_, NULL);
+				_tmp112_ = g_strconcat (_tmp104_, _tmp111_, NULL);
 				_g_free0 (cmdline);
-				cmdline = _tmp114_;
-				_g_free0 (_tmp113_);
+				cmdline = _tmp112_;
 				_g_free0 (_tmp111_);
 				_g_free0 (_tmp109_);
+				_g_free0 (_tmp107_);
 			}
 			_vala_source_file_unref0 (file);
 		}
 		_vala_iterable_unref0 (_file_list);
 	}
-	_tmp115_ = context;
-	_tmp116_ = vala_code_context_get_c_source_files (_tmp115_);
-	c_source_files = _tmp116_;
+	_tmp113_ = context;
+	_tmp114_ = vala_code_context_get_c_source_files (_tmp113_);
+	c_source_files = _tmp114_;
 	{
-		ValaList* _tmp117_;
-		ValaList* _tmp118_;
-		ValaList* _file_list;
-		ValaList* _tmp119_;
-		gint _tmp120_;
-		gint _tmp121_;
-		gint _file_size;
-		gint _file_index;
-		_tmp117_ = c_source_files;
-		_tmp118_ = _vala_iterable_ref0 (_tmp117_);
-		_file_list = _tmp118_;
-		_tmp119_ = _file_list;
-		_tmp120_ = vala_collection_get_size ((ValaCollection*) _tmp119_);
-		_tmp121_ = _tmp120_;
-		_file_size = _tmp121_;
+		ValaList* _file_list = NULL;
+		ValaList* _tmp115_ = NULL;
+		ValaList* _tmp116_ = NULL;
+		gint _file_size = 0;
+		ValaList* _tmp117_ = NULL;
+		gint _tmp118_ = 0;
+		gint _tmp119_ = 0;
+		gint _file_index = 0;
+		_tmp115_ = c_source_files;
+		_tmp116_ = _vala_iterable_ref0 (_tmp115_);
+		_file_list = _tmp116_;
+		_tmp117_ = _file_list;
+		_tmp118_ = vala_collection_get_size ((ValaCollection*) _tmp117_);
+		_tmp119_ = _tmp118_;
+		_file_size = _tmp119_;
 		_file_index = -1;
 		while (TRUE) {
-			gint _tmp122_;
-			gint _tmp123_;
-			gint _tmp124_;
-			ValaList* _tmp125_;
-			gint _tmp126_;
-			gpointer _tmp127_ = NULL;
-			gchar* file;
-			const gchar* _tmp128_;
-			const gchar* _tmp129_;
+			gint _tmp120_ = 0;
+			gint _tmp121_ = 0;
+			gint _tmp122_ = 0;
+			gchar* file = NULL;
+			ValaList* _tmp123_ = NULL;
+			gint _tmp124_ = 0;
+			gpointer _tmp125_ = NULL;
+			const gchar* _tmp126_ = NULL;
+			const gchar* _tmp127_ = NULL;
+			gchar* _tmp128_ = NULL;
+			gchar* _tmp129_ = NULL;
 			gchar* _tmp130_ = NULL;
-			gchar* _tmp131_;
-			gchar* _tmp132_;
-			gchar* _tmp133_;
-			gchar* _tmp134_;
-			_tmp122_ = _file_index;
-			_file_index = _tmp122_ + 1;
-			_tmp123_ = _file_index;
-			_tmp124_ = _file_size;
-			if (!(_tmp123_ < _tmp124_)) {
+			gchar* _tmp131_ = NULL;
+			gchar* _tmp132_ = NULL;
+			_tmp120_ = _file_index;
+			_file_index = _tmp120_ + 1;
+			_tmp121_ = _file_index;
+			_tmp122_ = _file_size;
+			if (!(_tmp121_ < _tmp122_)) {
 				break;
 			}
-			_tmp125_ = _file_list;
-			_tmp126_ = _file_index;
-			_tmp127_ = vala_list_get (_tmp125_, _tmp126_);
-			file = (gchar*) _tmp127_;
-			_tmp128_ = cmdline;
-			_tmp129_ = file;
-			_tmp130_ = g_shell_quote (_tmp129_);
+			_tmp123_ = _file_list;
+			_tmp124_ = _file_index;
+			_tmp125_ = vala_list_get (_tmp123_, _tmp124_);
+			file = (gchar*) _tmp125_;
+			_tmp126_ = cmdline;
+			_tmp127_ = file;
+			_tmp128_ = g_shell_quote (_tmp127_);
+			_tmp129_ = _tmp128_;
+			_tmp130_ = g_strconcat (" ", _tmp129_, NULL);
 			_tmp131_ = _tmp130_;
-			_tmp132_ = g_strconcat (" ", _tmp131_, NULL);
-			_tmp133_ = _tmp132_;
-			_tmp134_ = g_strconcat (_tmp128_, _tmp133_, NULL);
+			_tmp132_ = g_strconcat (_tmp126_, _tmp131_, NULL);
 			_g_free0 (cmdline);
-			cmdline = _tmp134_;
-			_g_free0 (_tmp133_);
+			cmdline = _tmp132_;
 			_g_free0 (_tmp131_);
+			_g_free0 (_tmp129_);
 			_g_free0 (file);
 		}
 		_vala_iterable_unref0 (_file_list);
 	}
-	_tmp135_ = cmdline;
-	_tmp136_ = pkgflags;
-	_tmp137_ = string_strip (_tmp136_);
+	_tmp133_ = cmdline;
+	_tmp134_ = pkgflags;
+	_tmp135_ = string_strip (_tmp134_);
+	_tmp136_ = _tmp135_;
+	_tmp137_ = g_strconcat (" ", _tmp136_, NULL);
 	_tmp138_ = _tmp137_;
-	_tmp139_ = g_strconcat (" ", _tmp138_, NULL);
-	_tmp140_ = _tmp139_;
-	_tmp141_ = g_strconcat (_tmp135_, _tmp140_, NULL);
+	_tmp139_ = g_strconcat (_tmp133_, _tmp138_, NULL);
 	_g_free0 (cmdline);
-	cmdline = _tmp141_;
-	_g_free0 (_tmp140_);
+	cmdline = _tmp139_;
 	_g_free0 (_tmp138_);
-	_tmp142_ = cc_options;
-	_tmp142__length1 = cc_options_length1;
+	_g_free0 (_tmp136_);
+	_tmp140_ = cc_options;
+	_tmp140__length1 = cc_options_length1;
 	{
 		gchar** cc_option_collection = NULL;
 		gint cc_option_collection_length1 = 0;
 		gint _cc_option_collection_size_ = 0;
 		gint cc_option_it = 0;
-		cc_option_collection = _tmp142_;
-		cc_option_collection_length1 = _tmp142__length1;
-		for (cc_option_it = 0; cc_option_it < _tmp142__length1; cc_option_it = cc_option_it + 1) {
-			gchar* _tmp143_;
+		cc_option_collection = _tmp140_;
+		cc_option_collection_length1 = _tmp140__length1;
+		for (cc_option_it = 0; cc_option_it < _tmp140__length1; cc_option_it = cc_option_it + 1) {
+			gchar* _tmp141_ = NULL;
 			gchar* cc_option = NULL;
-			_tmp143_ = g_strdup (cc_option_collection[cc_option_it]);
-			cc_option = _tmp143_;
+			_tmp141_ = g_strdup (cc_option_collection[cc_option_it]);
+			cc_option = _tmp141_;
 			{
-				const gchar* _tmp144_;
-				const gchar* _tmp145_;
+				const gchar* _tmp142_ = NULL;
+				const gchar* _tmp143_ = NULL;
+				gchar* _tmp144_ = NULL;
+				gchar* _tmp145_ = NULL;
 				gchar* _tmp146_ = NULL;
-				gchar* _tmp147_;
-				gchar* _tmp148_;
-				gchar* _tmp149_;
-				gchar* _tmp150_;
-				_tmp144_ = cmdline;
-				_tmp145_ = cc_option;
-				_tmp146_ = g_shell_quote (_tmp145_);
+				gchar* _tmp147_ = NULL;
+				gchar* _tmp148_ = NULL;
+				_tmp142_ = cmdline;
+				_tmp143_ = cc_option;
+				_tmp144_ = g_shell_quote (_tmp143_);
+				_tmp145_ = _tmp144_;
+				_tmp146_ = g_strconcat (" ", _tmp145_, NULL);
 				_tmp147_ = _tmp146_;
-				_tmp148_ = g_strconcat (" ", _tmp147_, NULL);
-				_tmp149_ = _tmp148_;
-				_tmp150_ = g_strconcat (_tmp144_, _tmp149_, NULL);
+				_tmp148_ = g_strconcat (_tmp142_, _tmp147_, NULL);
 				_g_free0 (cmdline);
-				cmdline = _tmp150_;
-				_g_free0 (_tmp149_);
+				cmdline = _tmp148_;
 				_g_free0 (_tmp147_);
+				_g_free0 (_tmp145_);
 				_g_free0 (cc_option);
 			}
 		}
 	}
-	_tmp151_ = context;
-	_tmp152_ = vala_code_context_get_verbose_mode (_tmp151_);
-	_tmp153_ = _tmp152_;
-	if (_tmp153_) {
-		FILE* _tmp154_;
-		const gchar* _tmp155_;
-		_tmp154_ = stdout;
-		_tmp155_ = cmdline;
-		fprintf (_tmp154_, "%s\n", _tmp155_);
+	_tmp149_ = context;
+	_tmp150_ = vala_code_context_get_verbose_mode (_tmp149_);
+	_tmp151_ = _tmp150_;
+	if (_tmp151_) {
+		FILE* _tmp152_ = NULL;
+		const gchar* _tmp153_ = NULL;
+		_tmp152_ = stdout;
+		_tmp153_ = cmdline;
+		fprintf (_tmp152_, "%s\n", _tmp153_);
 	}
 	{
 		gint exit_status = 0;
-		const gchar* _tmp156_;
-		gint _tmp157_ = 0;
-		gint _tmp158_;
-		_tmp156_ = cmdline;
-		g_spawn_command_line_sync (_tmp156_, NULL, NULL, &_tmp157_, &_inner_error_);
-		exit_status = _tmp157_;
+		const gchar* _tmp154_ = NULL;
+		gint _tmp155_ = 0;
+		gint _tmp156_ = 0;
+		_tmp154_ = cmdline;
+		g_spawn_command_line_sync (_tmp154_, NULL, NULL, &_tmp155_, &_inner_error_);
+		exit_status = _tmp155_;
 		if (_inner_error_ != NULL) {
 			if (_inner_error_->domain == G_SPAWN_ERROR) {
 				goto __catch3_g_spawn_error;
@@ -711,29 +707,29 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 			g_clear_error (&_inner_error_);
 			return;
 		}
-		_tmp158_ = exit_status;
-		if (_tmp158_ != 0) {
-			gint _tmp159_;
-			gchar* _tmp160_ = NULL;
-			gchar* _tmp161_;
-			_tmp159_ = exit_status;
-			_tmp160_ = g_strdup_printf ("cc exited with status %d", _tmp159_);
-			_tmp161_ = _tmp160_;
-			vala_report_error (NULL, _tmp161_);
-			_g_free0 (_tmp161_);
+		_tmp156_ = exit_status;
+		if (_tmp156_ != 0) {
+			gint _tmp157_ = 0;
+			gchar* _tmp158_ = NULL;
+			gchar* _tmp159_ = NULL;
+			_tmp157_ = exit_status;
+			_tmp158_ = g_strdup_printf ("cc exited with status %d", _tmp157_);
+			_tmp159_ = _tmp158_;
+			vala_report_error (NULL, _tmp159_);
+			_g_free0 (_tmp159_);
 		}
 	}
 	goto __finally3;
 	__catch3_g_spawn_error:
 	{
 		GError* e = NULL;
-		GError* _tmp162_;
-		const gchar* _tmp163_;
+		GError* _tmp160_ = NULL;
+		const gchar* _tmp161_ = NULL;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp162_ = e;
-		_tmp163_ = _tmp162_->message;
-		vala_report_error (NULL, _tmp163_);
+		_tmp160_ = e;
+		_tmp161_ = _tmp160_->message;
+		vala_report_error (NULL, _tmp161_);
 		_g_error_free0 (e);
 	}
 	__finally3:
@@ -748,63 +744,63 @@ void vala_ccode_compiler_compile (ValaCCodeCompiler* self, ValaCodeContext* cont
 		return;
 	}
 	{
-		ValaList* _tmp164_;
-		ValaList* _tmp165_;
-		ValaList* _file_list;
-		ValaList* _tmp166_;
-		gint _tmp167_;
-		gint _tmp168_;
-		gint _file_size;
-		gint _file_index;
-		_tmp164_ = source_files;
-		_tmp165_ = _vala_iterable_ref0 (_tmp164_);
-		_file_list = _tmp165_;
-		_tmp166_ = _file_list;
-		_tmp167_ = vala_collection_get_size ((ValaCollection*) _tmp166_);
-		_tmp168_ = _tmp167_;
-		_file_size = _tmp168_;
+		ValaList* _file_list = NULL;
+		ValaList* _tmp162_ = NULL;
+		ValaList* _tmp163_ = NULL;
+		gint _file_size = 0;
+		ValaList* _tmp164_ = NULL;
+		gint _tmp165_ = 0;
+		gint _tmp166_ = 0;
+		gint _file_index = 0;
+		_tmp162_ = source_files;
+		_tmp163_ = _vala_iterable_ref0 (_tmp162_);
+		_file_list = _tmp163_;
+		_tmp164_ = _file_list;
+		_tmp165_ = vala_collection_get_size ((ValaCollection*) _tmp164_);
+		_tmp166_ = _tmp165_;
+		_file_size = _tmp166_;
 		_file_index = -1;
 		while (TRUE) {
-			gint _tmp169_;
-			gint _tmp170_;
-			gint _tmp171_;
-			ValaList* _tmp172_;
-			gint _tmp173_;
-			gpointer _tmp174_ = NULL;
-			ValaSourceFile* file;
-			ValaSourceFile* _tmp175_;
-			ValaSourceFileType _tmp176_;
-			ValaSourceFileType _tmp177_;
-			_tmp169_ = _file_index;
-			_file_index = _tmp169_ + 1;
-			_tmp170_ = _file_index;
-			_tmp171_ = _file_size;
-			if (!(_tmp170_ < _tmp171_)) {
+			gint _tmp167_ = 0;
+			gint _tmp168_ = 0;
+			gint _tmp169_ = 0;
+			ValaSourceFile* file = NULL;
+			ValaList* _tmp170_ = NULL;
+			gint _tmp171_ = 0;
+			gpointer _tmp172_ = NULL;
+			ValaSourceFile* _tmp173_ = NULL;
+			ValaSourceFileType _tmp174_ = 0;
+			ValaSourceFileType _tmp175_ = 0;
+			_tmp167_ = _file_index;
+			_file_index = _tmp167_ + 1;
+			_tmp168_ = _file_index;
+			_tmp169_ = _file_size;
+			if (!(_tmp168_ < _tmp169_)) {
 				break;
 			}
-			_tmp172_ = _file_list;
-			_tmp173_ = _file_index;
-			_tmp174_ = vala_list_get (_tmp172_, _tmp173_);
-			file = (ValaSourceFile*) _tmp174_;
-			_tmp175_ = file;
-			_tmp176_ = vala_source_file_get_file_type (_tmp175_);
-			_tmp177_ = _tmp176_;
-			if (_tmp177_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
-				ValaCodeContext* _tmp178_;
-				gboolean _tmp179_;
-				gboolean _tmp180_;
-				_tmp178_ = context;
-				_tmp179_ = vala_code_context_get_save_csources (_tmp178_);
-				_tmp180_ = _tmp179_;
-				if (!_tmp180_) {
-					ValaSourceFile* _tmp181_;
-					gchar* _tmp182_ = NULL;
-					gchar* _tmp183_;
-					_tmp181_ = file;
-					_tmp182_ = vala_source_file_get_csource_filename (_tmp181_);
-					_tmp183_ = _tmp182_;
-					g_unlink (_tmp183_);
-					_g_free0 (_tmp183_);
+			_tmp170_ = _file_list;
+			_tmp171_ = _file_index;
+			_tmp172_ = vala_list_get (_tmp170_, _tmp171_);
+			file = (ValaSourceFile*) _tmp172_;
+			_tmp173_ = file;
+			_tmp174_ = vala_source_file_get_file_type (_tmp173_);
+			_tmp175_ = _tmp174_;
+			if (_tmp175_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
+				ValaCodeContext* _tmp176_ = NULL;
+				gboolean _tmp177_ = FALSE;
+				gboolean _tmp178_ = FALSE;
+				_tmp176_ = context;
+				_tmp177_ = vala_code_context_get_save_csources (_tmp176_);
+				_tmp178_ = _tmp177_;
+				if (!_tmp178_) {
+					ValaSourceFile* _tmp179_ = NULL;
+					gchar* _tmp180_ = NULL;
+					gchar* _tmp181_ = NULL;
+					_tmp179_ = file;
+					_tmp180_ = vala_source_file_get_csource_filename (_tmp179_);
+					_tmp181_ = _tmp180_;
+					g_unlink (_tmp181_);
+					_g_free0 (_tmp181_);
 				}
 			}
 			_vala_source_file_unref0 (file);

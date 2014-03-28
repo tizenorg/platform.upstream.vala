@@ -449,9 +449,9 @@ static gint vala_typesymbol_real_get_type_parameter_index (ValaTypeSymbol* self,
 
 ValaTypeSymbol* vala_typesymbol_construct (GType object_type, const gchar* name, ValaSourceReference* source_reference, ValaComment* comment) {
 	ValaTypeSymbol* self = NULL;
-	const gchar* _tmp0_;
-	ValaSourceReference* _tmp1_;
-	ValaComment* _tmp2_;
+	const gchar* _tmp0_ = NULL;
+	ValaSourceReference* _tmp1_ = NULL;
+	ValaComment* _tmp2_ = NULL;
 	_tmp0_ = name;
 	_tmp1_ = source_reference;
 	_tmp2_ = comment;
@@ -487,7 +487,7 @@ gboolean vala_typesymbol_is_reference_type (ValaTypeSymbol* self) {
  */
 static gboolean vala_typesymbol_real_is_subtype_of (ValaTypeSymbol* self, ValaTypeSymbol* t) {
 	gboolean result = FALSE;
-	ValaTypeSymbol* _tmp0_;
+	ValaTypeSymbol* _tmp0_ = NULL;
 	g_return_val_if_fail (t != NULL, FALSE);
 	_tmp0_ = t;
 	result = self == _tmp0_;

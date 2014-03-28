@@ -148,9 +148,9 @@ ValaCCodeStatement* vala_ccode_statement_construct (GType object_type);
 
 static void vala_ccode_empty_statement_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeEmptyStatement * self;
-	ValaCCodeWriter* _tmp0_;
-	ValaCCodeWriter* _tmp1_;
-	ValaCCodeWriter* _tmp2_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	ValaCCodeWriter* _tmp1_ = NULL;
+	ValaCCodeWriter* _tmp2_ = NULL;
 	self = (ValaCCodeEmptyStatement*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;

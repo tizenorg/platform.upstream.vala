@@ -141,7 +141,7 @@ public class Vala.GIRWriter : CodeVisitor {
 	 * @param context  a code context
 	 * @param filename a relative or absolute filename
 	 */
-	public void write_file (CodeContext context, string directory, string gir_namespace, string gir_version, string package) {
+	public void write_file (CodeContext context, string directory, string gir_filename, string gir_namespace, string gir_version, string package) {
 		this.context = context;
 		this.directory = directory;
 		this.gir_namespace = gir_namespace;
@@ -159,7 +159,7 @@ public class Vala.GIRWriter : CodeVisitor {
 		indent--;
 		buffer.append_printf ("</repository>\n");
 
-		string filename = "%s%c%s-%s.gir".printf (directory, Path.DIR_SEPARATOR, gir_namespace, gir_version);
+		string filename = "%s%c%s".printf (directory, Path.DIR_SEPARATOR, gir_filename);
 		stream = FileStream.open (filename, "w");
 		if (stream == null) {
 			Report.error (null, "unable to open `%s' for writing".printf (filename));
@@ -814,11 +814,14 @@ public class Vala.GIRWriter : CodeVisitor {
 			var int_type = new IntegerType (CodeContext.get ().root.scope.lookup ("int") as Struct);
 			write_param_or_return (int_type, true, ref index, has_array_length, "%s_length1".printf (name), null, direction);
 		} else if (type is DelegateType) {
-			var data_type = new PointerType (new VoidType ());
-			write_param_or_return (data_type, true, ref index, false, "%s_target".printf (name), null, direction);
-			if (type.value_owned) {
-				var notify_type = new DelegateType (CodeContext.get ().root.scope.lookup ("GLib").scope.lookup ("DestroyNotify") as Delegate);
-				write_param_or_return (notify_type, true, ref index, false, "%s_target_destroy_notify".printf (name), null, direction);
+			var deleg_type = (DelegateType) type;
+			if (deleg_type.delegate_symbol.has_target) {
+				var data_type = new PointerType (new VoidType ());
+				write_param_or_return (data_type, true, ref index, false, "%s_target".printf (name), null, direction);
+				if (deleg_type.is_disposable ()) {
+					var notify_type = new DelegateType (CodeContext.get ().root.scope.lookup ("GLib").scope.lookup ("DestroyNotify") as Delegate);
+					write_param_or_return (notify_type, true, ref index, false, "%s_target_destroy_notify".printf (name), null, direction);
+				}
 			}
 		}
 	}
@@ -828,7 +831,8 @@ public class Vala.GIRWriter : CodeVisitor {
 			index++;
 		} else if (type is DelegateType) {
 			index++;
-			if (type.value_owned) {
+			var deleg_type = (DelegateType) type;
+			if (deleg_type.is_disposable ()) {
 				index++;
 			}
 		}
@@ -1191,7 +1195,15 @@ public class Vala.GIRWriter : CodeVisitor {
 		DelegateType delegate_type = type as DelegateType;
 
 		if ((type.value_owned && delegate_type == null) || (constructor && !type.data_type.is_subtype_of (ginitiallyunowned_type))) {
-			buffer.append_printf (" transfer-ownership=\"full\"");
+			var any_owned = false;
+			foreach (var generic_arg in type.get_type_arguments ()) {
+				any_owned |= generic_arg.value_owned;
+			}
+			if (type.has_type_arguments () && !any_owned) {
+				buffer.append_printf (" transfer-ownership=\"container\"");
+			} else {
+				buffer.append_printf (" transfer-ownership=\"full\"");
+			}
 		} else {
 			buffer.append_printf (" transfer-ownership=\"none\"");
 		}
@@ -1206,13 +1218,15 @@ public class Vala.GIRWriter : CodeVisitor {
 			int closure_index = is_parameter ?
 				index + 1 : (type.value_owned ? index - 1 : index);
 			buffer.append_printf (" closure=\"%i\"", closure_index);
-			if (type.value_owned) {
-				buffer.append_printf (" destroy=\"%i\"", closure_index + 1);
-			}
-
 			if (delegate_type.is_called_once) {
 				buffer.append (" scope=\"async\"");
+			} else if (type.value_owned) {
+				buffer.append_printf (" scope=\"notified\" destroy=\"%i\"", closure_index + 1);
+			} else {
+				buffer.append (" scope=\"call\"");
 			}
+		} else if (delegate_type != null) {
+			buffer.append (" scope=\"call\"");
 		}
 
 		buffer.append_printf (">\n");

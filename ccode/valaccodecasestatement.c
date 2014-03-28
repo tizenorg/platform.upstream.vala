@@ -170,7 +170,7 @@ static void vala_ccode_case_statement_finalize (ValaCCodeNode* obj);
 
 ValaCCodeCaseStatement* vala_ccode_case_statement_construct (GType object_type, ValaCCodeExpression* expression) {
 	ValaCCodeCaseStatement* self = NULL;
-	ValaCCodeExpression* _tmp0_;
+	ValaCCodeExpression* _tmp0_ = NULL;
 	g_return_val_if_fail (expression != NULL, NULL);
 	self = (ValaCCodeCaseStatement*) vala_ccode_statement_construct (object_type);
 	_tmp0_ = expression;
@@ -186,14 +186,14 @@ ValaCCodeCaseStatement* vala_ccode_case_statement_new (ValaCCodeExpression* expr
 
 static void vala_ccode_case_statement_real_write (ValaCCodeNode* base, ValaCCodeWriter* writer) {
 	ValaCCodeCaseStatement * self;
-	ValaCCodeWriter* _tmp0_;
-	ValaCCodeLineDirective* _tmp1_;
-	ValaCCodeLineDirective* _tmp2_;
-	ValaCCodeWriter* _tmp3_;
-	ValaCCodeExpression* _tmp4_;
-	ValaCCodeWriter* _tmp5_;
-	ValaCCodeWriter* _tmp6_;
-	ValaCCodeWriter* _tmp7_;
+	ValaCCodeWriter* _tmp0_ = NULL;
+	ValaCCodeLineDirective* _tmp1_ = NULL;
+	ValaCCodeLineDirective* _tmp2_ = NULL;
+	ValaCCodeWriter* _tmp3_ = NULL;
+	ValaCCodeExpression* _tmp4_ = NULL;
+	ValaCCodeWriter* _tmp5_ = NULL;
+	ValaCCodeWriter* _tmp6_ = NULL;
+	ValaCCodeWriter* _tmp7_ = NULL;
 	self = (ValaCCodeCaseStatement*) base;
 	g_return_if_fail (writer != NULL);
 	_tmp0_ = writer;
@@ -214,7 +214,7 @@ static void vala_ccode_case_statement_real_write (ValaCCodeNode* base, ValaCCode
 
 ValaCCodeExpression* vala_ccode_case_statement_get_expression (ValaCCodeCaseStatement* self) {
 	ValaCCodeExpression* result;
-	ValaCCodeExpression* _tmp0_;
+	ValaCCodeExpression* _tmp0_ = NULL;
 	g_return_val_if_fail (self != NULL, NULL);
 	_tmp0_ = self->priv->_expression;
 	result = _tmp0_;
@@ -228,8 +228,8 @@ static gpointer _vala_ccode_node_ref0 (gpointer self) {
 
 
 void vala_ccode_case_statement_set_expression (ValaCCodeCaseStatement* self, ValaCCodeExpression* value) {
-	ValaCCodeExpression* _tmp0_;
-	ValaCCodeExpression* _tmp1_;
+	ValaCCodeExpression* _tmp0_ = NULL;
+	ValaCCodeExpression* _tmp1_ = NULL;
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	_tmp1_ = _vala_ccode_node_ref0 (_tmp0_);
