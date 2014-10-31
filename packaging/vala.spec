@@ -3,23 +3,23 @@
 %define         vala_libversion 0_24
 %define         vala_priority 24
 
-
 Name:           vala
 Version:        0.24.0
 Release:        0
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
-Group:          Development/Gnome
+Group:          Platform Development/Utilities
 Url:            http://live.gnome.org/Vala
 Source0:        http://download.gnome.org/sources/vala/%{baseline}/%{name}-%{version}.tar.xz
+Source1001:     %{name}.manifest
+
 BuildRequires:  bison
 BuildRequires:  fdupes
 BuildRequires:  flex
 BuildRequires:  glib2-devel >= 2.18.0
+BuildRequires:  xz
 Requires(post): update-alternatives
 Requires(postun): update-alternatives
-BuildRequires:  xz
-
 
 %description
 Vala is a new programming language that aims to bring modern
@@ -27,10 +27,9 @@ programming language features to GNOME developers without imposing any
 additional runtime requirements and without using a different ABI
 compared to applications and libraries written in C.
 
-
 %package -n libvala
 Summary:        Programming language for GNOME
-Group:          System/Libraries
+Group:          Platform Development/Utilities
 
 %description -n libvala
 Vala is a new programming language that aims to bring modern
@@ -38,10 +37,9 @@ programming language features to GNOME developers without imposing any
 additional runtime requirements and without using a different ABI
 compared to applications and libraries written in C.
 
-
 %package -n libvala-devel
 Summary:        Programming language for GNOME
-Group:          Development/Gnome
+Group:          Platform Development/Utilities
 Requires:       libvala = %{version}
 
 %description -n libvala-devel
@@ -52,10 +50,11 @@ compared to applications and libraries written in C.
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %build
 %configure --with-pic --enable-vapigen
-make %{?jobs:-j%jobs}
+%__make %{?_smp_mflags}
 
 %install
 %make_install
@@ -89,6 +88,7 @@ fi
 
 %files
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %license COPYING
 %ghost %{_bindir}/vala
 %ghost %{_bindir}/valac
@@ -117,11 +117,13 @@ fi
 
 %files -n libvala
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_libdir}/libvala-%{vala_version}.so.*
 
 %files -n libvala-devel
 %doc AUTHORS ChangeLog NEWS README
 %defattr(-,root,root,-)
+%manifest %{name}.manifest
 %{_includedir}/vala-%{vala_version}/
 %{_libdir}/libvala-%{vala_version}.so
 %{_libdir}/pkgconfig/libvala-%{vala_version}.pc
