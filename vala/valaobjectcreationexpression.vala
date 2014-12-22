@@ -396,6 +396,22 @@ public class Vala.ObjectCreationExpression : Expression {
 					error = true;
 					Report.error (source_reference, "Invalid type for argument 1");
 				}
+
+				var format_literal = ex as StringLiteral;
+				if (format_literal != null) {
+					var format = format_literal.eval ();
+					if (!context.analyzer.check_print_format (format, arg_it, source_reference)) {
+						error = true;
+						return false;
+					}
+				}
+
+				arg_it = get_argument_list ().iterator ();
+				arg_it.next ();
+				if (!context.analyzer.check_variadic_arguments (arg_it, 1, source_reference)) {
+					error = true;
+					return false;
+				}
 			}
 		}
 
@@ -462,6 +478,10 @@ public class Vala.ObjectCreationExpression : Expression {
 	public override void get_used_variables (Collection<Variable> collection) {
 		foreach (Expression arg in argument_list) {
 			arg.get_used_variables (collection);
+		}
+
+		foreach (MemberInitializer init in object_initializer) {
+			init.get_used_variables (collection);
 		}
 	}
 }

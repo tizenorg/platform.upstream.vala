@@ -657,15 +657,15 @@ void vala_throw_statement_set_error_expression (ValaThrowStatement* self, ValaEx
 
 static void vala_throw_statement_class_init (ValaThrowStatementClass * klass) {
 	vala_throw_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_throw_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_throw_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaThrowStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_throw_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_throw_statement_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_throw_statement_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_throw_statement_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_throw_statement_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_throw_statement_real_get_defined_variables;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_throw_statement_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_throw_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_throw_statement_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_throw_statement_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->check = vala_throw_statement_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_throw_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_throw_statement_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_throw_statement_real_get_used_variables;
 }
 
 

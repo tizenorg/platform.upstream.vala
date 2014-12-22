@@ -1873,11 +1873,11 @@ void vala_do_statement_set_condition (ValaDoStatement* self, ValaExpression* val
 
 static void vala_do_statement_class_init (ValaDoStatementClass * klass) {
 	vala_do_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_do_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_do_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDoStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_do_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_do_statement_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_do_statement_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_do_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_do_statement_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_do_statement_real_check;
 }
 
 

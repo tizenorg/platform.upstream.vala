@@ -521,14 +521,14 @@ static void vala_tuple_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen
 
 static void vala_tuple_class_init (ValaTupleClass * klass) {
 	vala_tuple_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_tuple_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_tuple_finalize;
 	g_type_class_add_private (klass, sizeof (ValaTuplePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_tuple_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_tuple_real_accept;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_tuple_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_tuple_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_tuple_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_tuple_real_emit;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_tuple_real_accept_children;
+	((ValaCodeNodeClass *) klass)->accept = vala_tuple_real_accept;
+	((ValaExpressionClass *) klass)->is_pure = vala_tuple_real_is_pure;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_tuple_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->check = vala_tuple_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_tuple_real_emit;
 }
 
 

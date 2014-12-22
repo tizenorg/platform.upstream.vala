@@ -1463,13 +1463,13 @@ void vala_parameter_set_base_parameter (ValaParameter* self, ValaParameter* valu
 
 static void vala_parameter_class_init (ValaParameterClass * klass) {
 	vala_parameter_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_parameter_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_parameter_finalize;
 	g_type_class_add_private (klass, sizeof (ValaParameterPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_parameter_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_parameter_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_parameter_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_parameter_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_parameter_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_parameter_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_parameter_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_parameter_real_replace_type;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_parameter_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->check = vala_parameter_real_check;
 }
 
 

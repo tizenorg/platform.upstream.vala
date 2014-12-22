@@ -279,6 +279,7 @@ namespace GLib {
 	public class Application : GLib.Object, GLib.ActionGroup, GLib.ActionMap {
 		[CCode (has_construct_function = false)]
 		public Application (string? application_id, GLib.ApplicationFlags flags);
+		public void add_main_option (string long_name, char short_name, GLib.OptionFlags flags, GLib.OptionArg arg, string description, string? arg_description);
 		public void add_main_option_entries ([CCode (array_length = false, array_null_terminated = true)] GLib.OptionEntry[] entries);
 		public void add_option_group (GLib.OptionGroup group);
 		[NoWrapper]
@@ -299,6 +300,7 @@ namespace GLib {
 		public uint get_inactivity_timeout ();
 		public bool get_is_registered ();
 		public bool get_is_remote ();
+		public unowned string? get_resource_base_path ();
 		public void hold ();
 		public static bool id_is_valid (string application_id);
 		[NoWrapper]
@@ -319,6 +321,7 @@ namespace GLib {
 		public void set_default ();
 		public void set_flags (GLib.ApplicationFlags flags);
 		public void set_inactivity_timeout (uint inactivity_timeout);
+		public void set_resource_base_path (string? resource_path);
 		public void unmark_busy ();
 		public void withdraw_notification (string id);
 		public GLib.ActionGroup action_group { set; }
@@ -327,6 +330,7 @@ namespace GLib {
 		public uint inactivity_timeout { get; set; }
 		public bool is_registered { get; }
 		public bool is_remote { get; }
+		public string resource_base_path { get; set; }
 		[HasEmitter]
 		public virtual signal void activate ();
 		public virtual signal int command_line (GLib.ApplicationCommandLine command_line);
@@ -1489,7 +1493,7 @@ namespace GLib {
 		public virtual void get_item_attributes (int item_index, [CCode (type = "GHashTable**")] out GLib.HashTable<string,GLib.Variant>? attributes);
 		public virtual GLib.MenuModel get_item_link (int item_index, string link);
 		[NoWrapper]
-		public virtual void get_item_links (int item_index, [CCode (type = "GHashTable**")] out GLib.HashTable<string,GLib.MenuModel>? links);
+		public virtual void get_item_links (int item_index, out GLib.HashTable<string,GLib.MenuModel> links);
 		public virtual int get_n_items ();
 		public virtual bool is_mutable ();
 		public virtual GLib.MenuAttributeIter iterate_item_attributes (int item_index);
@@ -1571,6 +1575,7 @@ namespace GLib {
 		public void set_default_action (string detailed_action);
 		public void set_default_action_and_target_value (string action, GLib.Variant? target);
 		public void set_icon (GLib.Icon icon);
+		public void set_priority (GLib.NotificationPriority priority);
 		public void set_title (string title);
 		public void set_urgent (bool urgent);
 	}
@@ -1822,7 +1827,7 @@ namespace GLib {
 		public SettingsSchemaSource.from_directory (string directory, GLib.SettingsSchemaSource? parent, bool trusted) throws GLib.Error;
 		[CCode (cheader_filename = "gio/gio.h")]
 		public static unowned GLib.SettingsSchemaSource get_default ();
-		public void list_schemas (bool recursive, out string non_relocatable, out string relocatable);
+		public void list_schemas (bool recursive, [CCode (array_length = false, array_null_terminated = true)] out string[] non_relocatable, [CCode (array_length = false, array_null_terminated = true)] out string[] relocatable);
 		public GLib.SettingsSchema? lookup (string schema_id, bool recursive);
 		public GLib.SettingsSchemaSource @ref ();
 		public void unref ();
@@ -2782,9 +2787,9 @@ namespace GLib {
 		public abstract bool can_poll ();
 		public abstract GLib.PollableSource create_source (GLib.Cancellable? cancellable = null);
 		public abstract bool is_readable ();
-		public ssize_t read_nonblocking ([CCode (array_length_cname = "count", array_length_pos = 1.5, array_length_type = "gsize", type = "void*")] uint8[] buffer, GLib.Cancellable? cancellable = null) throws GLib.Error;
+		public ssize_t read_nonblocking ([CCode (array_length_cname = "count", array_length_pos = 1.5, array_length_type = "gsize")] uint8[] buffer, GLib.Cancellable? cancellable = null) throws GLib.Error;
 		[CCode (vfunc_name = "read_nonblocking")]
-		public abstract ssize_t read_nonblocking_fn ([CCode (array_length_cname = "count", array_length_pos = 1.1, array_length_type = "gsize", type = "void*")] uint8[] buffer) throws GLib.Error;
+		public abstract ssize_t read_nonblocking_fn ([CCode (array_length_cname = "count", array_length_pos = 1.1, array_length_type = "gsize")] uint8[] buffer) throws GLib.Error;
 	}
 	[CCode (cheader_filename = "gio/gio.h", type_cname = "GPollableOutputStreamInterface", type_id = "g_pollable_output_stream_get_type ()")]
 	public interface PollableOutputStream : GLib.OutputStream {
@@ -2893,13 +2898,19 @@ namespace GLib {
 		public virtual signal void changed ();
 		public virtual signal void removed ();
 	}
-	[CCode (cheader_filename = "gio/gio.h", has_type_id = false)]
+	[CCode (cheader_filename = "gio/gio.h")]
 	public struct ActionEntry {
 		public weak string name;
-		public GLib.SimpleActionActivateCallback activate;
+		[Deprecated (replacement = "activate_callback", since = "vala-0.26")]
+		public GLib.SimpleActionActivateCallback? activate;
 		public weak string parameter_type;
 		public weak string state;
-		public GLib.SimpleActionChangeStateCallback change_state;
+		[Deprecated (replacement = "change_state_callback", since = "vala-0.26")]
+		public GLib.SimpleActionChangeStateCallback? change_state;
+		[CCode (cname = "activate")]
+		public GLib.SimpleActionActivateFunc activate_callback;
+		[CCode (cname = "change_state")]
+		public GLib.SimpleActionChangeStateCallback? change_state_callback;
 	}
 	[CCode (cheader_filename = "gio/gio.h", has_type_id = false)]
 	public struct DBusErrorEntry {
@@ -3017,6 +3028,7 @@ namespace GLib {
 		INVALID,
 		LINUX_UCRED,
 		FREEBSD_CMSGCRED,
+		NETBSD_UNPCBID,
 		OPENBSD_SOCKPEERCRED,
 		SOLARIS_UCRED
 	}
@@ -3287,6 +3299,13 @@ namespace GLib {
 		NONE,
 		FORCE
 	}
+	[CCode (cheader_filename = "gio/gio.h", cprefix = "G_NOTIFICATION_PRIORITY_", type_id = "g_notification_priority_get_type ()")]
+	public enum NotificationPriority {
+		NORMAL,
+		LOW,
+		HIGH,
+		URGENT
+	}
 	[CCode (cheader_filename = "gio/gio.h", cprefix = "G_OUTPUT_STREAM_SPLICE_", type_id = "g_output_stream_splice_flags_get_type ()")]
 	[Flags]
 	public enum OutputStreamSpliceFlags {
@@ -3497,7 +3516,11 @@ namespace GLib {
 		INVALID_FILE_CONTENT,
 		SELINUX_SECURITY_CONTEXT_UNKNOWN,
 		ADT_AUDIT_DATA_UNKNOWN,
-		OBJECT_PATH_IN_USE;
+		OBJECT_PATH_IN_USE,
+		UNKNOWN_OBJECT,
+		UNKNOWN_INTERFACE,
+		UNKNOWN_PROPERTY,
+		PROPERTY_READ_ONLY;
 		[CCode (cheader_filename = "gio/gio.h")]
 		public static string encode_gerror (GLib.Error error);
 		[CCode (cheader_filename = "gio/gio.h")]
@@ -3650,9 +3673,15 @@ namespace GLib {
 	[CCode (cheader_filename = "gio/gio.h", instance_pos = 2.9)]
 	public delegate bool SettingsGetMapping (GLib.Variant value, out void* result);
 	[CCode (cheader_filename = "gio/gio.h")]
+	[Deprecated (replacement = "SimplActionActivateFunc", since = "vala-0.26")]
 	public delegate void SimpleActionActivateCallback (GLib.SimpleAction action, GLib.Variant? parameter);
+	[CCode (cheader_filename = "gio/gio.h", has_target = false)]
+	public delegate void SimpleActionActivateFunc (GLib.SimpleAction action, GLib.Variant? parameter, void* user_data);
 	[CCode (cheader_filename = "gio/gio.h")]
+	[Deprecated (replacement = "SimplActionChangeStateFunc", since = "vala-0.26")]
 	public delegate void SimpleActionChangeStateCallback (GLib.SimpleAction action, GLib.Variant value);
+	[CCode (cheader_filename = "gio/gio.h", has_target = false)]
+	public delegate void SimpleActionChangeStateFunc (GLib.SimpleAction action, GLib.Variant value, void* user_data);
 	[CCode (cheader_filename = "gio/gio.h", has_target = false)]
 	public delegate void SimpleAsyncThreadFunc (GLib.SimpleAsyncResult res, GLib.Object object, GLib.Cancellable? cancellable = null);
 	[CCode (cheader_filename = "gio/gio.h", instance_pos = 2.9)]
@@ -4103,7 +4132,7 @@ namespace GLib {
 	[CCode (cheader_filename = "gio/gio.h")]
 	public static void networking_init ();
 	[CCode (cheader_filename = "gio/gio.h")]
-	public static ssize_t pollable_stream_read (GLib.InputStream stream, [CCode (array_length_cname = "count", array_length_pos = 2.5, array_length_type = "gsize", type = "void*")] uint8[] buffer, bool blocking, GLib.Cancellable? cancellable = null) throws GLib.Error;
+	public static ssize_t pollable_stream_read (GLib.InputStream stream, [CCode (array_length_cname = "count", array_length_pos = 2.5, array_length_type = "gsize")] uint8[] buffer, bool blocking, GLib.Cancellable? cancellable = null) throws GLib.Error;
 	[CCode (cheader_filename = "gio/gio.h")]
 	public static ssize_t pollable_stream_write (GLib.OutputStream stream, [CCode (array_length_cname = "count", array_length_pos = 2.5, array_length_type = "gsize")] uint8[] buffer, bool blocking, GLib.Cancellable? cancellable = null) throws GLib.Error;
 	[CCode (cheader_filename = "gio/gio.h")]

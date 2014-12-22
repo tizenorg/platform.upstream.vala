@@ -292,10 +292,10 @@ void vala_ccode_once_section_set_define (ValaCCodeOnceSection* self, const gchar
 
 static void vala_ccode_once_section_class_init (ValaCCodeOnceSectionClass * klass) {
 	vala_ccode_once_section_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_once_section_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_once_section_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeOnceSectionPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_once_section_real_write;
-	VALA_CCODE_NODE_CLASS (klass)->write_declaration = vala_ccode_once_section_real_write_declaration;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_once_section_real_write;
+	((ValaCCodeNodeClass *) klass)->write_declaration = vala_ccode_once_section_real_write_declaration;
 }
 
 

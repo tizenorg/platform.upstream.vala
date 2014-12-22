@@ -3667,15 +3667,15 @@ ValaCCodeDelegateModule* vala_ccode_delegate_module_new (void) {
 
 static void vala_ccode_delegate_module_class_init (ValaCCodeDelegateModuleClass * klass) {
 	vala_ccode_delegate_module_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->generate_delegate_declaration = vala_ccode_delegate_module_real_generate_delegate_declaration;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_delegate = vala_ccode_delegate_module_real_visit_delegate;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_delegate_target_cname = vala_ccode_delegate_module_real_get_delegate_target_cname;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_delegate_target_cexpression = vala_ccode_delegate_module_real_get_delegate_target_cexpression;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_delegate_target_cvalue = vala_ccode_delegate_module_real_get_delegate_target_cvalue;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_delegate_target_destroy_notify_cvalue = vala_ccode_delegate_module_real_get_delegate_target_destroy_notify_cvalue;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_delegate_target_destroy_notify_cname = vala_ccode_delegate_module_real_get_delegate_target_destroy_notify_cname;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_implicit_cast_expression = vala_ccode_delegate_module_real_get_implicit_cast_expression;
-	VALA_CCODE_METHOD_MODULE_CLASS (klass)->generate_parameter = vala_ccode_delegate_module_real_generate_parameter;
+	((ValaCCodeBaseModuleClass *) klass)->generate_delegate_declaration = vala_ccode_delegate_module_real_generate_delegate_declaration;
+	((ValaCodeVisitorClass *) klass)->visit_delegate = vala_ccode_delegate_module_real_visit_delegate;
+	((ValaCCodeBaseModuleClass *) klass)->get_delegate_target_cname = vala_ccode_delegate_module_real_get_delegate_target_cname;
+	((ValaCCodeBaseModuleClass *) klass)->get_delegate_target_cexpression = vala_ccode_delegate_module_real_get_delegate_target_cexpression;
+	((ValaCCodeBaseModuleClass *) klass)->get_delegate_target_cvalue = vala_ccode_delegate_module_real_get_delegate_target_cvalue;
+	((ValaCCodeBaseModuleClass *) klass)->get_delegate_target_destroy_notify_cvalue = vala_ccode_delegate_module_real_get_delegate_target_destroy_notify_cvalue;
+	((ValaCCodeBaseModuleClass *) klass)->get_delegate_target_destroy_notify_cname = vala_ccode_delegate_module_real_get_delegate_target_destroy_notify_cname;
+	((ValaCCodeBaseModuleClass *) klass)->get_implicit_cast_expression = vala_ccode_delegate_module_real_get_implicit_cast_expression;
+	((ValaCCodeMethodModuleClass *) klass)->generate_parameter = vala_ccode_delegate_module_real_generate_parameter;
 }
 
 

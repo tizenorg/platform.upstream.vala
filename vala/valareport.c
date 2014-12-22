@@ -696,10 +696,10 @@ void vala_report_set_enable_warnings (ValaReport* self, gboolean value) {
 static void vala_report_class_init (ValaReportClass * klass) {
 	vala_report_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (ValaReportPrivate));
-	VALA_REPORT_CLASS (klass)->note = vala_report_real_note;
-	VALA_REPORT_CLASS (klass)->depr = vala_report_real_depr;
-	VALA_REPORT_CLASS (klass)->warn = vala_report_real_warn;
-	VALA_REPORT_CLASS (klass)->err = vala_report_real_err;
+	((ValaReportClass *) klass)->note = vala_report_real_note;
+	((ValaReportClass *) klass)->depr = vala_report_real_depr;
+	((ValaReportClass *) klass)->warn = vala_report_real_warn;
+	((ValaReportClass *) klass)->err = vala_report_real_err;
 	G_OBJECT_CLASS (klass)->get_property = _vala_vala_report_get_property;
 	G_OBJECT_CLASS (klass)->set_property = _vala_vala_report_set_property;
 	G_OBJECT_CLASS (klass)->finalize = vala_report_finalize;

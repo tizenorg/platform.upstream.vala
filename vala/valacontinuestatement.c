@@ -280,8 +280,8 @@ static void vala_continue_statement_real_emit (ValaCodeNode* base, ValaCodeGener
 
 static void vala_continue_statement_class_init (ValaContinueStatementClass * klass) {
 	vala_continue_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_continue_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_continue_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_continue_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->emit = vala_continue_statement_real_emit;
 }
 
 

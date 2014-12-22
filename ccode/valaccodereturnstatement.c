@@ -246,9 +246,9 @@ void vala_ccode_return_statement_set_return_expression (ValaCCodeReturnStatement
 
 static void vala_ccode_return_statement_class_init (ValaCCodeReturnStatementClass * klass) {
 	vala_ccode_return_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_return_statement_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_return_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeReturnStatementPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_return_statement_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_return_statement_real_write;
 }
 
 

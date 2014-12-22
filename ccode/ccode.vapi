@@ -96,6 +96,15 @@ namespace Vala {
 		public virtual void write_initialization (Vala.CCodeWriter writer);
 	}
 	[CCode (cheader_filename = "valaccode.h")]
+	public class CCodeDeclaratorSuffix {
+		public bool array;
+		public Vala.CCodeExpression? array_length;
+		public bool deprecated;
+		public CCodeDeclaratorSuffix ();
+		public CCodeDeclaratorSuffix.with_array (Vala.CCodeExpression? array_length = null);
+		public void write (Vala.CCodeWriter writer);
+	}
+	[CCode (cheader_filename = "valaccode.h")]
 	public class CCodeDoStatement : Vala.CCodeStatement {
 		public CCodeDoStatement (Vala.CCodeStatement stmt, Vala.CCodeExpression cond);
 		public override void write (Vala.CCodeWriter writer);
@@ -355,7 +364,7 @@ namespace Vala {
 	public class CCodeStruct : Vala.CCodeNode {
 		public CCodeStruct (string name);
 		public void add_declaration (Vala.CCodeDeclaration decl);
-		public void add_field (string type_name, string name, string? declarator_suffix = null);
+		public void add_field (string type_name, string name, Vala.CCodeDeclaratorSuffix? declarator_suffix = null);
 		public override void write (Vala.CCodeWriter writer);
 		public bool deprecated { get; set; }
 		public bool is_empty { get; }
@@ -386,12 +395,12 @@ namespace Vala {
 	}
 	[CCode (cheader_filename = "valaccode.h")]
 	public class CCodeVariableDeclarator : Vala.CCodeDeclarator {
-		public CCodeVariableDeclarator (string name, Vala.CCodeExpression? initializer = null, string? declarator_suffix = null);
+		public CCodeVariableDeclarator (string name, Vala.CCodeExpression? initializer = null, Vala.CCodeDeclaratorSuffix? declarator_suffix = null);
 		public override void write (Vala.CCodeWriter writer);
 		public override void write_declaration (Vala.CCodeWriter writer);
 		public override void write_initialization (Vala.CCodeWriter writer);
-		public CCodeVariableDeclarator.zero (string name, Vala.CCodeExpression? initializer, string? declarator_suffix = null);
-		public string? declarator_suffix { get; set; }
+		public CCodeVariableDeclarator.zero (string name, Vala.CCodeExpression? initializer, Vala.CCodeDeclaratorSuffix? declarator_suffix = null);
+		public Vala.CCodeDeclaratorSuffix? declarator_suffix { get; set; }
 		public bool init0 { get; set; }
 		public Vala.CCodeExpression? initializer { get; set; }
 		public string name { get; set; }
@@ -463,7 +472,8 @@ namespace Vala {
 		INLINE,
 		VOLATILE,
 		DEPRECATED,
-		THREAD_LOCAL
+		THREAD_LOCAL,
+		INTERNAL
 	}
 	[CCode (cheader_filename = "valaccode.h")]
 	public enum CCodeUnaryOperator {

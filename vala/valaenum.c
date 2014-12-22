@@ -1397,14 +1397,14 @@ gboolean vala_enum_get_is_flags (ValaEnum* self) {
 
 static void vala_enum_class_init (ValaEnumClass * klass) {
 	vala_enum_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_enum_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_enum_finalize;
 	g_type_class_add_private (klass, sizeof (ValaEnumPrivate));
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_enum_real_add_method;
-	VALA_SYMBOL_CLASS (klass)->add_constant = vala_enum_real_add_constant;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_enum_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_enum_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_enum_real_is_reference_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_enum_real_check;
+	((ValaSymbolClass *) klass)->add_method = vala_enum_real_add_method;
+	((ValaSymbolClass *) klass)->add_constant = vala_enum_real_add_constant;
+	((ValaCodeNodeClass *) klass)->accept = vala_enum_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_enum_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_enum_real_is_reference_type;
+	((ValaCodeNodeClass *) klass)->check = vala_enum_real_check;
 }
 
 

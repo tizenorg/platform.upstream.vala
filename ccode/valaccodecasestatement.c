@@ -240,9 +240,9 @@ void vala_ccode_case_statement_set_expression (ValaCCodeCaseStatement* self, Val
 
 static void vala_ccode_case_statement_class_init (ValaCCodeCaseStatementClass * klass) {
 	vala_ccode_case_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_case_statement_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_case_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeCaseStatementPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_case_statement_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_case_statement_real_write;
 }
 
 

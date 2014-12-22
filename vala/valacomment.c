@@ -283,7 +283,7 @@ void vala_value_take_comment (GValue* value, gpointer v_object) {
 
 static void vala_comment_class_init (ValaCommentClass * klass) {
 	vala_comment_parent_class = g_type_class_peek_parent (klass);
-	VALA_COMMENT_CLASS (klass)->finalize = vala_comment_finalize;
+	((ValaCommentClass *) klass)->finalize = vala_comment_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCommentPrivate));
 }
 
@@ -297,6 +297,7 @@ static void vala_comment_instance_init (ValaComment * self) {
 static void vala_comment_finalize (ValaComment* obj) {
 	ValaComment * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_COMMENT, ValaComment);
+	g_signal_handlers_destroy (self);
 	_g_free0 (self->priv->_content);
 	_vala_source_reference_unref0 (self->priv->_source_reference);
 }

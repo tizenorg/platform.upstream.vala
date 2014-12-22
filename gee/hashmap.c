@@ -1244,14 +1244,14 @@ static gint vala_hash_map_key_set_real_get_size (ValaCollection* base) {
 
 static void vala_hash_map_key_set_class_init (ValaHashMapKeySetClass * klass) {
 	vala_hash_map_key_set_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERABLE_CLASS (klass)->finalize = vala_hash_map_key_set_finalize;
+	((ValaIterableClass *) klass)->finalize = vala_hash_map_key_set_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapKeySetPrivate));
-	VALA_ITERABLE_CLASS (klass)->get_element_type = vala_hash_map_key_set_real_get_element_type;
-	VALA_ITERABLE_CLASS (klass)->iterator = vala_hash_map_key_set_real_iterator;
-	VALA_COLLECTION_CLASS (klass)->add = vala_hash_map_key_set_real_add;
-	VALA_COLLECTION_CLASS (klass)->clear = vala_hash_map_key_set_real_clear;
-	VALA_COLLECTION_CLASS (klass)->remove = vala_hash_map_key_set_real_remove;
-	VALA_COLLECTION_CLASS (klass)->contains = vala_hash_map_key_set_real_contains;
+	((ValaIterableClass *) klass)->get_element_type = vala_hash_map_key_set_real_get_element_type;
+	((ValaIterableClass *) klass)->iterator = vala_hash_map_key_set_real_iterator;
+	((ValaCollectionClass *) klass)->add = vala_hash_map_key_set_real_add;
+	((ValaCollectionClass *) klass)->clear = vala_hash_map_key_set_real_clear;
+	((ValaCollectionClass *) klass)->remove = vala_hash_map_key_set_real_remove;
+	((ValaCollectionClass *) klass)->contains = vala_hash_map_key_set_real_contains;
 	VALA_COLLECTION_CLASS (klass)->get_size = vala_hash_map_key_set_real_get_size;
 }
 
@@ -1424,11 +1424,11 @@ static void vala_hash_map_map_iterator_set_map (ValaHashMapMapIterator* self, Va
 
 static void vala_hash_map_map_iterator_class_init (ValaHashMapMapIteratorClass * klass) {
 	vala_hash_map_map_iterator_parent_class = g_type_class_peek_parent (klass);
-	VALA_MAP_ITERATOR_CLASS (klass)->finalize = vala_hash_map_map_iterator_finalize;
+	((ValaMapIteratorClass *) klass)->finalize = vala_hash_map_map_iterator_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapMapIteratorPrivate));
-	VALA_MAP_ITERATOR_CLASS (klass)->next = vala_hash_map_map_iterator_real_next;
-	VALA_MAP_ITERATOR_CLASS (klass)->get_key = vala_hash_map_map_iterator_real_get_key;
-	VALA_MAP_ITERATOR_CLASS (klass)->get_value = vala_hash_map_map_iterator_real_get_value;
+	((ValaMapIteratorClass *) klass)->next = vala_hash_map_map_iterator_real_next;
+	((ValaMapIteratorClass *) klass)->get_key = vala_hash_map_map_iterator_real_get_key;
+	((ValaMapIteratorClass *) klass)->get_value = vala_hash_map_map_iterator_real_get_value;
 }
 
 
@@ -1576,10 +1576,10 @@ static void vala_hash_map_key_iterator_set_map (ValaHashMapKeyIterator* self, Va
 
 static void vala_hash_map_key_iterator_class_init (ValaHashMapKeyIteratorClass * klass) {
 	vala_hash_map_key_iterator_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERATOR_CLASS (klass)->finalize = vala_hash_map_key_iterator_finalize;
+	((ValaIteratorClass *) klass)->finalize = vala_hash_map_key_iterator_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapKeyIteratorPrivate));
-	VALA_ITERATOR_CLASS (klass)->next = vala_hash_map_key_iterator_real_next;
-	VALA_ITERATOR_CLASS (klass)->get = vala_hash_map_key_iterator_real_get;
+	((ValaIteratorClass *) klass)->next = vala_hash_map_key_iterator_real_next;
+	((ValaIteratorClass *) klass)->get = vala_hash_map_key_iterator_real_get;
 }
 
 
@@ -1751,14 +1751,14 @@ static gint vala_hash_map_value_collection_real_get_size (ValaCollection* base) 
 
 static void vala_hash_map_value_collection_class_init (ValaHashMapValueCollectionClass * klass) {
 	vala_hash_map_value_collection_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERABLE_CLASS (klass)->finalize = vala_hash_map_value_collection_finalize;
+	((ValaIterableClass *) klass)->finalize = vala_hash_map_value_collection_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapValueCollectionPrivate));
-	VALA_ITERABLE_CLASS (klass)->get_element_type = vala_hash_map_value_collection_real_get_element_type;
-	VALA_ITERABLE_CLASS (klass)->iterator = vala_hash_map_value_collection_real_iterator;
-	VALA_COLLECTION_CLASS (klass)->add = vala_hash_map_value_collection_real_add;
-	VALA_COLLECTION_CLASS (klass)->clear = vala_hash_map_value_collection_real_clear;
-	VALA_COLLECTION_CLASS (klass)->remove = vala_hash_map_value_collection_real_remove;
-	VALA_COLLECTION_CLASS (klass)->contains = vala_hash_map_value_collection_real_contains;
+	((ValaIterableClass *) klass)->get_element_type = vala_hash_map_value_collection_real_get_element_type;
+	((ValaIterableClass *) klass)->iterator = vala_hash_map_value_collection_real_iterator;
+	((ValaCollectionClass *) klass)->add = vala_hash_map_value_collection_real_add;
+	((ValaCollectionClass *) klass)->clear = vala_hash_map_value_collection_real_clear;
+	((ValaCollectionClass *) klass)->remove = vala_hash_map_value_collection_real_remove;
+	((ValaCollectionClass *) klass)->contains = vala_hash_map_value_collection_real_contains;
 	VALA_COLLECTION_CLASS (klass)->get_size = vala_hash_map_value_collection_real_get_size;
 }
 
@@ -1906,10 +1906,10 @@ static void vala_hash_map_value_iterator_set_map (ValaHashMapValueIterator* self
 
 static void vala_hash_map_value_iterator_class_init (ValaHashMapValueIteratorClass * klass) {
 	vala_hash_map_value_iterator_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERATOR_CLASS (klass)->finalize = vala_hash_map_value_iterator_finalize;
+	((ValaIteratorClass *) klass)->finalize = vala_hash_map_value_iterator_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapValueIteratorPrivate));
-	VALA_ITERATOR_CLASS (klass)->next = vala_hash_map_value_iterator_real_next;
-	VALA_ITERATOR_CLASS (klass)->get = vala_hash_map_value_iterator_real_get;
+	((ValaIteratorClass *) klass)->next = vala_hash_map_value_iterator_real_next;
+	((ValaIteratorClass *) klass)->get = vala_hash_map_value_iterator_real_get;
 }
 
 
@@ -1941,16 +1941,16 @@ static GType vala_hash_map_value_iterator_get_type (void) {
 
 static void vala_hash_map_class_init (ValaHashMapClass * klass) {
 	vala_hash_map_parent_class = g_type_class_peek_parent (klass);
-	VALA_MAP_CLASS (klass)->finalize = vala_hash_map_finalize;
+	((ValaMapClass *) klass)->finalize = vala_hash_map_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashMapPrivate));
-	VALA_MAP_CLASS (klass)->get_keys = vala_hash_map_real_get_keys;
-	VALA_MAP_CLASS (klass)->get_values = vala_hash_map_real_get_values;
-	VALA_MAP_CLASS (klass)->map_iterator = vala_hash_map_real_map_iterator;
-	VALA_MAP_CLASS (klass)->contains = vala_hash_map_real_contains;
-	VALA_MAP_CLASS (klass)->get = vala_hash_map_real_get;
-	VALA_MAP_CLASS (klass)->set = vala_hash_map_real_set;
-	VALA_MAP_CLASS (klass)->remove = vala_hash_map_real_remove;
-	VALA_MAP_CLASS (klass)->clear = vala_hash_map_real_clear;
+	((ValaMapClass *) klass)->get_keys = vala_hash_map_real_get_keys;
+	((ValaMapClass *) klass)->get_values = vala_hash_map_real_get_values;
+	((ValaMapClass *) klass)->map_iterator = vala_hash_map_real_map_iterator;
+	((ValaMapClass *) klass)->contains = vala_hash_map_real_contains;
+	((ValaMapClass *) klass)->get = vala_hash_map_real_get;
+	((ValaMapClass *) klass)->set = vala_hash_map_real_set;
+	((ValaMapClass *) klass)->remove = vala_hash_map_real_remove;
+	((ValaMapClass *) klass)->clear = vala_hash_map_real_clear;
 	VALA_MAP_CLASS (klass)->get_size = vala_hash_map_real_get_size;
 }
 

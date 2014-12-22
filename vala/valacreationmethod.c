@@ -2604,11 +2604,11 @@ void vala_creation_method_set_chain_up (ValaCreationMethod* self, gboolean value
 
 static void vala_creation_method_class_init (ValaCreationMethodClass * klass) {
 	vala_creation_method_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_creation_method_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_creation_method_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCreationMethodPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_creation_method_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_creation_method_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_creation_method_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_creation_method_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_creation_method_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_creation_method_real_check;
 }
 
 

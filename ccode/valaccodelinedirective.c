@@ -219,9 +219,9 @@ void vala_ccode_line_directive_set_line_number (ValaCCodeLineDirective* self, gi
 
 static void vala_ccode_line_directive_class_init (ValaCCodeLineDirectiveClass * klass) {
 	vala_ccode_line_directive_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_line_directive_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_line_directive_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeLineDirectivePrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_line_directive_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_line_directive_real_write;
 }
 
 

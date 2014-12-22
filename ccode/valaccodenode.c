@@ -320,11 +320,11 @@ void vala_value_take_ccode_node (GValue* value, gpointer v_object) {
 
 static void vala_ccode_node_class_init (ValaCCodeNodeClass * klass) {
 	vala_ccode_node_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_node_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_node_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeNodePrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_node_real_write;
-	VALA_CCODE_NODE_CLASS (klass)->write_declaration = vala_ccode_node_real_write_declaration;
-	VALA_CCODE_NODE_CLASS (klass)->write_combined = vala_ccode_node_real_write_combined;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_node_real_write;
+	((ValaCCodeNodeClass *) klass)->write_declaration = vala_ccode_node_real_write_declaration;
+	((ValaCCodeNodeClass *) klass)->write_combined = vala_ccode_node_real_write_combined;
 }
 
 
@@ -337,6 +337,7 @@ static void vala_ccode_node_instance_init (ValaCCodeNode * self) {
 static void vala_ccode_node_finalize (ValaCCodeNode* obj) {
 	ValaCCodeNode * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_CCODE_NODE, ValaCCodeNode);
+	g_signal_handlers_destroy (self);
 	_vala_ccode_node_unref0 (self->priv->_line);
 }
 

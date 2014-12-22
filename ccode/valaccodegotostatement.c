@@ -218,9 +218,9 @@ void vala_ccode_goto_statement_set_name (ValaCCodeGotoStatement* self, const gch
 
 static void vala_ccode_goto_statement_class_init (ValaCCodeGotoStatementClass * klass) {
 	vala_ccode_goto_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_goto_statement_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_goto_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeGotoStatementPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_goto_statement_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_goto_statement_real_write;
 }
 
 

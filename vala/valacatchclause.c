@@ -751,14 +751,14 @@ void vala_catch_clause_set_clabel_name (ValaCatchClause* self, const gchar* valu
 
 static void vala_catch_clause_class_init (ValaCatchClauseClass * klass) {
 	vala_catch_clause_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_catch_clause_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_catch_clause_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCatchClausePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_catch_clause_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_catch_clause_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_catch_clause_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_catch_clause_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_catch_clause_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_catch_clause_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_catch_clause_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_catch_clause_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_catch_clause_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_catch_clause_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_catch_clause_real_emit;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_catch_clause_real_get_defined_variables;
 }
 
 

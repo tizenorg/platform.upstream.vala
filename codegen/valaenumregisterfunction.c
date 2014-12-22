@@ -202,10 +202,10 @@ void vala_enum_register_function_set_enum_reference (ValaEnumRegisterFunction* s
 
 static void vala_enum_register_function_class_init (ValaEnumRegisterFunctionClass * klass) {
 	vala_enum_register_function_parent_class = g_type_class_peek_parent (klass);
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->finalize = vala_enum_register_function_finalize;
+	((ValaTypeRegisterFunctionClass *) klass)->finalize = vala_enum_register_function_finalize;
 	g_type_class_add_private (klass, sizeof (ValaEnumRegisterFunctionPrivate));
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_type_declaration = vala_enum_register_function_real_get_type_declaration;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_accessibility = vala_enum_register_function_real_get_accessibility;
+	((ValaTypeRegisterFunctionClass *) klass)->get_type_declaration = vala_enum_register_function_real_get_type_declaration;
+	((ValaTypeRegisterFunctionClass *) klass)->get_accessibility = vala_enum_register_function_real_get_accessibility;
 }
 
 

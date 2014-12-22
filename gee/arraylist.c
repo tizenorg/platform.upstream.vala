@@ -873,10 +873,10 @@ static void vala_array_list_iterator_set_list (ValaArrayListIterator* self, Vala
 
 static void vala_array_list_iterator_class_init (ValaArrayListIteratorClass * klass) {
 	vala_array_list_iterator_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERATOR_CLASS (klass)->finalize = vala_array_list_iterator_finalize;
+	((ValaIteratorClass *) klass)->finalize = vala_array_list_iterator_finalize;
 	g_type_class_add_private (klass, sizeof (ValaArrayListIteratorPrivate));
-	VALA_ITERATOR_CLASS (klass)->next = vala_array_list_iterator_real_next;
-	VALA_ITERATOR_CLASS (klass)->get = vala_array_list_iterator_real_get;
+	((ValaIteratorClass *) klass)->next = vala_array_list_iterator_real_next;
+	((ValaIteratorClass *) klass)->get = vala_array_list_iterator_real_get;
 }
 
 
@@ -909,19 +909,19 @@ static GType vala_array_list_iterator_get_type (void) {
 
 static void vala_array_list_class_init (ValaArrayListClass * klass) {
 	vala_array_list_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERABLE_CLASS (klass)->finalize = vala_array_list_finalize;
+	((ValaIterableClass *) klass)->finalize = vala_array_list_finalize;
 	g_type_class_add_private (klass, sizeof (ValaArrayListPrivate));
-	VALA_ITERABLE_CLASS (klass)->get_element_type = vala_array_list_real_get_element_type;
-	VALA_ITERABLE_CLASS (klass)->iterator = vala_array_list_real_iterator;
-	VALA_COLLECTION_CLASS (klass)->contains = vala_array_list_real_contains;
-	VALA_LIST_CLASS (klass)->index_of = vala_array_list_real_index_of;
-	VALA_LIST_CLASS (klass)->get = vala_array_list_real_get;
-	VALA_LIST_CLASS (klass)->set = vala_array_list_real_set;
-	VALA_COLLECTION_CLASS (klass)->add = vala_array_list_real_add;
-	VALA_LIST_CLASS (klass)->insert = vala_array_list_real_insert;
-	VALA_COLLECTION_CLASS (klass)->remove = vala_array_list_real_remove;
-	VALA_LIST_CLASS (klass)->remove_at = vala_array_list_real_remove_at;
-	VALA_COLLECTION_CLASS (klass)->clear = vala_array_list_real_clear;
+	((ValaIterableClass *) klass)->get_element_type = vala_array_list_real_get_element_type;
+	((ValaIterableClass *) klass)->iterator = vala_array_list_real_iterator;
+	((ValaCollectionClass *) klass)->contains = vala_array_list_real_contains;
+	((ValaListClass *) klass)->index_of = vala_array_list_real_index_of;
+	((ValaListClass *) klass)->get = vala_array_list_real_get;
+	((ValaListClass *) klass)->set = vala_array_list_real_set;
+	((ValaCollectionClass *) klass)->add = vala_array_list_real_add;
+	((ValaListClass *) klass)->insert = vala_array_list_real_insert;
+	((ValaCollectionClass *) klass)->remove = vala_array_list_real_remove;
+	((ValaListClass *) klass)->remove_at = vala_array_list_real_remove_at;
+	((ValaCollectionClass *) klass)->clear = vala_array_list_real_clear;
 	VALA_COLLECTION_CLASS (klass)->get_size = vala_array_list_real_get_size;
 }
 

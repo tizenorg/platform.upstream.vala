@@ -572,9 +572,9 @@ void vala_dynamic_signal_set_handler (ValaDynamicSignal* self, ValaExpression* v
 
 static void vala_dynamic_signal_class_init (ValaDynamicSignalClass * klass) {
 	vala_dynamic_signal_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_dynamic_signal_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_dynamic_signal_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDynamicSignalPrivate));
-	VALA_CODE_NODE_CLASS (klass)->check = vala_dynamic_signal_real_check;
+	((ValaCodeNodeClass *) klass)->check = vala_dynamic_signal_real_check;
 }
 
 

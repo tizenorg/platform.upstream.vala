@@ -985,13 +985,13 @@ static gboolean vala_error_domain_real_check (ValaCodeNode* base, ValaCodeContex
 
 static void vala_error_domain_class_init (ValaErrorDomainClass * klass) {
 	vala_error_domain_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_error_domain_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_error_domain_finalize;
 	g_type_class_add_private (klass, sizeof (ValaErrorDomainPrivate));
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_error_domain_real_add_method;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_error_domain_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_error_domain_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_error_domain_real_is_reference_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_error_domain_real_check;
+	((ValaSymbolClass *) klass)->add_method = vala_error_domain_real_add_method;
+	((ValaCodeNodeClass *) klass)->accept = vala_error_domain_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_error_domain_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_error_domain_real_is_reference_type;
+	((ValaCodeNodeClass *) klass)->check = vala_error_domain_real_check;
 }
 
 

@@ -340,7 +340,7 @@ public class Vala.GIRWriter : CodeVisitor {
 			buffer.append_printf ("<field name=\"priv\">\n");
 			indent++;
 			write_indent ();
-			buffer.append_printf ("<type name=\"%sPrivate\" c:type=\"%sPrivate*\"/>\n", cl.name, CCodeBaseModule.get_ccode_name (cl));
+			buffer.append_printf ("<type name=\"%sPrivate\" c:type=\"%sPrivate*\"/>\n", get_gir_name (cl), CCodeBaseModule.get_ccode_name (cl));
 			indent--;
 			write_indent ();
 			buffer.append_printf("</field>\n");
@@ -423,7 +423,7 @@ public class Vala.GIRWriter : CodeVisitor {
 			buffer.append_printf ("</record>\n");
 
 			write_indent ();
-			buffer.append_printf ("<record name=\"%sPrivate\" c:type=\"%sPrivate\" disguised=\"1\"/>\n", cl.name, CCodeBaseModule.get_ccode_name (cl));
+			buffer.append_printf ("<record name=\"%sPrivate\" c:type=\"%sPrivate\" disguised=\"1\"/>\n", get_gir_name (cl), CCodeBaseModule.get_ccode_name (cl));
 		} else {
 			write_indent ();
 			buffer.append_printf ("<record name=\"%s\"", get_gir_name (cl));
@@ -578,6 +578,32 @@ public class Vala.GIRWriter : CodeVisitor {
 			}
 		}
 
+		foreach (var prop in iface.get_properties ()) {
+			if (prop.is_abstract || prop.is_virtual) {
+				if (prop.get_accessor != null) {
+					var m = prop.get_accessor.get_method ();
+					write_indent ();
+					buffer.append_printf("<field name=\"%s\">\n", m.name);
+					indent++;
+					do_write_signature (m, "callback", true, m.name, CCodeBaseModule.get_ccode_name (m), m.get_parameters (), m.return_type, m.tree_can_fail, false);
+					indent--;
+					write_indent ();
+					buffer.append_printf ("</field>\n");
+				}
+
+				if (prop.set_accessor != null) {
+					var m = prop.set_accessor.get_method ();
+					write_indent ();
+					buffer.append_printf("<field name=\"%s\">\n", m.name);
+					indent++;
+					do_write_signature (m, "callback", true, m.name, CCodeBaseModule.get_ccode_name (m), m.get_parameters (), m.return_type, m.tree_can_fail, false);
+					indent--;
+					write_indent ();
+					buffer.append_printf ("</field>\n");
+				}
+			}
+		}
+
 		indent--;
 		write_indent ();
 		buffer.append_printf ("</record>\n");
@@ -695,19 +721,9 @@ public class Vala.GIRWriter : CodeVisitor {
 		}
 
 		write_indent ();
-		buffer.append_printf ("<errordomain name=\"%s\"", edomain.name);
-		buffer.append_printf (" get-quark=\"%squark\"", CCodeBaseModule.get_ccode_lower_case_prefix (edomain));
-		buffer.append_printf (" codes=\"%s\"", edomain.name);
-		write_symbol_attributes (edomain);
-		buffer.append_printf (">\n");
-
-		write_annotations (edomain);
-
-		buffer.append_printf ("</errordomain>\n");
-
-		write_indent ();
 		buffer.append_printf ("<enumeration name=\"%s\"", edomain.name);
 		write_ctype_attributes (edomain);
+		buffer.append_printf (" glib:error-domain=\"%s\"", CCodeBaseModule.get_quark_name (edomain));
 		buffer.append_printf (">\n");
 		indent++;
 
@@ -1138,6 +1154,20 @@ public class Vala.GIRWriter : CodeVisitor {
 		indent--;
 		write_indent ();
 		buffer.append_printf ("</property>\n");
+
+		if (prop.get_accessor != null) {
+			var m = prop.get_accessor.get_method ();
+			if (m != null) {
+				visit_method (m);
+			}
+		}
+
+		if (prop.set_accessor != null) {
+			var m = prop.set_accessor.get_method ();
+			if (m != null) {
+				visit_method (m);
+			}
+		}
 	}
 
 	public override void visit_signal (Signal sig) {
@@ -1262,8 +1292,9 @@ public class Vala.GIRWriter : CodeVisitor {
 
 			write_indent ();
 			buffer.append_printf ("<array");
-			if (array_type.fixed_length) {
-				buffer.append_printf (" fixed-size=\"%i\"", array_type.length);
+			if (array_type.fixed_length && array_type.length is IntegerLiteral) {
+				var lit = (IntegerLiteral) array_type.length;
+				buffer.append_printf (" fixed-size=\"%i\"", int.parse (lit.value));
 			} else if (index != -1) {
 				buffer.append_printf (" length=\"%i\"", index);
 			}
@@ -1337,7 +1368,15 @@ public class Vala.GIRWriter : CodeVisitor {
 	}
 
 	private string? get_full_gir_name (Symbol sym) {
-		var gir_name = sym.get_attribute_string ("GIR", "name") ?? sym.name;
+		string? gir_name = sym.get_attribute_string ("GIR", "name");
+
+		if (gir_name == null && sym is Namespace) {
+			gir_name = sym.get_attribute_string ("CCode", "gir_namespace");
+		}
+		if (gir_name == null) {
+			gir_name = sym.name;
+		}
+
 		if (sym.parent_symbol == null) {
 			return gir_name;
 		}

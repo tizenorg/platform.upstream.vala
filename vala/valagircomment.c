@@ -214,7 +214,7 @@ void vala_gir_comment_set_return_content (ValaGirComment* self, ValaComment* val
 
 static void vala_gir_comment_class_init (ValaGirCommentClass * klass) {
 	vala_gir_comment_parent_class = g_type_class_peek_parent (klass);
-	VALA_COMMENT_CLASS (klass)->finalize = vala_gir_comment_finalize;
+	((ValaCommentClass *) klass)->finalize = vala_gir_comment_finalize;
 	g_type_class_add_private (klass, sizeof (ValaGirCommentPrivate));
 }
 

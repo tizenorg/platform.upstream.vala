@@ -3053,18 +3053,18 @@ void vala_struct_set_signed (ValaStruct* self, gboolean value) {
 
 static void vala_struct_class_init (ValaStructClass * klass) {
 	vala_struct_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_struct_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_struct_finalize;
 	g_type_class_add_private (klass, sizeof (ValaStructPrivate));
-	VALA_SYMBOL_CLASS (klass)->add_constant = vala_struct_real_add_constant;
-	VALA_SYMBOL_CLASS (klass)->add_field = vala_struct_real_add_field;
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_struct_real_add_method;
-	VALA_SYMBOL_CLASS (klass)->add_property = vala_struct_real_add_property;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_struct_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_struct_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->get_type_parameter_index = vala_struct_real_get_type_parameter_index;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_struct_real_replace_type;
-	VALA_TYPESYMBOL_CLASS (klass)->is_subtype_of = vala_struct_real_is_subtype_of;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_struct_real_check;
+	((ValaSymbolClass *) klass)->add_constant = vala_struct_real_add_constant;
+	((ValaSymbolClass *) klass)->add_field = vala_struct_real_add_field;
+	((ValaSymbolClass *) klass)->add_method = vala_struct_real_add_method;
+	((ValaSymbolClass *) klass)->add_property = vala_struct_real_add_property;
+	((ValaCodeNodeClass *) klass)->accept = vala_struct_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_struct_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->get_type_parameter_index = vala_struct_real_get_type_parameter_index;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_struct_real_replace_type;
+	((ValaTypeSymbolClass *) klass)->is_subtype_of = vala_struct_real_is_subtype_of;
+	((ValaCodeNodeClass *) klass)->check = vala_struct_real_check;
 }
 
 

@@ -2231,12 +2231,12 @@ void vala_conditional_expression_set_false_expression (ValaConditionalExpression
 
 static void vala_conditional_expression_class_init (ValaConditionalExpressionClass * klass) {
 	vala_conditional_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_conditional_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_conditional_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaConditionalExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_conditional_expression_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_conditional_expression_real_accept_children;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_conditional_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_conditional_expression_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_conditional_expression_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_conditional_expression_real_accept_children;
+	((ValaExpressionClass *) klass)->is_pure = vala_conditional_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_conditional_expression_real_check;
 }
 
 

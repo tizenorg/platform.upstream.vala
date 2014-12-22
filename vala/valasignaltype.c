@@ -1014,16 +1014,16 @@ void vala_signal_type_set_signal_symbol (ValaSignalType* self, ValaSignal* value
 
 static void vala_signal_type_class_init (ValaSignalTypeClass * klass) {
 	vala_signal_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_signal_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_signal_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSignalTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->is_invokable = vala_signal_type_real_is_invokable;
-	VALA_DATA_TYPE_CLASS (klass)->get_return_type = vala_signal_type_real_get_return_type;
-	VALA_DATA_TYPE_CLASS (klass)->get_parameters = vala_signal_type_real_get_parameters;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_signal_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_signal_type_real_compatible;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_signal_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_signal_type_real_get_member;
-	VALA_DATA_TYPE_CLASS (klass)->is_accessible = vala_signal_type_real_is_accessible;
+	((ValaDataTypeClass *) klass)->is_invokable = vala_signal_type_real_is_invokable;
+	((ValaDataTypeClass *) klass)->get_return_type = vala_signal_type_real_get_return_type;
+	((ValaDataTypeClass *) klass)->get_parameters = vala_signal_type_real_get_parameters;
+	((ValaDataTypeClass *) klass)->copy = vala_signal_type_real_copy;
+	((ValaDataTypeClass *) klass)->compatible = vala_signal_type_real_compatible;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_signal_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->get_member = vala_signal_type_real_get_member;
+	((ValaDataTypeClass *) klass)->is_accessible = vala_signal_type_real_is_accessible;
 }
 
 

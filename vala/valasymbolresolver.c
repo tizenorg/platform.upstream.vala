@@ -1499,6 +1499,7 @@ static void vala_symbol_resolver_real_visit_sizeof_expression (ValaCodeVisitor* 
 static void vala_symbol_resolver_real_visit_typeof_expression (ValaCodeVisitor* base, ValaTypeofExpression* expr);
 static void vala_symbol_resolver_real_visit_unary_expression (ValaCodeVisitor* base, ValaUnaryExpression* expr);
 static void vala_symbol_resolver_real_visit_cast_expression (ValaCodeVisitor* base, ValaCastExpression* expr);
+static void vala_symbol_resolver_real_visit_named_argument (ValaCodeVisitor* base, ValaNamedArgument* expr);
 static void vala_symbol_resolver_real_visit_addressof_expression (ValaCodeVisitor* base, ValaAddressofExpression* expr);
 static void vala_symbol_resolver_real_visit_reference_transfer_expression (ValaCodeVisitor* base, ValaReferenceTransferExpression* expr);
 static void vala_symbol_resolver_real_visit_binary_expression (ValaCodeVisitor* base, ValaBinaryExpression* expr);
@@ -3619,6 +3620,16 @@ static void vala_symbol_resolver_real_visit_cast_expression (ValaCodeVisitor* ba
 }
 
 
+static void vala_symbol_resolver_real_visit_named_argument (ValaCodeVisitor* base, ValaNamedArgument* expr) {
+	ValaSymbolResolver * self;
+	ValaNamedArgument* _tmp0_ = NULL;
+	self = (ValaSymbolResolver*) base;
+	g_return_if_fail (expr != NULL);
+	_tmp0_ = expr;
+	vala_code_node_accept_children ((ValaCodeNode*) _tmp0_, (ValaCodeVisitor*) self);
+}
+
+
 static void vala_symbol_resolver_real_visit_addressof_expression (ValaCodeVisitor* base, ValaAddressofExpression* expr) {
 	ValaSymbolResolver * self;
 	ValaAddressofExpression* _tmp0_ = NULL;
@@ -3703,67 +3714,68 @@ ValaSymbolResolver* vala_symbol_resolver_new (void) {
 
 static void vala_symbol_resolver_class_init (ValaSymbolResolverClass * klass) {
 	vala_symbol_resolver_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->finalize = vala_symbol_resolver_finalize;
+	((ValaCodeVisitorClass *) klass)->finalize = vala_symbol_resolver_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSymbolResolverPrivate));
-	VALA_CODE_VISITOR_CLASS (klass)->visit_namespace = vala_symbol_resolver_real_visit_namespace;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_class = vala_symbol_resolver_real_visit_class;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_struct = vala_symbol_resolver_real_visit_struct;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_interface = vala_symbol_resolver_real_visit_interface;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_enum = vala_symbol_resolver_real_visit_enum;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_error_domain = vala_symbol_resolver_real_visit_error_domain;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_delegate = vala_symbol_resolver_real_visit_delegate;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_constant = vala_symbol_resolver_real_visit_constant;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_field = vala_symbol_resolver_real_visit_field;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method = vala_symbol_resolver_real_visit_method;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_creation_method = vala_symbol_resolver_real_visit_creation_method;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_formal_parameter = vala_symbol_resolver_real_visit_formal_parameter;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_property = vala_symbol_resolver_real_visit_property;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_property_accessor = vala_symbol_resolver_real_visit_property_accessor;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_signal = vala_symbol_resolver_real_visit_signal;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_constructor = vala_symbol_resolver_real_visit_constructor;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_destructor = vala_symbol_resolver_real_visit_destructor;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_block = vala_symbol_resolver_real_visit_block;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_using_directive = vala_symbol_resolver_real_visit_using_directive;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_data_type = vala_symbol_resolver_real_visit_data_type;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_declaration_statement = vala_symbol_resolver_real_visit_declaration_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_local_variable = vala_symbol_resolver_real_visit_local_variable;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_initializer_list = vala_symbol_resolver_real_visit_initializer_list;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_expression_statement = vala_symbol_resolver_real_visit_expression_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_if_statement = vala_symbol_resolver_real_visit_if_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_switch_statement = vala_symbol_resolver_real_visit_switch_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_switch_section = vala_symbol_resolver_real_visit_switch_section;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_switch_label = vala_symbol_resolver_real_visit_switch_label;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_loop = vala_symbol_resolver_real_visit_loop;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_while_statement = vala_symbol_resolver_real_visit_while_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_do_statement = vala_symbol_resolver_real_visit_do_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_for_statement = vala_symbol_resolver_real_visit_for_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_foreach_statement = vala_symbol_resolver_real_visit_foreach_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_return_statement = vala_symbol_resolver_real_visit_return_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_yield_statement = vala_symbol_resolver_real_visit_yield_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_throw_statement = vala_symbol_resolver_real_visit_throw_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_try_statement = vala_symbol_resolver_real_visit_try_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_delete_statement = vala_symbol_resolver_real_visit_delete_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_catch_clause = vala_symbol_resolver_real_visit_catch_clause;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_array_creation_expression = vala_symbol_resolver_real_visit_array_creation_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_template = vala_symbol_resolver_real_visit_template;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_tuple = vala_symbol_resolver_real_visit_tuple;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_member_access = vala_symbol_resolver_real_visit_member_access;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method_call = vala_symbol_resolver_real_visit_method_call;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_element_access = vala_symbol_resolver_real_visit_element_access;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_slice_expression = vala_symbol_resolver_real_visit_slice_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_postfix_expression = vala_symbol_resolver_real_visit_postfix_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_object_creation_expression = vala_symbol_resolver_real_visit_object_creation_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_sizeof_expression = vala_symbol_resolver_real_visit_sizeof_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_typeof_expression = vala_symbol_resolver_real_visit_typeof_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_unary_expression = vala_symbol_resolver_real_visit_unary_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_cast_expression = vala_symbol_resolver_real_visit_cast_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_addressof_expression = vala_symbol_resolver_real_visit_addressof_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_reference_transfer_expression = vala_symbol_resolver_real_visit_reference_transfer_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_binary_expression = vala_symbol_resolver_real_visit_binary_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_type_check = vala_symbol_resolver_real_visit_type_check;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_conditional_expression = vala_symbol_resolver_real_visit_conditional_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_lambda_expression = vala_symbol_resolver_real_visit_lambda_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_assignment = vala_symbol_resolver_real_visit_assignment;
+	((ValaCodeVisitorClass *) klass)->visit_namespace = vala_symbol_resolver_real_visit_namespace;
+	((ValaCodeVisitorClass *) klass)->visit_class = vala_symbol_resolver_real_visit_class;
+	((ValaCodeVisitorClass *) klass)->visit_struct = vala_symbol_resolver_real_visit_struct;
+	((ValaCodeVisitorClass *) klass)->visit_interface = vala_symbol_resolver_real_visit_interface;
+	((ValaCodeVisitorClass *) klass)->visit_enum = vala_symbol_resolver_real_visit_enum;
+	((ValaCodeVisitorClass *) klass)->visit_error_domain = vala_symbol_resolver_real_visit_error_domain;
+	((ValaCodeVisitorClass *) klass)->visit_delegate = vala_symbol_resolver_real_visit_delegate;
+	((ValaCodeVisitorClass *) klass)->visit_constant = vala_symbol_resolver_real_visit_constant;
+	((ValaCodeVisitorClass *) klass)->visit_field = vala_symbol_resolver_real_visit_field;
+	((ValaCodeVisitorClass *) klass)->visit_method = vala_symbol_resolver_real_visit_method;
+	((ValaCodeVisitorClass *) klass)->visit_creation_method = vala_symbol_resolver_real_visit_creation_method;
+	((ValaCodeVisitorClass *) klass)->visit_formal_parameter = vala_symbol_resolver_real_visit_formal_parameter;
+	((ValaCodeVisitorClass *) klass)->visit_property = vala_symbol_resolver_real_visit_property;
+	((ValaCodeVisitorClass *) klass)->visit_property_accessor = vala_symbol_resolver_real_visit_property_accessor;
+	((ValaCodeVisitorClass *) klass)->visit_signal = vala_symbol_resolver_real_visit_signal;
+	((ValaCodeVisitorClass *) klass)->visit_constructor = vala_symbol_resolver_real_visit_constructor;
+	((ValaCodeVisitorClass *) klass)->visit_destructor = vala_symbol_resolver_real_visit_destructor;
+	((ValaCodeVisitorClass *) klass)->visit_block = vala_symbol_resolver_real_visit_block;
+	((ValaCodeVisitorClass *) klass)->visit_using_directive = vala_symbol_resolver_real_visit_using_directive;
+	((ValaCodeVisitorClass *) klass)->visit_data_type = vala_symbol_resolver_real_visit_data_type;
+	((ValaCodeVisitorClass *) klass)->visit_declaration_statement = vala_symbol_resolver_real_visit_declaration_statement;
+	((ValaCodeVisitorClass *) klass)->visit_local_variable = vala_symbol_resolver_real_visit_local_variable;
+	((ValaCodeVisitorClass *) klass)->visit_initializer_list = vala_symbol_resolver_real_visit_initializer_list;
+	((ValaCodeVisitorClass *) klass)->visit_expression_statement = vala_symbol_resolver_real_visit_expression_statement;
+	((ValaCodeVisitorClass *) klass)->visit_if_statement = vala_symbol_resolver_real_visit_if_statement;
+	((ValaCodeVisitorClass *) klass)->visit_switch_statement = vala_symbol_resolver_real_visit_switch_statement;
+	((ValaCodeVisitorClass *) klass)->visit_switch_section = vala_symbol_resolver_real_visit_switch_section;
+	((ValaCodeVisitorClass *) klass)->visit_switch_label = vala_symbol_resolver_real_visit_switch_label;
+	((ValaCodeVisitorClass *) klass)->visit_loop = vala_symbol_resolver_real_visit_loop;
+	((ValaCodeVisitorClass *) klass)->visit_while_statement = vala_symbol_resolver_real_visit_while_statement;
+	((ValaCodeVisitorClass *) klass)->visit_do_statement = vala_symbol_resolver_real_visit_do_statement;
+	((ValaCodeVisitorClass *) klass)->visit_for_statement = vala_symbol_resolver_real_visit_for_statement;
+	((ValaCodeVisitorClass *) klass)->visit_foreach_statement = vala_symbol_resolver_real_visit_foreach_statement;
+	((ValaCodeVisitorClass *) klass)->visit_return_statement = vala_symbol_resolver_real_visit_return_statement;
+	((ValaCodeVisitorClass *) klass)->visit_yield_statement = vala_symbol_resolver_real_visit_yield_statement;
+	((ValaCodeVisitorClass *) klass)->visit_throw_statement = vala_symbol_resolver_real_visit_throw_statement;
+	((ValaCodeVisitorClass *) klass)->visit_try_statement = vala_symbol_resolver_real_visit_try_statement;
+	((ValaCodeVisitorClass *) klass)->visit_delete_statement = vala_symbol_resolver_real_visit_delete_statement;
+	((ValaCodeVisitorClass *) klass)->visit_catch_clause = vala_symbol_resolver_real_visit_catch_clause;
+	((ValaCodeVisitorClass *) klass)->visit_array_creation_expression = vala_symbol_resolver_real_visit_array_creation_expression;
+	((ValaCodeVisitorClass *) klass)->visit_template = vala_symbol_resolver_real_visit_template;
+	((ValaCodeVisitorClass *) klass)->visit_tuple = vala_symbol_resolver_real_visit_tuple;
+	((ValaCodeVisitorClass *) klass)->visit_member_access = vala_symbol_resolver_real_visit_member_access;
+	((ValaCodeVisitorClass *) klass)->visit_method_call = vala_symbol_resolver_real_visit_method_call;
+	((ValaCodeVisitorClass *) klass)->visit_element_access = vala_symbol_resolver_real_visit_element_access;
+	((ValaCodeVisitorClass *) klass)->visit_slice_expression = vala_symbol_resolver_real_visit_slice_expression;
+	((ValaCodeVisitorClass *) klass)->visit_postfix_expression = vala_symbol_resolver_real_visit_postfix_expression;
+	((ValaCodeVisitorClass *) klass)->visit_object_creation_expression = vala_symbol_resolver_real_visit_object_creation_expression;
+	((ValaCodeVisitorClass *) klass)->visit_sizeof_expression = vala_symbol_resolver_real_visit_sizeof_expression;
+	((ValaCodeVisitorClass *) klass)->visit_typeof_expression = vala_symbol_resolver_real_visit_typeof_expression;
+	((ValaCodeVisitorClass *) klass)->visit_unary_expression = vala_symbol_resolver_real_visit_unary_expression;
+	((ValaCodeVisitorClass *) klass)->visit_cast_expression = vala_symbol_resolver_real_visit_cast_expression;
+	((ValaCodeVisitorClass *) klass)->visit_named_argument = vala_symbol_resolver_real_visit_named_argument;
+	((ValaCodeVisitorClass *) klass)->visit_addressof_expression = vala_symbol_resolver_real_visit_addressof_expression;
+	((ValaCodeVisitorClass *) klass)->visit_reference_transfer_expression = vala_symbol_resolver_real_visit_reference_transfer_expression;
+	((ValaCodeVisitorClass *) klass)->visit_binary_expression = vala_symbol_resolver_real_visit_binary_expression;
+	((ValaCodeVisitorClass *) klass)->visit_type_check = vala_symbol_resolver_real_visit_type_check;
+	((ValaCodeVisitorClass *) klass)->visit_conditional_expression = vala_symbol_resolver_real_visit_conditional_expression;
+	((ValaCodeVisitorClass *) klass)->visit_lambda_expression = vala_symbol_resolver_real_visit_lambda_expression;
+	((ValaCodeVisitorClass *) klass)->visit_assignment = vala_symbol_resolver_real_visit_assignment;
 }
 
 

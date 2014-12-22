@@ -77,7 +77,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = doc
-DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+	$(dist_man_MANS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -146,7 +147,7 @@ am__uninstall_files_from_dir = { \
 man1dir = $(mandir)/man1
 am__installdirs = "$(DESTDIR)$(man1dir)"
 NROFF = nroff
-MANS = $(man_MANS)
+MANS = $(dist_man_MANS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -309,7 +310,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gen_introspect_decl = @gen_introspect_decl@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -338,24 +338,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-vala_gen_introspect_decl = @vala_gen_introspect_decl@
-vapigen_decl = @vapigen_decl@
 NULL = 
 SUBDIRS = \
 	vala \
 	$(NULL)
 
-@ENABLE_VAPIGEN_TRUE@VAPIGEN_MANS = \
-@ENABLE_VAPIGEN_TRUE@	vala-gen-introspect.1 \
-@ENABLE_VAPIGEN_TRUE@	vapigen.1 \
-@ENABLE_VAPIGEN_TRUE@	$(NULL)
-
-man_MANS = \
-	valac.1 \
-	$(VAPIGEN_MANS) \
-	$(NULL)
-
-EXTRA_DIST = \
+dist_man_MANS = \
 	valac.1 \
 	vala-gen-introspect.1 \
 	vapigen.1 \
@@ -400,10 +388,10 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-man1: $(man_MANS)
+install-man1: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
 	@list1=''; \
-	list2='$(man_MANS)'; \
+	list2='$(dist_man_MANS)'; \
 	test -n "$(man1dir)" \
 	  && test -n "`echo $$list1$$list2`" \
 	  || exit 0; \
@@ -438,7 +426,7 @@ uninstall-man1:
 	@$(NORMAL_UNINSTALL)
 	@list=''; test -n "$(man1dir)" || exit 0; \
 	files=`{ for i in $$list; do echo "$$i"; done; \
-	l2='$(man_MANS)'; for i in $$l2; do echo "$$i"; done | \
+	l2='$(dist_man_MANS)'; for i in $$l2; do echo "$$i"; done | \
 	  sed -n '/\.1[a-z]*$$/p'; \
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^1][0-9a-z]*$$,1,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
@@ -727,8 +715,8 @@ uninstall-man: uninstall-man1
 
 @ENABLE_UNVERSIONED_TRUE@install-data-hook:
 @ENABLE_UNVERSIONED_TRUE@	cd $(DESTDIR)$(man1dir) && $(LN_S) -f valac@PACKAGE_SUFFIX@.1 valac.1
-@ENABLE_UNVERSIONED_TRUE@@ENABLE_VAPIGEN_TRUE@	cd $(DESTDIR)$(man1dir) && $(LN_S) -f vala-gen-introspect@PACKAGE_SUFFIX@.1 vala-gen-introspect.1
-@ENABLE_UNVERSIONED_TRUE@@ENABLE_VAPIGEN_TRUE@	cd $(DESTDIR)$(man1dir) && $(LN_S) -f vapigen@PACKAGE_SUFFIX@.1 vapigen.1
+@ENABLE_UNVERSIONED_TRUE@	cd $(DESTDIR)$(man1dir) && $(LN_S) -f vala-gen-introspect@PACKAGE_SUFFIX@.1 vala-gen-introspect.1
+@ENABLE_UNVERSIONED_TRUE@	cd $(DESTDIR)$(man1dir) && $(LN_S) -f vapigen@PACKAGE_SUFFIX@.1 vapigen.1
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

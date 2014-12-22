@@ -760,15 +760,15 @@ void vala_error_type_set_dynamic_error (ValaErrorType* self, gboolean value) {
 
 static void vala_error_type_class_init (ValaErrorTypeClass * klass) {
 	vala_error_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_error_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_error_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaErrorTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_error_type_real_compatible;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_error_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_error_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->equals = vala_error_type_real_equals;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_error_type_real_get_member;
-	VALA_DATA_TYPE_CLASS (klass)->is_reference_type_or_type_parameter = vala_error_type_real_is_reference_type_or_type_parameter;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_error_type_real_check;
+	((ValaDataTypeClass *) klass)->compatible = vala_error_type_real_compatible;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_error_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_error_type_real_copy;
+	((ValaDataTypeClass *) klass)->equals = vala_error_type_real_equals;
+	((ValaDataTypeClass *) klass)->get_member = vala_error_type_real_get_member;
+	((ValaDataTypeClass *) klass)->is_reference_type_or_type_parameter = vala_error_type_real_is_reference_type_or_type_parameter;
+	((ValaCodeNodeClass *) klass)->check = vala_error_type_real_check;
 }
 
 

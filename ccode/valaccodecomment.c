@@ -172,9 +172,9 @@ void vala_ccode_comment_set_text (ValaCCodeComment* self, const gchar* value) {
 
 static void vala_ccode_comment_class_init (ValaCCodeCommentClass * klass) {
 	vala_ccode_comment_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_comment_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_comment_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeCommentPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_comment_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_comment_real_write;
 }
 
 

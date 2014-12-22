@@ -448,10 +448,10 @@ void vala_ccode_binary_expression_set_right (ValaCCodeBinaryExpression* self, Va
 
 static void vala_ccode_binary_expression_class_init (ValaCCodeBinaryExpressionClass * klass) {
 	vala_ccode_binary_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_binary_expression_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_binary_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeBinaryExpressionPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_binary_expression_real_write;
-	VALA_CCODE_EXPRESSION_CLASS (klass)->write_inner = vala_ccode_binary_expression_real_write_inner;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_binary_expression_real_write;
+	((ValaCCodeExpressionClass *) klass)->write_inner = vala_ccode_binary_expression_real_write_inner;
 }
 
 

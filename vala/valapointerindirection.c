@@ -582,15 +582,15 @@ void vala_pointer_indirection_set_inner (ValaPointerIndirection* self, ValaExpre
 
 static void vala_pointer_indirection_class_init (ValaPointerIndirectionClass * klass) {
 	vala_pointer_indirection_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_pointer_indirection_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_pointer_indirection_finalize;
 	g_type_class_add_private (klass, sizeof (ValaPointerIndirectionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_pointer_indirection_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_pointer_indirection_real_replace_expression;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_pointer_indirection_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_pointer_indirection_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_pointer_indirection_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_pointer_indirection_real_get_defined_variables;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_pointer_indirection_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_pointer_indirection_real_accept;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_pointer_indirection_real_replace_expression;
+	((ValaExpressionClass *) klass)->is_pure = vala_pointer_indirection_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_pointer_indirection_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_pointer_indirection_real_emit;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_pointer_indirection_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_pointer_indirection_real_get_used_variables;
 }
 
 

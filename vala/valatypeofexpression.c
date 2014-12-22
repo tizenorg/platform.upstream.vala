@@ -1531,14 +1531,14 @@ void vala_typeof_expression_set_type_reference (ValaTypeofExpression* self, Vala
 
 static void vala_typeof_expression_class_init (ValaTypeofExpressionClass * klass) {
 	vala_typeof_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_typeof_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_typeof_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaTypeofExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_typeof_expression_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_typeof_expression_real_accept_children;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_typeof_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_typeof_expression_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_typeof_expression_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_typeof_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_typeof_expression_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_typeof_expression_real_accept_children;
+	((ValaExpressionClass *) klass)->is_pure = vala_typeof_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_typeof_expression_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_typeof_expression_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_typeof_expression_real_emit;
 }
 
 

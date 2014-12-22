@@ -215,9 +215,9 @@ void vala_ccode_label_set_name (ValaCCodeLabel* self, const gchar* value) {
 
 static void vala_ccode_label_class_init (ValaCCodeLabelClass * klass) {
 	vala_ccode_label_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_label_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_label_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeLabelPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_label_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_label_real_write;
 }
 
 

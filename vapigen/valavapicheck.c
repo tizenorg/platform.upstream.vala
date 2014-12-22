@@ -306,7 +306,7 @@ static void vala_vapi_check_parse_gidl (ValaVAPICheck* self) {
 		_tmp8_ = _tmp7_;
 		_tmp9_ = g_idl_parse_file (_tmp8_, &_inner_error_);
 		_tmp5_ = _tmp9_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_MARKUP_ERROR) {
 				goto __catch0_g_markup_error;
 			}
@@ -361,7 +361,7 @@ static void vala_vapi_check_parse_gidl (ValaVAPICheck* self) {
 		_g_error_free0 (e);
 	}
 	__finally0:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return;
@@ -607,7 +607,7 @@ static gint vala_vapi_check_check_metadata (ValaVAPICheck* self) {
 		_tmp2_ = _tmp1_;
 		_tmp3_ = g_io_channel_new_file (_tmp2_, "r", &_inner_error_);
 		metafile = _tmp3_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			goto __catch1_g_error;
 		}
 		lineno = 1;
@@ -637,7 +637,7 @@ static gint vala_vapi_check_check_metadata (ValaVAPICheck* self) {
 			_g_free0 (line);
 			line = _tmp6_;
 			_tmp4_ = _tmp7_;
-			if (_inner_error_ != NULL) {
+			if (G_UNLIKELY (_inner_error_ != NULL)) {
 				_g_free0 (line);
 				_g_io_channel_unref0 (metafile);
 				goto __catch1_g_error;

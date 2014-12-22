@@ -455,9 +455,9 @@ void vala_ccode_block_set_suppress_newline (ValaCCodeBlock* self, gboolean value
 
 static void vala_ccode_block_class_init (ValaCCodeBlockClass * klass) {
 	vala_ccode_block_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_block_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_block_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeBlockPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_block_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_block_real_write;
 }
 
 

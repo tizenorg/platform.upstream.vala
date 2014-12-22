@@ -510,7 +510,7 @@ void vala_value_take_basic_block (GValue* value, gpointer v_object) {
 
 static void vala_basic_block_class_init (ValaBasicBlockClass * klass) {
 	vala_basic_block_parent_class = g_type_class_peek_parent (klass);
-	VALA_BASIC_BLOCK_CLASS (klass)->finalize = vala_basic_block_finalize;
+	((ValaBasicBlockClass *) klass)->finalize = vala_basic_block_finalize;
 	g_type_class_add_private (klass, sizeof (ValaBasicBlockPrivate));
 }
 
@@ -558,6 +558,7 @@ static void vala_basic_block_instance_init (ValaBasicBlock * self) {
 static void vala_basic_block_finalize (ValaBasicBlock* obj) {
 	ValaBasicBlock * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_BASIC_BLOCK, ValaBasicBlock);
+	g_signal_handlers_destroy (self);
 	_vala_iterable_unref0 (self->priv->nodes);
 	_vala_iterable_unref0 (self->priv->predecessors);
 	_vala_iterable_unref0 (self->priv->successors);

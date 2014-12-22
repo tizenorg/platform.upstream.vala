@@ -678,11 +678,11 @@ void vala_lock_statement_set_body (ValaLockStatement* self, ValaBlock* value) {
 
 static void vala_lock_statement_class_init (ValaLockStatementClass * klass) {
 	vala_lock_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_lock_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_lock_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaLockStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_lock_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_lock_statement_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_lock_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_lock_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->check = vala_lock_statement_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_lock_statement_real_emit;
 }
 
 

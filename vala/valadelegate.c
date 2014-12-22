@@ -1983,14 +1983,14 @@ void vala_delegate_set_sender_type (ValaDelegate* self, ValaDataType* value) {
 
 static void vala_delegate_class_init (ValaDelegateClass * klass) {
 	vala_delegate_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_delegate_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_delegate_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDelegatePrivate));
-	VALA_TYPESYMBOL_CLASS (klass)->get_type_parameter_index = vala_delegate_real_get_type_parameter_index;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_delegate_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_delegate_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_delegate_real_is_reference_type;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_delegate_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_delegate_real_check;
+	((ValaTypeSymbolClass *) klass)->get_type_parameter_index = vala_delegate_real_get_type_parameter_index;
+	((ValaCodeNodeClass *) klass)->accept = vala_delegate_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_delegate_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_delegate_real_is_reference_type;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_delegate_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_delegate_real_check;
 }
 
 

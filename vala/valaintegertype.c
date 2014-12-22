@@ -567,10 +567,10 @@ static gboolean vala_integer_type_real_compatible (ValaDataType* base, ValaDataT
 
 static void vala_integer_type_class_init (ValaIntegerTypeClass * klass) {
 	vala_integer_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_integer_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_integer_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaIntegerTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_integer_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_integer_type_real_compatible;
+	((ValaDataTypeClass *) klass)->copy = vala_integer_type_real_copy;
+	((ValaDataTypeClass *) klass)->compatible = vala_integer_type_real_compatible;
 }
 
 

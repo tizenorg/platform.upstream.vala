@@ -553,7 +553,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		gint _tmp43__length1 = 0;
 		const gchar* _tmp44_ = NULL;
 		void* _tmp45_ = NULL;
-		const gchar* _tmp59_ = NULL;
+		const gchar* _tmp62_ = NULL;
 		len = (gsize) 1;
 		{
 			gboolean _tmp9_ = FALSE;
@@ -630,7 +630,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 					_tmp25__length1 = str_array_length1;
 					_tmp26_ = i;
 					_tmp27_ = _tmp25_[_tmp26_];
-					_tmp28_ = strlen (_tmp27_);
+					_tmp28_ = strlen ((const gchar*) _tmp27_);
 					_tmp29_ = _tmp28_;
 					_tmp21_ = _tmp29_;
 				} else {
@@ -652,7 +652,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		_tmp34_ = str_array_length1;
 		_tmp35_ = len;
 		_tmp36_ = separator;
-		_tmp37_ = strlen (_tmp36_);
+		_tmp37_ = strlen ((const gchar*) _tmp36_);
 		_tmp38_ = _tmp37_;
 		_tmp39_ = i;
 		len = _tmp35_ + (_tmp38_ * (_tmp39_ - 1));
@@ -663,7 +663,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		_tmp43_ = str_array;
 		_tmp43__length1 = str_array_length1;
 		_tmp44_ = _tmp43_[0];
-		_tmp45_ = g_stpcpy ((void*) _tmp42_, _tmp44_);
+		_tmp45_ = g_stpcpy ((void*) _tmp42_, (const gchar*) _tmp44_);
 		ptr = _tmp45_;
 		{
 			gboolean _tmp46_ = FALSE;
@@ -681,8 +681,8 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 				gint _tmp54__length1 = 0;
 				gint _tmp55_ = 0;
 				const gchar* _tmp56_ = NULL;
-				void* _tmp57_ = NULL;
-				void* _tmp58_ = NULL;
+				void* _tmp60_ = NULL;
+				void* _tmp61_ = NULL;
 				if (!_tmp46_) {
 					gint _tmp47_ = 0;
 					_tmp47_ = i;
@@ -697,29 +697,38 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 				}
 				_tmp50_ = ptr;
 				_tmp51_ = separator;
-				_tmp52_ = g_stpcpy (_tmp50_, _tmp51_);
+				_tmp52_ = g_stpcpy (_tmp50_, (const gchar*) _tmp51_);
 				ptr = _tmp52_;
 				_tmp54_ = str_array;
 				_tmp54__length1 = str_array_length1;
 				_tmp55_ = i;
 				_tmp56_ = _tmp54_[_tmp55_];
-				_tmp53_ = _tmp56_;
-				if (_tmp53_ == NULL) {
+				if (_tmp56_ != NULL) {
+					gchar** _tmp57_ = NULL;
+					gint _tmp57__length1 = 0;
+					gint _tmp58_ = 0;
+					const gchar* _tmp59_ = NULL;
+					_tmp57_ = str_array;
+					_tmp57__length1 = str_array_length1;
+					_tmp58_ = i;
+					_tmp59_ = _tmp57_[_tmp58_];
+					_tmp53_ = (const gchar*) _tmp59_;
+				} else {
 					_tmp53_ = "";
 				}
-				_tmp57_ = ptr;
-				_tmp58_ = g_stpcpy (_tmp57_, _tmp53_);
-				ptr = _tmp58_;
+				_tmp60_ = ptr;
+				_tmp61_ = g_stpcpy (_tmp60_, _tmp53_);
+				ptr = _tmp61_;
 			}
 		}
-		_tmp59_ = res;
+		_tmp62_ = res;
 		res = NULL;
-		result = (gchar*) _tmp59_;
+		result = (gchar*) _tmp62_;
 		return result;
 	} else {
-		gchar* _tmp60_ = NULL;
-		_tmp60_ = g_strdup ("");
-		result = _tmp60_;
+		gchar* _tmp63_ = NULL;
+		_tmp63_ = g_strdup ("");
+		result = _tmp63_;
 		return result;
 	}
 }
@@ -852,7 +861,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_tmp4_ = _tmp3_;
 		_g_free0 (_tmp2_);
 		regex = _tmp4_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_REGEX_ERROR) {
 				goto __catch4_g_regex_error;
 			}
@@ -864,7 +873,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_tmp7_ = replacement;
 		_tmp8_ = g_regex_replace_literal (_tmp6_, self, (gssize) (-1), 0, _tmp7_, 0, &_inner_error_);
 		_tmp5_ = _tmp8_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			_g_regex_unref0 (regex);
 			if (_inner_error_->domain == G_REGEX_ERROR) {
 				goto __catch4_g_regex_error;
@@ -891,7 +900,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_g_error_free0 (e);
 	}
 	__finally4:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return NULL;
@@ -7032,7 +7041,7 @@ ValaCCodeMethodCallModule* vala_ccode_method_call_module_new (void) {
 
 static void vala_ccode_method_call_module_class_init (ValaCCodeMethodCallModuleClass * klass) {
 	vala_ccode_method_call_module_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method_call = vala_ccode_method_call_module_real_visit_method_call;
+	((ValaCodeVisitorClass *) klass)->visit_method_call = vala_ccode_method_call_module_real_visit_method_call;
 }
 
 

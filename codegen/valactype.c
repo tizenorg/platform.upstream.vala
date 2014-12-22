@@ -123,9 +123,9 @@ void vala_ctype_set_ctype_name (ValaCType* self, const gchar* value) {
 
 static void vala_ctype_class_init (ValaCTypeClass * klass) {
 	vala_ctype_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_ctype_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_ctype_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_ctype_real_copy;
+	((ValaDataTypeClass *) klass)->copy = vala_ctype_real_copy;
 }
 
 

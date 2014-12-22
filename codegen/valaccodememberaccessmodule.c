@@ -5460,8 +5460,8 @@ static ValaTargetValue* vala_ccode_member_access_module_real_load_variable (Vala
 			ValaGLibValue* _tmp14_ = NULL;
 			ValaGLibValue* _tmp15_ = NULL;
 			ValaArrayType* _tmp16_ = NULL;
-			gint _tmp17_ = 0;
-			gint _tmp18_ = 0;
+			ValaExpression* _tmp17_ = NULL;
+			ValaExpression* _tmp18_ = NULL;
 			gchar* _tmp19_ = NULL;
 			gchar* _tmp20_ = NULL;
 			ValaCCodeConstant* _tmp21_ = NULL;
@@ -5474,7 +5474,7 @@ static ValaTargetValue* vala_ccode_member_access_module_real_load_variable (Vala
 			_tmp16_ = array_type;
 			_tmp17_ = vala_array_type_get_length (_tmp16_);
 			_tmp18_ = _tmp17_;
-			_tmp19_ = g_strdup_printf ("%i", _tmp18_);
+			_tmp19_ = vala_code_node_to_string ((ValaCodeNode*) _tmp18_);
 			_tmp20_ = _tmp19_;
 			_tmp21_ = vala_ccode_constant_new (_tmp20_);
 			_tmp22_ = _tmp21_;
@@ -5912,15 +5912,15 @@ ValaCCodeMemberAccessModule* vala_ccode_member_access_module_construct (GType ob
 
 static void vala_ccode_member_access_module_class_init (ValaCCodeMemberAccessModuleClass * klass) {
 	vala_ccode_member_access_module_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->visit_member_access = vala_ccode_member_access_module_real_visit_member_access;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_local_cvalue = vala_ccode_member_access_module_real_get_local_cvalue;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_parameter_cvalue = vala_ccode_member_access_module_real_get_parameter_cvalue;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_field_cvalue = vala_ccode_member_access_module_real_get_field_cvalue;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->load_variable = vala_ccode_member_access_module_real_load_variable;
-	VALA_CODE_GENERATOR_CLASS (klass)->load_local = vala_ccode_member_access_module_real_load_local;
-	VALA_CODE_GENERATOR_CLASS (klass)->load_parameter = vala_ccode_member_access_module_real_load_parameter;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->load_this_parameter = vala_ccode_member_access_module_real_load_this_parameter;
-	VALA_CODE_GENERATOR_CLASS (klass)->load_field = vala_ccode_member_access_module_real_load_field;
+	((ValaCodeVisitorClass *) klass)->visit_member_access = vala_ccode_member_access_module_real_visit_member_access;
+	((ValaCCodeBaseModuleClass *) klass)->get_local_cvalue = vala_ccode_member_access_module_real_get_local_cvalue;
+	((ValaCCodeBaseModuleClass *) klass)->get_parameter_cvalue = vala_ccode_member_access_module_real_get_parameter_cvalue;
+	((ValaCCodeBaseModuleClass *) klass)->get_field_cvalue = vala_ccode_member_access_module_real_get_field_cvalue;
+	((ValaCCodeBaseModuleClass *) klass)->load_variable = vala_ccode_member_access_module_real_load_variable;
+	((ValaCodeGeneratorClass *) klass)->load_local = vala_ccode_member_access_module_real_load_local;
+	((ValaCodeGeneratorClass *) klass)->load_parameter = vala_ccode_member_access_module_real_load_parameter;
+	((ValaCCodeBaseModuleClass *) klass)->load_this_parameter = vala_ccode_member_access_module_real_load_this_parameter;
+	((ValaCodeGeneratorClass *) klass)->load_field = vala_ccode_member_access_module_real_load_field;
 }
 
 

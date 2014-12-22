@@ -3762,15 +3762,15 @@ void vala_foreach_statement_set_iterator_variable (ValaForeachStatement* self, V
 
 static void vala_foreach_statement_class_init (ValaForeachStatementClass * klass) {
 	vala_foreach_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_foreach_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_foreach_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaForeachStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_foreach_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_foreach_statement_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_foreach_statement_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_foreach_statement_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_foreach_statement_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_foreach_statement_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_foreach_statement_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_foreach_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_foreach_statement_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_foreach_statement_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_foreach_statement_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_foreach_statement_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_foreach_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_foreach_statement_real_get_defined_variables;
 }
 
 

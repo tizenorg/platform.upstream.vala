@@ -287,10 +287,10 @@ void vala_ccode_type_definition_set_deprecated (ValaCCodeTypeDefinition* self, g
 
 static void vala_ccode_type_definition_class_init (ValaCCodeTypeDefinitionClass * klass) {
 	vala_ccode_type_definition_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_type_definition_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_type_definition_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeTypeDefinitionPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_type_definition_real_write;
-	VALA_CCODE_NODE_CLASS (klass)->write_declaration = vala_ccode_type_definition_real_write_declaration;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_type_definition_real_write;
+	((ValaCCodeNodeClass *) klass)->write_declaration = vala_ccode_type_definition_real_write_declaration;
 }
 
 

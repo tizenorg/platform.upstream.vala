@@ -558,7 +558,7 @@ void vala_variable_set_single_assignment (ValaVariable* self, gboolean value) {
 
 static void vala_variable_class_init (ValaVariableClass * klass) {
 	vala_variable_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_variable_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_variable_finalize;
 	g_type_class_add_private (klass, sizeof (ValaVariablePrivate));
 }
 

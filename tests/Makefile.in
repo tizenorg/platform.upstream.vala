@@ -81,12 +81,13 @@ noinst_PROGRAMS = $(am__EXEEXT_1)
 TESTS = basic-types/integers.vala basic-types/escape-chars.vala \
 	basic-types/floats.vala basic-types/strings.vala \
 	basic-types/arrays.vala basic-types/pointers.vala \
-	basic-types/sizeof.vala basic-types/bug591552.vala \
-	basic-types/bug595751.vala basic-types/bug596637.vala \
-	basic-types/bug596785.vala basic-types/bug632322.vala \
-	basic-types/bug647222.vala basic-types/bug648364.vala \
-	basic-types/bug650993.vala basic-types/bug652380.vala \
-	basic-types/bug655908.vala basic-types/bug659975.vala \
+	basic-types/sizeof.vala basic-types/bug571486.vala \
+	basic-types/bug591552.vala basic-types/bug595751.vala \
+	basic-types/bug596637.vala basic-types/bug596785.vala \
+	basic-types/bug632322.vala basic-types/bug647222.vala \
+	basic-types/bug648364.vala basic-types/bug650993.vala \
+	basic-types/bug652380.vala basic-types/bug655908.vala \
+	basic-types/bug659975.vala basic-types/bug678791.vala \
 	basic-types/bug686336.vala namespaces.vala methods/lambda.vala \
 	methods/closures.vala methods/prepostconditions.vala \
 	methods/symbolresolution.vala methods/bug595538.vala \
@@ -96,17 +97,18 @@ TESTS = basic-types/integers.vala basic-types/escape-chars.vala \
 	methods/bug622570.vala methods/bug639054.vala \
 	methods/bug642885.vala methods/bug642899.vala \
 	methods/bug646345.vala methods/bug648320.vala \
-	methods/bug649562.vala methods/bug653391.vala \
-	methods/bug653908.vala methods/bug663210.vala \
-	methods/bug723009.vala methods/bug723195.vala \
-	methods/bug726347.vala methods/generics.vala \
+	methods/bug649562.vala methods/bug652098.vala \
+	methods/bug653391.vala methods/bug653908.vala \
+	methods/bug663210.vala methods/bug723009.vala \
+	methods/bug723195.vala methods/bug726347.vala \
+	methods/bug736235.vala methods/generics.vala \
 	control-flow/break.vala \
 	control-flow/expressions-conditional.vala \
 	control-flow/for.vala control-flow/foreach.vala \
 	control-flow/switch.vala control-flow/sideeffects.vala \
 	control-flow/bug639482.vala control-flow/bug652549.vala \
 	control-flow/bug661985.vala control-flow/bug665904.vala \
-	control-flow/bug691514.vala enums/enums.vala \
+	control-flow/bug691514.vala enums/enums.vala enums/flags.vala \
 	enums/bug673879.vala structs/structs.vala structs/gvalue.vala \
 	structs/bug530605.vala structs/bug572091.vala \
 	structs/bug583603.vala structs/bug595587.vala \
@@ -140,12 +142,13 @@ TESTS = basic-types/integers.vala basic-types/escape-chars.vala \
 	objects/bug628639.vala objects/bug634782.vala \
 	objects/bug642809.vala objects/bug643711.vala \
 	objects/bug646362.vala objects/bug646792.vala \
-	objects/bug653138.vala objects/bug654702.vala \
-	objects/bug663134.vala objects/bug664529.vala \
-	objects/bug667668.vala objects/bug683646.vala \
-	objects/bug695671.vala objects/bug701978.vala \
-	objects/bug702736.vala objects/bug702846.vala \
-	errors/errors.vala errors/bug567181.vala errors/bug579101.vala \
+	objects/bug647018.vala objects/bug653138.vala \
+	objects/bug654702.vala objects/bug663134.vala \
+	objects/bug664529.vala objects/bug667668.vala \
+	objects/bug683646.vala objects/bug695671.vala \
+	objects/bug701978.vala objects/bug702736.vala \
+	objects/bug702846.vala errors/errors.vala \
+	errors/bug567181.vala errors/bug579101.vala \
 	errors/bug596228.vala errors/bug623049.vala \
 	errors/bug639589.vala errors/bug651145.vala \
 	asynchronous/bug595735.vala asynchronous/bug595755.vala \
@@ -514,7 +517,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gen_introspect_decl = @gen_introspect_decl@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -543,8 +545,6 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-vala_gen_introspect_decl = @vala_gen_introspect_decl@
-vapigen_decl = @vapigen_decl@
 NULL = 
 AM_CPPFLAGS = \
 	$(GLIB_CFLAGS) \
@@ -799,6 +799,13 @@ basic-types/sizeof.vala.log: basic-types/sizeof.vala
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+basic-types/bug571486.vala.log: basic-types/bug571486.vala
+	@p='basic-types/bug571486.vala'; \
+	b='basic-types/bug571486.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 basic-types/bug591552.vala.log: basic-types/bug591552.vala
 	@p='basic-types/bug591552.vala'; \
 	b='basic-types/bug591552.vala'; \
@@ -872,6 +879,13 @@ basic-types/bug655908.vala.log: basic-types/bug655908.vala
 basic-types/bug659975.vala.log: basic-types/bug659975.vala
 	@p='basic-types/bug659975.vala'; \
 	b='basic-types/bug659975.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+basic-types/bug678791.vala.log: basic-types/bug678791.vala
+	@p='basic-types/bug678791.vala'; \
+	b='basic-types/bug678791.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1016,6 +1030,13 @@ methods/bug649562.vala.log: methods/bug649562.vala
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+methods/bug652098.vala.log: methods/bug652098.vala
+	@p='methods/bug652098.vala'; \
+	b='methods/bug652098.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 methods/bug653391.vala.log: methods/bug653391.vala
 	@p='methods/bug653391.vala'; \
 	b='methods/bug653391.vala'; \
@@ -1054,6 +1075,13 @@ methods/bug723195.vala.log: methods/bug723195.vala
 methods/bug726347.vala.log: methods/bug726347.vala
 	@p='methods/bug726347.vala'; \
 	b='methods/bug726347.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+methods/bug736235.vala.log: methods/bug736235.vala
+	@p='methods/bug736235.vala'; \
+	b='methods/bug736235.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1145,6 +1173,13 @@ control-flow/bug691514.vala.log: control-flow/bug691514.vala
 enums/enums.vala.log: enums/enums.vala
 	@p='enums/enums.vala'; \
 	b='enums/enums.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+enums/flags.vala.log: enums/flags.vala
+	@p='enums/flags.vala'; \
+	b='enums/flags.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1621,6 +1656,13 @@ objects/bug646362.vala.log: objects/bug646362.vala
 objects/bug646792.vala.log: objects/bug646792.vala
 	@p='objects/bug646792.vala'; \
 	b='objects/bug646792.vala'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+objects/bug647018.vala.log: objects/bug647018.vala
+	@p='objects/bug647018.vala'; \
+	b='objects/bug647018.vala'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

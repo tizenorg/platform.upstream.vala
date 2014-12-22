@@ -520,9 +520,9 @@ gint vala_typesymbol_get_type_parameter_index (ValaTypeSymbol* self, const gchar
 
 static void vala_typesymbol_class_init (ValaTypeSymbolClass * klass) {
 	vala_typesymbol_parent_class = g_type_class_peek_parent (klass);
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_typesymbol_real_is_reference_type;
-	VALA_TYPESYMBOL_CLASS (klass)->is_subtype_of = vala_typesymbol_real_is_subtype_of;
-	VALA_TYPESYMBOL_CLASS (klass)->get_type_parameter_index = vala_typesymbol_real_get_type_parameter_index;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_typesymbol_real_is_reference_type;
+	((ValaTypeSymbolClass *) klass)->is_subtype_of = vala_typesymbol_real_is_subtype_of;
+	((ValaTypeSymbolClass *) klass)->get_type_parameter_index = vala_typesymbol_real_get_type_parameter_index;
 }
 
 

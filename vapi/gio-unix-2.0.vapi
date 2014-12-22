@@ -15,6 +15,7 @@ namespace GLib {
 		public unowned string get_categories ();
 		public unowned string get_filename ();
 		public unowned string get_generic_name ();
+		public static GLib.List<GLib.DesktopAppInfo> get_implementations (string @interface);
 		public bool get_is_hidden ();
 		public unowned string[] get_keywords ();
 		public bool get_nodisplay ();
@@ -24,6 +25,7 @@ namespace GLib {
 		public bool has_key (string key);
 		public void launch_action (string action_name, GLib.AppLaunchContext launch_context);
 		public bool launch_uris_as_manager (GLib.List uris, GLib.AppLaunchContext launch_context, GLib.SpawnFlags spawn_flags, GLib.SpawnChildSetupFunc user_setup, void* user_setup_data, GLib.DesktopAppLaunchCallback pid_callback, void* pid_callback_data) throws GLib.Error;
+		[CCode (array_length = false, array_null_terminated = true)]
 		public unowned string[] list_actions ();
 		public static void*[] search (string search_string);
 		public static void set_desktop_env (string desktop_env);

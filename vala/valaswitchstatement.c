@@ -1934,13 +1934,13 @@ void vala_switch_statement_set_expression (ValaSwitchStatement* self, ValaExpres
 
 static void vala_switch_statement_class_init (ValaSwitchStatementClass * klass) {
 	vala_switch_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_switch_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_switch_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSwitchStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_switch_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_switch_statement_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_switch_statement_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_switch_statement_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_switch_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_switch_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_switch_statement_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_switch_statement_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->check = vala_switch_statement_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_switch_statement_real_emit;
 }
 
 

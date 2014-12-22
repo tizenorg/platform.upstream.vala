@@ -3198,28 +3198,28 @@ void vala_data_type_set_is_dynamic (ValaDataType* self, gboolean value) {
 
 static void vala_data_type_class_init (ValaDataTypeClass * klass) {
 	vala_data_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_data_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_data_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDataTypePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_data_type_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_data_type_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_data_type_real_to_string;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_data_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_data_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->equals = vala_data_type_real_equals;
-	VALA_DATA_TYPE_CLASS (klass)->stricter = vala_data_type_real_stricter;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_data_type_real_replace_type;
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_data_type_real_compatible;
-	VALA_DATA_TYPE_CLASS (klass)->is_invokable = vala_data_type_real_is_invokable;
-	VALA_DATA_TYPE_CLASS (klass)->get_return_type = vala_data_type_real_get_return_type;
-	VALA_DATA_TYPE_CLASS (klass)->get_parameters = vala_data_type_real_get_parameters;
-	VALA_DATA_TYPE_CLASS (klass)->is_reference_type_or_type_parameter = vala_data_type_real_is_reference_type_or_type_parameter;
-	VALA_DATA_TYPE_CLASS (klass)->is_array = vala_data_type_real_is_array;
-	VALA_DATA_TYPE_CLASS (klass)->is_accessible = vala_data_type_real_is_accessible;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_data_type_real_get_member;
-	VALA_DATA_TYPE_CLASS (klass)->get_pointer_member = vala_data_type_real_get_pointer_member;
-	VALA_DATA_TYPE_CLASS (klass)->is_real_struct_type = vala_data_type_real_is_real_struct_type;
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_data_type_real_is_disposable;
-	VALA_DATA_TYPE_CLASS (klass)->get_actual_type = vala_data_type_real_get_actual_type;
+	((ValaCodeNodeClass *) klass)->accept = vala_data_type_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_data_type_real_accept_children;
+	((ValaCodeNodeClass *) klass)->to_string = vala_data_type_real_to_string;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_data_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_data_type_real_copy;
+	((ValaDataTypeClass *) klass)->equals = vala_data_type_real_equals;
+	((ValaDataTypeClass *) klass)->stricter = vala_data_type_real_stricter;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_data_type_real_replace_type;
+	((ValaDataTypeClass *) klass)->compatible = vala_data_type_real_compatible;
+	((ValaDataTypeClass *) klass)->is_invokable = vala_data_type_real_is_invokable;
+	((ValaDataTypeClass *) klass)->get_return_type = vala_data_type_real_get_return_type;
+	((ValaDataTypeClass *) klass)->get_parameters = vala_data_type_real_get_parameters;
+	((ValaDataTypeClass *) klass)->is_reference_type_or_type_parameter = vala_data_type_real_is_reference_type_or_type_parameter;
+	((ValaDataTypeClass *) klass)->is_array = vala_data_type_real_is_array;
+	((ValaDataTypeClass *) klass)->is_accessible = vala_data_type_real_is_accessible;
+	((ValaDataTypeClass *) klass)->get_member = vala_data_type_real_get_member;
+	((ValaDataTypeClass *) klass)->get_pointer_member = vala_data_type_real_get_pointer_member;
+	((ValaDataTypeClass *) klass)->is_real_struct_type = vala_data_type_real_is_real_struct_type;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_data_type_real_is_disposable;
+	((ValaDataTypeClass *) klass)->get_actual_type = vala_data_type_real_get_actual_type;
 }
 
 

@@ -1475,13 +1475,13 @@ void vala_boolean_literal_set_value (ValaBooleanLiteral* self, gboolean value) {
 
 static void vala_boolean_literal_class_init (ValaBooleanLiteralClass * klass) {
 	vala_boolean_literal_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_boolean_literal_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_boolean_literal_finalize;
 	g_type_class_add_private (klass, sizeof (ValaBooleanLiteralPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_boolean_literal_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_boolean_literal_real_to_string;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_boolean_literal_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_boolean_literal_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_boolean_literal_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_boolean_literal_real_accept;
+	((ValaCodeNodeClass *) klass)->to_string = vala_boolean_literal_real_to_string;
+	((ValaExpressionClass *) klass)->is_pure = vala_boolean_literal_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_boolean_literal_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_boolean_literal_real_emit;
 }
 
 

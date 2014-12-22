@@ -2470,14 +2470,14 @@ void vala_lambda_expression_set_method (ValaLambdaExpression* self, ValaMethod* 
 
 static void vala_lambda_expression_class_init (ValaLambdaExpressionClass * klass) {
 	vala_lambda_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_lambda_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_lambda_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaLambdaExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_lambda_expression_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_lambda_expression_real_accept_children;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_lambda_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_lambda_expression_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_lambda_expression_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_lambda_expression_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_lambda_expression_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_lambda_expression_real_accept_children;
+	((ValaExpressionClass *) klass)->is_pure = vala_lambda_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_lambda_expression_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_lambda_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_lambda_expression_real_get_used_variables;
 }
 
 

@@ -257,11 +257,11 @@ ValaList* vala_list_construct (GType object_type, GType g_type, GBoxedCopyFunc g
 static void vala_list_class_init (ValaListClass * klass) {
 	vala_list_parent_class = g_type_class_peek_parent (klass);
 	g_type_class_add_private (klass, sizeof (ValaListPrivate));
-	VALA_LIST_CLASS (klass)->get = vala_list_real_get;
-	VALA_LIST_CLASS (klass)->set = vala_list_real_set;
-	VALA_LIST_CLASS (klass)->index_of = vala_list_real_index_of;
-	VALA_LIST_CLASS (klass)->insert = vala_list_real_insert;
-	VALA_LIST_CLASS (klass)->remove_at = vala_list_real_remove_at;
+	((ValaListClass *) klass)->get = vala_list_real_get;
+	((ValaListClass *) klass)->set = vala_list_real_set;
+	((ValaListClass *) klass)->index_of = vala_list_real_index_of;
+	((ValaListClass *) klass)->insert = vala_list_real_insert;
+	((ValaListClass *) klass)->remove_at = vala_list_real_remove_at;
 }
 
 

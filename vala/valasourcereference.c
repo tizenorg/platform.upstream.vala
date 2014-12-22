@@ -425,7 +425,7 @@ void vala_value_take_source_reference (GValue* value, gpointer v_object) {
 
 static void vala_source_reference_class_init (ValaSourceReferenceClass * klass) {
 	vala_source_reference_parent_class = g_type_class_peek_parent (klass);
-	VALA_SOURCE_REFERENCE_CLASS (klass)->finalize = vala_source_reference_finalize;
+	((ValaSourceReferenceClass *) klass)->finalize = vala_source_reference_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSourceReferencePrivate));
 }
 
@@ -439,6 +439,7 @@ static void vala_source_reference_instance_init (ValaSourceReference * self) {
 static void vala_source_reference_finalize (ValaSourceReference* obj) {
 	ValaSourceReference * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_SOURCE_REFERENCE, ValaSourceReference);
+	g_signal_handlers_destroy (self);
 	_vala_iterable_unref0 (self->priv->_using_directives);
 }
 

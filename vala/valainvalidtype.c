@@ -294,7 +294,7 @@ static ValaDataType* vala_invalid_type_real_copy (ValaDataType* base) {
 
 static void vala_invalid_type_class_init (ValaInvalidTypeClass * klass) {
 	vala_invalid_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_invalid_type_real_copy;
+	((ValaDataTypeClass *) klass)->copy = vala_invalid_type_real_copy;
 }
 
 

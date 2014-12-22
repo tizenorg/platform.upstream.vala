@@ -399,6 +399,8 @@ void vala_expression_set_value_type (ValaExpression* self, ValaDataType* value);
 void vala_data_type_set_nullable (ValaDataType* self, gboolean value);
 static void vala_initializer_list_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen);
 void vala_code_node_emit (ValaCodeNode* self, ValaCodeGenerator* codegen);
+static void vala_initializer_list_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection);
+void vala_code_node_get_used_variables (ValaCodeNode* self, ValaCollection* collection);
 gint vala_initializer_list_get_size (ValaInitializerList* self);
 static void vala_initializer_list_finalize (ValaCodeNode* obj);
 
@@ -1417,6 +1419,58 @@ static void vala_initializer_list_real_emit (ValaCodeNode* base, ValaCodeGenerat
 }
 
 
+static void vala_initializer_list_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection) {
+	ValaInitializerList * self;
+	self = (ValaInitializerList*) base;
+	g_return_if_fail (collection != NULL);
+	{
+		ValaList* _expr_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _expr_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _expr_index = 0;
+		_tmp0_ = self->priv->initializers;
+		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
+		_expr_list = _tmp1_;
+		_tmp2_ = _expr_list;
+		_tmp3_ = vala_collection_get_size ((ValaCollection*) _tmp2_);
+		_tmp4_ = _tmp3_;
+		_expr_size = _tmp4_;
+		_expr_index = -1;
+		while (TRUE) {
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaExpression* expr = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
+			gpointer _tmp10_ = NULL;
+			ValaExpression* _tmp11_ = NULL;
+			ValaCollection* _tmp12_ = NULL;
+			_tmp5_ = _expr_index;
+			_expr_index = _tmp5_ + 1;
+			_tmp6_ = _expr_index;
+			_tmp7_ = _expr_size;
+			if (!(_tmp6_ < _tmp7_)) {
+				break;
+			}
+			_tmp8_ = _expr_list;
+			_tmp9_ = _expr_index;
+			_tmp10_ = vala_list_get (_tmp8_, _tmp9_);
+			expr = (ValaExpression*) _tmp10_;
+			_tmp11_ = expr;
+			_tmp12_ = collection;
+			vala_code_node_get_used_variables ((ValaCodeNode*) _tmp11_, _tmp12_);
+			_vala_code_node_unref0 (expr);
+		}
+		_vala_iterable_unref0 (_expr_list);
+	}
+}
+
+
 gint vala_initializer_list_get_size (ValaInitializerList* self) {
 	gint result;
 	ValaList* _tmp0_ = NULL;
@@ -1433,15 +1487,16 @@ gint vala_initializer_list_get_size (ValaInitializerList* self) {
 
 static void vala_initializer_list_class_init (ValaInitializerListClass * klass) {
 	vala_initializer_list_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_initializer_list_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_initializer_list_finalize;
 	g_type_class_add_private (klass, sizeof (ValaInitializerListPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_initializer_list_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_initializer_list_real_accept;
-	VALA_EXPRESSION_CLASS (klass)->is_constant = vala_initializer_list_real_is_constant;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_initializer_list_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_initializer_list_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_initializer_list_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_initializer_list_real_emit;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_initializer_list_real_accept_children;
+	((ValaCodeNodeClass *) klass)->accept = vala_initializer_list_real_accept;
+	((ValaExpressionClass *) klass)->is_constant = vala_initializer_list_real_is_constant;
+	((ValaExpressionClass *) klass)->is_pure = vala_initializer_list_real_is_pure;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_initializer_list_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->check = vala_initializer_list_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_initializer_list_real_emit;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_initializer_list_real_get_used_variables;
 }
 
 

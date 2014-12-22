@@ -280,8 +280,8 @@ static void vala_empty_statement_real_emit (ValaCodeNode* base, ValaCodeGenerato
 
 static void vala_empty_statement_class_init (ValaEmptyStatementClass * klass) {
 	vala_empty_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_empty_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_empty_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_empty_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->emit = vala_empty_statement_real_emit;
 }
 
 

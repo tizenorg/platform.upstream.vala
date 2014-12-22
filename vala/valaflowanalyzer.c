@@ -7215,7 +7215,7 @@ static void vala_flow_analyzer_value_take_jump_target (GValue* value, gpointer v
 
 static void vala_flow_analyzer_jump_target_class_init (ValaFlowAnalyzerJumpTargetClass * klass) {
 	vala_flow_analyzer_jump_target_parent_class = g_type_class_peek_parent (klass);
-	VALA_FLOW_ANALYZER_JUMP_TARGET_CLASS (klass)->finalize = vala_flow_analyzer_jump_target_finalize;
+	((ValaFlowAnalyzerJumpTargetClass *) klass)->finalize = vala_flow_analyzer_jump_target_finalize;
 	g_type_class_add_private (klass, sizeof (ValaFlowAnalyzerJumpTargetPrivate));
 }
 
@@ -7229,6 +7229,7 @@ static void vala_flow_analyzer_jump_target_instance_init (ValaFlowAnalyzerJumpTa
 static void vala_flow_analyzer_jump_target_finalize (ValaFlowAnalyzerJumpTarget* obj) {
 	ValaFlowAnalyzerJumpTarget * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_FLOW_ANALYZER_TYPE_JUMP_TARGET, ValaFlowAnalyzerJumpTarget);
+	g_signal_handlers_destroy (self);
 	_vala_code_node_unref0 (self->priv->_error_domain);
 	_vala_code_node_unref0 (self->priv->_error_code);
 	_vala_code_node_unref0 (self->priv->_error_class);
@@ -7272,38 +7273,38 @@ static void vala_flow_analyzer_jump_target_unref (gpointer instance) {
 
 static void vala_flow_analyzer_class_init (ValaFlowAnalyzerClass * klass) {
 	vala_flow_analyzer_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->finalize = vala_flow_analyzer_finalize;
+	((ValaCodeVisitorClass *) klass)->finalize = vala_flow_analyzer_finalize;
 	g_type_class_add_private (klass, sizeof (ValaFlowAnalyzerPrivate));
-	VALA_CODE_VISITOR_CLASS (klass)->visit_source_file = vala_flow_analyzer_real_visit_source_file;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_class = vala_flow_analyzer_real_visit_class;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_struct = vala_flow_analyzer_real_visit_struct;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_interface = vala_flow_analyzer_real_visit_interface;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_enum = vala_flow_analyzer_real_visit_enum;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_error_domain = vala_flow_analyzer_real_visit_error_domain;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_field = vala_flow_analyzer_real_visit_field;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_lambda_expression = vala_flow_analyzer_real_visit_lambda_expression;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method = vala_flow_analyzer_real_visit_method;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_signal = vala_flow_analyzer_real_visit_signal;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_creation_method = vala_flow_analyzer_real_visit_creation_method;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_property = vala_flow_analyzer_real_visit_property;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_property_accessor = vala_flow_analyzer_real_visit_property_accessor;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_block = vala_flow_analyzer_real_visit_block;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_declaration_statement = vala_flow_analyzer_real_visit_declaration_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_local_variable = vala_flow_analyzer_real_visit_local_variable;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_expression_statement = vala_flow_analyzer_real_visit_expression_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_if_statement = vala_flow_analyzer_real_visit_if_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_switch_statement = vala_flow_analyzer_real_visit_switch_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_loop = vala_flow_analyzer_real_visit_loop;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_foreach_statement = vala_flow_analyzer_real_visit_foreach_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_break_statement = vala_flow_analyzer_real_visit_break_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_continue_statement = vala_flow_analyzer_real_visit_continue_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_return_statement = vala_flow_analyzer_real_visit_return_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_yield_statement = vala_flow_analyzer_real_visit_yield_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_throw_statement = vala_flow_analyzer_real_visit_throw_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_try_statement = vala_flow_analyzer_real_visit_try_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_lock_statement = vala_flow_analyzer_real_visit_lock_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_unlock_statement = vala_flow_analyzer_real_visit_unlock_statement;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_expression = vala_flow_analyzer_real_visit_expression;
+	((ValaCodeVisitorClass *) klass)->visit_source_file = vala_flow_analyzer_real_visit_source_file;
+	((ValaCodeVisitorClass *) klass)->visit_class = vala_flow_analyzer_real_visit_class;
+	((ValaCodeVisitorClass *) klass)->visit_struct = vala_flow_analyzer_real_visit_struct;
+	((ValaCodeVisitorClass *) klass)->visit_interface = vala_flow_analyzer_real_visit_interface;
+	((ValaCodeVisitorClass *) klass)->visit_enum = vala_flow_analyzer_real_visit_enum;
+	((ValaCodeVisitorClass *) klass)->visit_error_domain = vala_flow_analyzer_real_visit_error_domain;
+	((ValaCodeVisitorClass *) klass)->visit_field = vala_flow_analyzer_real_visit_field;
+	((ValaCodeVisitorClass *) klass)->visit_lambda_expression = vala_flow_analyzer_real_visit_lambda_expression;
+	((ValaCodeVisitorClass *) klass)->visit_method = vala_flow_analyzer_real_visit_method;
+	((ValaCodeVisitorClass *) klass)->visit_signal = vala_flow_analyzer_real_visit_signal;
+	((ValaCodeVisitorClass *) klass)->visit_creation_method = vala_flow_analyzer_real_visit_creation_method;
+	((ValaCodeVisitorClass *) klass)->visit_property = vala_flow_analyzer_real_visit_property;
+	((ValaCodeVisitorClass *) klass)->visit_property_accessor = vala_flow_analyzer_real_visit_property_accessor;
+	((ValaCodeVisitorClass *) klass)->visit_block = vala_flow_analyzer_real_visit_block;
+	((ValaCodeVisitorClass *) klass)->visit_declaration_statement = vala_flow_analyzer_real_visit_declaration_statement;
+	((ValaCodeVisitorClass *) klass)->visit_local_variable = vala_flow_analyzer_real_visit_local_variable;
+	((ValaCodeVisitorClass *) klass)->visit_expression_statement = vala_flow_analyzer_real_visit_expression_statement;
+	((ValaCodeVisitorClass *) klass)->visit_if_statement = vala_flow_analyzer_real_visit_if_statement;
+	((ValaCodeVisitorClass *) klass)->visit_switch_statement = vala_flow_analyzer_real_visit_switch_statement;
+	((ValaCodeVisitorClass *) klass)->visit_loop = vala_flow_analyzer_real_visit_loop;
+	((ValaCodeVisitorClass *) klass)->visit_foreach_statement = vala_flow_analyzer_real_visit_foreach_statement;
+	((ValaCodeVisitorClass *) klass)->visit_break_statement = vala_flow_analyzer_real_visit_break_statement;
+	((ValaCodeVisitorClass *) klass)->visit_continue_statement = vala_flow_analyzer_real_visit_continue_statement;
+	((ValaCodeVisitorClass *) klass)->visit_return_statement = vala_flow_analyzer_real_visit_return_statement;
+	((ValaCodeVisitorClass *) klass)->visit_yield_statement = vala_flow_analyzer_real_visit_yield_statement;
+	((ValaCodeVisitorClass *) klass)->visit_throw_statement = vala_flow_analyzer_real_visit_throw_statement;
+	((ValaCodeVisitorClass *) klass)->visit_try_statement = vala_flow_analyzer_real_visit_try_statement;
+	((ValaCodeVisitorClass *) klass)->visit_lock_statement = vala_flow_analyzer_real_visit_lock_statement;
+	((ValaCodeVisitorClass *) klass)->visit_unlock_statement = vala_flow_analyzer_real_visit_unlock_statement;
+	((ValaCodeVisitorClass *) klass)->visit_expression = vala_flow_analyzer_real_visit_expression;
 }
 
 

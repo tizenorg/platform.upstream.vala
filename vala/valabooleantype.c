@@ -384,7 +384,7 @@ static ValaDataType* vala_boolean_type_real_copy (ValaDataType* base) {
 
 static void vala_boolean_type_class_init (ValaBooleanTypeClass * klass) {
 	vala_boolean_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_boolean_type_real_copy;
+	((ValaDataTypeClass *) klass)->copy = vala_boolean_type_real_copy;
 }
 
 

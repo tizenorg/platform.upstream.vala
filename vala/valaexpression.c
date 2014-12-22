@@ -636,11 +636,11 @@ ValaStatement* vala_expression_get_parent_statement (ValaExpression* self) {
 
 static void vala_expression_class_init (ValaExpressionClass * klass) {
 	vala_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaExpressionPrivate));
-	VALA_EXPRESSION_CLASS (klass)->is_constant = vala_expression_real_is_constant;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_expression_real_is_pure;
-	VALA_EXPRESSION_CLASS (klass)->is_non_null = vala_expression_real_is_non_null;
+	((ValaExpressionClass *) klass)->is_constant = vala_expression_real_is_constant;
+	((ValaExpressionClass *) klass)->is_pure = vala_expression_real_is_pure;
+	((ValaExpressionClass *) klass)->is_non_null = vala_expression_real_is_non_null;
 }
 
 

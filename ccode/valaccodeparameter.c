@@ -252,9 +252,9 @@ void vala_ccode_parameter_set_ellipsis (ValaCCodeParameter* self, gboolean value
 
 static void vala_ccode_parameter_class_init (ValaCCodeParameterClass * klass) {
 	vala_ccode_parameter_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_parameter_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_parameter_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeParameterPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_parameter_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_parameter_real_write;
 }
 
 

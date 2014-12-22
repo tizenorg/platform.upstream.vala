@@ -900,10 +900,10 @@ static void vala_hash_set_iterator_set_set (ValaHashSetIterator* self, ValaHashS
 
 static void vala_hash_set_iterator_class_init (ValaHashSetIteratorClass * klass) {
 	vala_hash_set_iterator_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERATOR_CLASS (klass)->finalize = vala_hash_set_iterator_finalize;
+	((ValaIteratorClass *) klass)->finalize = vala_hash_set_iterator_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashSetIteratorPrivate));
-	VALA_ITERATOR_CLASS (klass)->next = vala_hash_set_iterator_real_next;
-	VALA_ITERATOR_CLASS (klass)->get = vala_hash_set_iterator_real_get;
+	((ValaIteratorClass *) klass)->next = vala_hash_set_iterator_real_next;
+	((ValaIteratorClass *) klass)->get = vala_hash_set_iterator_real_get;
 }
 
 
@@ -936,14 +936,14 @@ static GType vala_hash_set_iterator_get_type (void) {
 
 static void vala_hash_set_class_init (ValaHashSetClass * klass) {
 	vala_hash_set_parent_class = g_type_class_peek_parent (klass);
-	VALA_ITERABLE_CLASS (klass)->finalize = vala_hash_set_finalize;
+	((ValaIterableClass *) klass)->finalize = vala_hash_set_finalize;
 	g_type_class_add_private (klass, sizeof (ValaHashSetPrivate));
-	VALA_COLLECTION_CLASS (klass)->contains = vala_hash_set_real_contains;
-	VALA_ITERABLE_CLASS (klass)->get_element_type = vala_hash_set_real_get_element_type;
-	VALA_ITERABLE_CLASS (klass)->iterator = vala_hash_set_real_iterator;
-	VALA_COLLECTION_CLASS (klass)->add = vala_hash_set_real_add;
-	VALA_COLLECTION_CLASS (klass)->remove = vala_hash_set_real_remove;
-	VALA_COLLECTION_CLASS (klass)->clear = vala_hash_set_real_clear;
+	((ValaCollectionClass *) klass)->contains = vala_hash_set_real_contains;
+	((ValaIterableClass *) klass)->get_element_type = vala_hash_set_real_get_element_type;
+	((ValaIterableClass *) klass)->iterator = vala_hash_set_real_iterator;
+	((ValaCollectionClass *) klass)->add = vala_hash_set_real_add;
+	((ValaCollectionClass *) klass)->remove = vala_hash_set_real_remove;
+	((ValaCollectionClass *) klass)->clear = vala_hash_set_real_clear;
 	VALA_COLLECTION_CLASS (klass)->get_size = vala_hash_set_real_get_size;
 }
 

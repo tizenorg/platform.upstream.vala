@@ -239,7 +239,7 @@ namespace Vala {
 		public static string get_ccode_const_name (Vala.CodeNode node);
 		public static string get_ccode_constructv_name (Vala.CreationMethod m);
 		public static string get_ccode_copy_function (Vala.TypeSymbol sym);
-		public static string get_ccode_declarator_suffix (Vala.DataType type);
+		public Vala.CCodeDeclaratorSuffix? get_ccode_declarator_suffix (Vala.DataType type);
 		public static string get_ccode_default_value (Vala.TypeSymbol sym);
 		public static bool get_ccode_delegate_target (Vala.CodeNode node);
 		public static string get_ccode_delegate_target_name (Vala.Variable variable);
@@ -322,6 +322,7 @@ namespace Vala {
 		public virtual string get_parameter_array_length_cname (Vala.Parameter param, int dim);
 		public abstract Vala.TargetValue get_parameter_cvalue (Vala.Parameter param);
 		public Vala.CCodeConstant get_property_canonical_cconstant (Vala.Property prop);
+		public static string get_quark_name (Vala.ErrorDomain edomain);
 		public Vala.CCodeExpression get_result_cexpression (string cname = "result");
 		public Vala.CCodeConstant get_signal_canonical_constant (Vala.Signal sig, string? detail = null);
 		public virtual Vala.CCodeFunctionCall get_signal_creation (Vala.Signal sig, Vala.TypeSymbol type);
@@ -439,7 +440,7 @@ namespace Vala {
 	[CCode (cheader_filename = "valacodegen.h")]
 	public class CCodeCompiler {
 		public CCodeCompiler ();
-		public void compile (Vala.CodeContext context, string? cc_command, string[] cc_options);
+		public void compile (Vala.CodeContext context, string? cc_command, string[] cc_options, string? pkg_config_command = null);
 	}
 	[CCode (cheader_filename = "valacodegen.h")]
 	public abstract class CCodeControlFlowModule : Vala.CCodeMethodModule {
@@ -568,20 +569,23 @@ namespace Vala {
 	public class GDBusModule : Vala.GVariantModule {
 		public GDBusModule ();
 		public bool dbus_method_uses_file_descriptor (Vala.Method method);
+		public static string dbus_result_name (Vala.Method m);
 		public static string? get_dbus_name (Vala.TypeSymbol symbol);
 		public static string get_dbus_name_for_member (Vala.Symbol symbol);
+		protected Vala.CCodeExpression get_interface_info (Vala.ObjectTypeSymbol sym);
 		public static bool is_dbus_no_reply (Vala.Method m);
+		public static bool is_dbus_visible (Vala.CodeNode node);
 		public void receive_dbus_value (Vala.DataType type, Vala.CCodeExpression message_expr, Vala.CCodeExpression iter_expr, Vala.CCodeExpression target_expr, Vala.Symbol? sym, Vala.CCodeExpression? error_expr = null, out bool may_fail = null);
 		public void send_dbus_value (Vala.DataType type, Vala.CCodeExpression builder_expr, Vala.CCodeExpression expr, Vala.Symbol? sym);
+		public override void visit_class (Vala.Class cl);
 		public override void visit_error_domain (Vala.ErrorDomain edomain);
+		public override void visit_interface (Vala.Interface iface);
 	}
 	[CCode (cheader_filename = "valacodegen.h")]
 	public class GDBusServerModule : Vala.GDBusClientModule {
 		public GDBusServerModule ();
-		public static string dbus_result_name (Vala.Method m);
 		public override void generate_class_declaration (Vala.Class cl, Vala.CCodeFile decl_space);
 		public override void generate_interface_declaration (Vala.Interface iface, Vala.CCodeFile decl_space);
-		public static bool is_dbus_visible (Vala.CodeNode node);
 		public override void register_dbus_info (Vala.CCodeBlock block, Vala.ObjectTypeSymbol sym);
 		public override void visit_class (Vala.Class cl);
 		public override void visit_interface (Vala.Interface iface);

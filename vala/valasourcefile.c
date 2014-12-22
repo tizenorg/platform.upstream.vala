@@ -86,7 +86,7 @@ typedef struct _ValaUsingDirective ValaUsingDirective;
 typedef struct _ValaUsingDirectiveClass ValaUsingDirectiveClass;
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _vala_iterable_unref0(var) ((var == NULL) ? NULL : (var = (vala_iterable_unref (var), NULL)))
-#define _g_mapped_file_free0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_free (var), NULL)))
+#define _g_mapped_file_unref0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_unref (var), NULL)))
 #define _vala_code_node_unref0(var) ((var == NULL) ? NULL : (var = (vala_code_node_unref (var), NULL)))
 
 #define VALA_TYPE_CODE_VISITOR (vala_code_visitor_get_type ())
@@ -1090,9 +1090,9 @@ static void vala_source_file_read_source_file (ValaSourceFile* self) {
 		g_file_get_contents (_tmp0_, &_tmp1_, NULL, &_inner_error_);
 		_g_free0 (cont);
 		cont = _tmp1_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch14_g_file_error;
+				goto __catch16_g_file_error;
 			}
 			_g_free0 (cont);
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
@@ -1100,8 +1100,8 @@ static void vala_source_file_read_source_file (ValaSourceFile* self) {
 			return;
 		}
 	}
-	goto __finally14;
-	__catch14_g_file_error:
+	goto __finally16;
+	__catch16_g_file_error:
 	{
 		GError* fe = NULL;
 		fe = _inner_error_;
@@ -1110,8 +1110,8 @@ static void vala_source_file_read_source_file (ValaSourceFile* self) {
 		_g_free0 (cont);
 		return;
 	}
-	__finally14:
-	if (_inner_error_ != NULL) {
+	__finally16:
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		_g_free0 (cont);
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
@@ -1212,9 +1212,9 @@ gchar* vala_source_file_get_mapped_contents (ValaSourceFile* self) {
 			_tmp6_ = self->priv->_filename;
 			_tmp7_ = g_mapped_file_new (_tmp6_, FALSE, &_inner_error_);
 			_tmp5_ = _tmp7_;
-			if (_inner_error_ != NULL) {
+			if (G_UNLIKELY (_inner_error_ != NULL)) {
 				if (_inner_error_->domain == G_FILE_ERROR) {
-					goto __catch15_g_file_error;
+					goto __catch17_g_file_error;
 				}
 				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
@@ -1222,12 +1222,12 @@ gchar* vala_source_file_get_mapped_contents (ValaSourceFile* self) {
 			}
 			_tmp8_ = _tmp5_;
 			_tmp5_ = NULL;
-			_g_mapped_file_free0 (self->priv->mapped_file);
+			_g_mapped_file_unref0 (self->priv->mapped_file);
 			self->priv->mapped_file = _tmp8_;
-			_g_mapped_file_free0 (_tmp5_);
+			_g_mapped_file_unref0 (_tmp5_);
 		}
-		goto __finally15;
-		__catch15_g_file_error:
+		goto __finally17;
+		__catch17_g_file_error:
 		{
 			GError* e = NULL;
 			const gchar* _tmp9_ = NULL;
@@ -1248,8 +1248,8 @@ gchar* vala_source_file_get_mapped_contents (ValaSourceFile* self) {
 			_g_error_free0 (e);
 			return result;
 		}
-		__finally15:
-		if (_inner_error_ != NULL) {
+		__finally17:
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 			g_clear_error (&_inner_error_);
 			return NULL;
@@ -1646,7 +1646,7 @@ void vala_value_take_source_file (GValue* value, gpointer v_object) {
 
 static void vala_source_file_class_init (ValaSourceFileClass * klass) {
 	vala_source_file_parent_class = g_type_class_peek_parent (klass);
-	VALA_SOURCE_FILE_CLASS (klass)->finalize = vala_source_file_finalize;
+	((ValaSourceFileClass *) klass)->finalize = vala_source_file_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSourceFilePrivate));
 }
 
@@ -1680,6 +1680,7 @@ static void vala_source_file_instance_init (ValaSourceFile * self) {
 static void vala_source_file_finalize (ValaSourceFile* obj) {
 	ValaSourceFile * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_SOURCE_FILE, ValaSourceFile);
+	g_signal_handlers_destroy (self);
 	_g_free0 (self->priv->_filename);
 	_g_free0 (self->priv->_gir_namespace);
 	_g_free0 (self->priv->_gir_version);
@@ -1690,7 +1691,7 @@ static void vala_source_file_finalize (ValaSourceFile* obj) {
 	_g_free0 (self->priv->csource_filename);
 	_g_free0 (self->priv->cinclude_filename);
 	_vala_iterable_unref0 (self->priv->source_array);
-	_g_mapped_file_free0 (self->priv->mapped_file);
+	_g_mapped_file_unref0 (self->priv->mapped_file);
 	_g_free0 (self->priv->_content);
 }
 

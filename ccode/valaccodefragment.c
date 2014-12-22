@@ -333,11 +333,11 @@ ValaCCodeFragment* vala_ccode_fragment_new (void) {
 
 static void vala_ccode_fragment_class_init (ValaCCodeFragmentClass * klass) {
 	vala_ccode_fragment_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_fragment_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_fragment_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeFragmentPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_fragment_real_write;
-	VALA_CCODE_NODE_CLASS (klass)->write_declaration = vala_ccode_fragment_real_write_declaration;
-	VALA_CCODE_NODE_CLASS (klass)->write_combined = vala_ccode_fragment_real_write_combined;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_fragment_real_write;
+	((ValaCCodeNodeClass *) klass)->write_declaration = vala_ccode_fragment_real_write_declaration;
+	((ValaCCodeNodeClass *) klass)->write_combined = vala_ccode_fragment_real_write_combined;
 }
 
 

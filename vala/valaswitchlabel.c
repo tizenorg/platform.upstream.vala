@@ -527,12 +527,12 @@ void vala_switch_label_set_section (ValaSwitchLabel* self, ValaSwitchSection* va
 
 static void vala_switch_label_class_init (ValaSwitchLabelClass * klass) {
 	vala_switch_label_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_switch_label_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_switch_label_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSwitchLabelPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_switch_label_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_switch_label_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_switch_label_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_switch_label_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_switch_label_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_switch_label_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_switch_label_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_switch_label_real_emit;
 }
 
 

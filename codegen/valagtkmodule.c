@@ -1003,7 +1003,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_tmp4_ = _tmp3_;
 		_g_free0 (_tmp2_);
 		regex = _tmp4_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_REGEX_ERROR) {
 				goto __catch6_g_regex_error;
 			}
@@ -1015,7 +1015,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_tmp7_ = replacement;
 		_tmp8_ = g_regex_replace_literal (_tmp6_, self, (gssize) (-1), 0, _tmp7_, 0, &_inner_error_);
 		_tmp5_ = _tmp8_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			_g_regex_unref0 (regex);
 			if (_inner_error_->domain == G_REGEX_ERROR) {
 				goto __catch6_g_regex_error;
@@ -1042,7 +1042,7 @@ static gchar* string_replace (const gchar* self, const gchar* old, const gchar* 
 		_g_error_free0 (e);
 	}
 	__finally6:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return NULL;
@@ -1073,7 +1073,7 @@ static void vala_gtk_module_process_current_ui_resource (ValaGtkModule* self, co
 	ValaMarkupTokenType current_token = 0;
 	ValaMarkupReader* _tmp24_ = NULL;
 	ValaMarkupTokenType _tmp25_ = 0;
-	gboolean _tmp82_ = FALSE;
+	gboolean _tmp93_ = FALSE;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (ui_resource != NULL);
 	g_return_if_fail (node != NULL);
@@ -1143,8 +1143,8 @@ static void vala_gtk_module_process_current_ui_resource (ValaGtkModule* self, co
 		ValaMarkupTokenType _tmp26_ = 0;
 		gboolean _tmp27_ = FALSE;
 		ValaMarkupTokenType _tmp28_ = 0;
-		ValaMarkupReader* _tmp80_ = NULL;
-		ValaMarkupTokenType _tmp81_ = 0;
+		ValaMarkupReader* _tmp91_ = NULL;
+		ValaMarkupTokenType _tmp92_ = 0;
 		_tmp26_ = current_token;
 		if (!(_tmp26_ != VALA_MARKUP_TOKEN_TYPE_EOF)) {
 			break;
@@ -1259,54 +1259,88 @@ static void vala_gtk_module_process_current_ui_resource (ValaGtkModule* self, co
 				handler_name = _tmp61_;
 				_tmp62_ = current_class;
 				if (_tmp62_ != NULL) {
+					gboolean _tmp63_ = FALSE;
+					const gchar* _tmp64_ = NULL;
 					gint sep_idx = 0;
-					const gchar* _tmp63_ = NULL;
-					gint _tmp64_ = 0;
-					gint _tmp65_ = 0;
+					const gchar* _tmp74_ = NULL;
+					gint _tmp75_ = 0;
+					gint _tmp76_ = 0;
 					ValaSignal* sig = NULL;
-					ValaClass* _tmp69_ = NULL;
-					const gchar* _tmp70_ = NULL;
-					gchar* _tmp71_ = NULL;
-					gchar* _tmp72_ = NULL;
-					ValaSymbol* _tmp73_ = NULL;
-					ValaSignal* _tmp74_ = NULL;
-					ValaSignal* _tmp75_ = NULL;
-					ValaSignal* _tmp76_ = NULL;
-					_tmp63_ = signal_name;
-					_tmp64_ = string_index_of (_tmp63_, "::", 0);
-					sep_idx = _tmp64_;
-					_tmp65_ = sep_idx;
-					if (_tmp65_ >= 0) {
-						const gchar* _tmp66_ = NULL;
-						gint _tmp67_ = 0;
-						gchar* _tmp68_ = NULL;
-						_tmp66_ = signal_name;
-						_tmp67_ = sep_idx;
-						_tmp68_ = string_substring (_tmp66_, (glong) 0, (glong) _tmp67_);
+					ValaClass* _tmp80_ = NULL;
+					const gchar* _tmp81_ = NULL;
+					gchar* _tmp82_ = NULL;
+					gchar* _tmp83_ = NULL;
+					ValaSymbol* _tmp84_ = NULL;
+					ValaSignal* _tmp85_ = NULL;
+					ValaSignal* _tmp86_ = NULL;
+					ValaSignal* _tmp87_ = NULL;
+					_tmp64_ = signal_name;
+					if (_tmp64_ == NULL) {
+						_tmp63_ = TRUE;
+					} else {
+						const gchar* _tmp65_ = NULL;
+						_tmp65_ = handler_name;
+						_tmp63_ = _tmp65_ == NULL;
+					}
+					if (_tmp63_) {
+						ValaCodeNode* _tmp66_ = NULL;
+						ValaSourceReference* _tmp67_ = NULL;
+						ValaSourceReference* _tmp68_ = NULL;
+						const gchar* _tmp69_ = NULL;
+						gchar* _tmp70_ = NULL;
+						gchar* _tmp71_ = NULL;
+						ValaMarkupReader* _tmp72_ = NULL;
+						ValaMarkupTokenType _tmp73_ = 0;
+						_tmp66_ = node;
+						_tmp67_ = vala_code_node_get_source_reference (_tmp66_);
+						_tmp68_ = _tmp67_;
+						_tmp69_ = ui_file;
+						_tmp70_ = g_strdup_printf ("Invalid signal in ui file `%s'", _tmp69_);
+						_tmp71_ = _tmp70_;
+						vala_report_error (_tmp68_, _tmp71_);
+						_g_free0 (_tmp71_);
+						_tmp72_ = reader;
+						_tmp73_ = vala_markup_reader_read_token (_tmp72_, NULL, NULL);
+						current_token = _tmp73_;
+						_g_free0 (handler_name);
 						_g_free0 (signal_name);
-						signal_name = _tmp68_;
+						continue;
 					}
-					_tmp69_ = current_class;
-					_tmp70_ = signal_name;
-					_tmp71_ = string_replace (_tmp70_, "-", "_");
-					_tmp72_ = _tmp71_;
-					_tmp73_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) _tmp69_, _tmp72_);
-					_tmp74_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp73_, VALA_TYPE_SIGNAL) ? ((ValaSignal*) _tmp73_) : NULL;
-					if (_tmp74_ == NULL) {
-						_vala_code_node_unref0 (_tmp73_);
+					_tmp74_ = signal_name;
+					_tmp75_ = string_index_of (_tmp74_, "::", 0);
+					sep_idx = _tmp75_;
+					_tmp76_ = sep_idx;
+					if (_tmp76_ >= 0) {
+						const gchar* _tmp77_ = NULL;
+						gint _tmp78_ = 0;
+						gchar* _tmp79_ = NULL;
+						_tmp77_ = signal_name;
+						_tmp78_ = sep_idx;
+						_tmp79_ = string_substring (_tmp77_, (glong) 0, (glong) _tmp78_);
+						_g_free0 (signal_name);
+						signal_name = _tmp79_;
 					}
-					_tmp75_ = _tmp74_;
-					_g_free0 (_tmp72_);
-					sig = _tmp75_;
-					_tmp76_ = sig;
-					if (_tmp76_ != NULL) {
-						ValaHashMap* _tmp77_ = NULL;
-						const gchar* _tmp78_ = NULL;
-						ValaSignal* _tmp79_ = NULL;
-						_tmp77_ = self->priv->current_handler_to_signal_map;
-						_tmp78_ = handler_name;
-						_tmp79_ = sig;
-						vala_map_set ((ValaMap*) _tmp77_, _tmp78_, _tmp79_);
+					_tmp80_ = current_class;
+					_tmp81_ = signal_name;
+					_tmp82_ = string_replace (_tmp81_, "-", "_");
+					_tmp83_ = _tmp82_;
+					_tmp84_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) _tmp80_, _tmp83_);
+					_tmp85_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp84_, VALA_TYPE_SIGNAL) ? ((ValaSignal*) _tmp84_) : NULL;
+					if (_tmp85_ == NULL) {
+						_vala_code_node_unref0 (_tmp84_);
+					}
+					_tmp86_ = _tmp85_;
+					_g_free0 (_tmp83_);
+					sig = _tmp86_;
+					_tmp87_ = sig;
+					if (_tmp87_ != NULL) {
+						ValaHashMap* _tmp88_ = NULL;
+						const gchar* _tmp89_ = NULL;
+						ValaSignal* _tmp90_ = NULL;
+						_tmp88_ = self->priv->current_handler_to_signal_map;
+						_tmp89_ = handler_name;
+						_tmp90_ = sig;
+						vala_map_set ((ValaMap*) _tmp88_, _tmp89_, _tmp90_);
 					}
 					_vala_code_node_unref0 (sig);
 				}
@@ -1314,26 +1348,26 @@ static void vala_gtk_module_process_current_ui_resource (ValaGtkModule* self, co
 				_g_free0 (signal_name);
 			}
 		}
-		_tmp80_ = reader;
-		_tmp81_ = vala_markup_reader_read_token (_tmp80_, NULL, NULL);
-		current_token = _tmp81_;
+		_tmp91_ = reader;
+		_tmp92_ = vala_markup_reader_read_token (_tmp91_, NULL, NULL);
+		current_token = _tmp92_;
 	}
-	_tmp82_ = template_tag_found;
-	if (!_tmp82_) {
-		ValaCodeNode* _tmp83_ = NULL;
-		ValaSourceReference* _tmp84_ = NULL;
-		ValaSourceReference* _tmp85_ = NULL;
-		const gchar* _tmp86_ = NULL;
-		gchar* _tmp87_ = NULL;
-		gchar* _tmp88_ = NULL;
-		_tmp83_ = node;
-		_tmp84_ = vala_code_node_get_source_reference (_tmp83_);
-		_tmp85_ = _tmp84_;
-		_tmp86_ = ui_resource;
-		_tmp87_ = g_strdup_printf ("ui resource `%s' does not describe a valid composite template", _tmp86_);
-		_tmp88_ = _tmp87_;
-		vala_report_error (_tmp85_, _tmp88_);
-		_g_free0 (_tmp88_);
+	_tmp93_ = template_tag_found;
+	if (!_tmp93_) {
+		ValaCodeNode* _tmp94_ = NULL;
+		ValaSourceReference* _tmp95_ = NULL;
+		ValaSourceReference* _tmp96_ = NULL;
+		const gchar* _tmp97_ = NULL;
+		gchar* _tmp98_ = NULL;
+		gchar* _tmp99_ = NULL;
+		_tmp94_ = node;
+		_tmp95_ = vala_code_node_get_source_reference (_tmp94_);
+		_tmp96_ = _tmp95_;
+		_tmp97_ = ui_resource;
+		_tmp98_ = g_strdup_printf ("ui resource `%s' does not describe a valid composite template", _tmp97_);
+		_tmp99_ = _tmp98_;
+		vala_report_error (_tmp96_, _tmp99_);
+		_g_free0 (_tmp99_);
 	}
 	_vala_code_node_unref0 (current_class);
 	_g_object_unref0 (reader);
@@ -2438,12 +2472,12 @@ ValaGtkModule* vala_gtk_module_new (void) {
 
 static void vala_gtk_module_class_init (ValaGtkModuleClass * klass) {
 	vala_gtk_module_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->finalize = vala_gtk_module_finalize;
+	((ValaCodeVisitorClass *) klass)->finalize = vala_gtk_module_finalize;
 	g_type_class_add_private (klass, sizeof (ValaGtkModulePrivate));
-	VALA_GTYPE_MODULE_CLASS (klass)->generate_class_init = vala_gtk_module_real_generate_class_init;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_field = vala_gtk_module_real_visit_field;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method = vala_gtk_module_real_visit_method;
-	VALA_GTYPE_MODULE_CLASS (klass)->end_instance_init = vala_gtk_module_real_end_instance_init;
+	((ValaGTypeModuleClass *) klass)->generate_class_init = vala_gtk_module_real_generate_class_init;
+	((ValaCodeVisitorClass *) klass)->visit_field = vala_gtk_module_real_visit_field;
+	((ValaCodeVisitorClass *) klass)->visit_method = vala_gtk_module_real_visit_method;
+	((ValaGTypeModuleClass *) klass)->end_instance_init = vala_gtk_module_real_end_instance_init;
 }
 
 

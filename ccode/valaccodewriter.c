@@ -45,7 +45,7 @@ typedef struct _ValaCCodeWriterClass ValaCCodeWriterClass;
 typedef struct _ValaCCodeWriterPrivate ValaCCodeWriterPrivate;
 #define _g_free0(var) (var = (g_free (var), NULL))
 #define _fclose0(var) ((var == NULL) ? NULL : (var = (fclose (var), NULL)))
-#define _g_mapped_file_free0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_free (var), NULL)))
+#define _g_mapped_file_unref0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_unref (var), NULL)))
 #define _g_error_free0(var) ((var == NULL) ? NULL : (var = (g_error_free (var), NULL)))
 
 #define VALA_TYPE_CCODE_NODE (vala_ccode_node_get_type ())
@@ -311,7 +311,7 @@ void vala_ccode_writer_close (ValaCCodeWriter* self) {
 			_tmp1_ = self->priv->_filename;
 			_tmp2_ = g_mapped_file_new (_tmp1_, FALSE, &_inner_error_);
 			old_file = _tmp2_;
-			if (_inner_error_ != NULL) {
+			if (G_UNLIKELY (_inner_error_ != NULL)) {
 				if (_inner_error_->domain == G_FILE_ERROR) {
 					goto __catch0_g_file_error;
 				}
@@ -322,12 +322,12 @@ void vala_ccode_writer_close (ValaCCodeWriter* self) {
 			_tmp3_ = self->priv->temp_filename;
 			_tmp4_ = g_mapped_file_new (_tmp3_, FALSE, &_inner_error_);
 			new_file = _tmp4_;
-			if (_inner_error_ != NULL) {
-				_g_mapped_file_free0 (old_file);
+			if (G_UNLIKELY (_inner_error_ != NULL)) {
+				_g_mapped_file_unref0 (old_file);
 				if (_inner_error_->domain == G_FILE_ERROR) {
 					goto __catch0_g_file_error;
 				}
-				_g_mapped_file_free0 (old_file);
+				_g_mapped_file_unref0 (old_file);
 				g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 				g_clear_error (&_inner_error_);
 				return;
@@ -355,12 +355,12 @@ void vala_ccode_writer_close (ValaCCodeWriter* self) {
 					changed = FALSE;
 				}
 			}
-			_g_mapped_file_free0 (old_file);
+			_g_mapped_file_unref0 (old_file);
 			old_file = NULL;
-			_g_mapped_file_free0 (new_file);
+			_g_mapped_file_unref0 (new_file);
 			new_file = NULL;
-			_g_mapped_file_free0 (new_file);
-			_g_mapped_file_free0 (old_file);
+			_g_mapped_file_unref0 (new_file);
+			_g_mapped_file_unref0 (old_file);
 		}
 		goto __finally0;
 		__catch0_g_file_error:
@@ -371,7 +371,7 @@ void vala_ccode_writer_close (ValaCCodeWriter* self) {
 			_g_error_free0 (e);
 		}
 		__finally0:
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 			g_clear_error (&_inner_error_);
 			return;
@@ -573,7 +573,7 @@ void vala_ccode_writer_write_comment (ValaCCodeWriter* self, const gchar* text) 
 		first = TRUE;
 		_tmp1_ = g_regex_new ("^\t+", 0, 0, &_inner_error_);
 		regex = _tmp1_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_REGEX_ERROR) {
 				goto __catch1_g_regex_error;
 			}
@@ -625,7 +625,7 @@ void vala_ccode_writer_write_comment (ValaCCodeWriter* self, const gchar* text) 
 					_tmp10_ = line;
 					_tmp11_ = g_regex_replace_literal (_tmp9_, _tmp10_, (gssize) (-1), 0, "", 0, &_inner_error_);
 					_tmp8_ = _tmp11_;
-					if (_inner_error_ != NULL) {
+					if (G_UNLIKELY (_inner_error_ != NULL)) {
 						_g_free0 (line);
 						lines = (_vala_array_free (lines, lines_length1, (GDestroyNotify) g_free), NULL);
 						_g_regex_unref0 (regex);
@@ -721,7 +721,7 @@ void vala_ccode_writer_write_comment (ValaCCodeWriter* self, const gchar* text) 
 		_g_error_free0 (e);
 	}
 	__finally1:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return;
@@ -890,7 +890,7 @@ void vala_value_take_ccode_writer (GValue* value, gpointer v_object) {
 
 static void vala_ccode_writer_class_init (ValaCCodeWriterClass * klass) {
 	vala_ccode_writer_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_WRITER_CLASS (klass)->finalize = vala_ccode_writer_finalize;
+	((ValaCCodeWriterClass *) klass)->finalize = vala_ccode_writer_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeWriterPrivate));
 }
 
@@ -906,6 +906,7 @@ static void vala_ccode_writer_instance_init (ValaCCodeWriter * self) {
 static void vala_ccode_writer_finalize (ValaCCodeWriter* obj) {
 	ValaCCodeWriter * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_CCODE_WRITER, ValaCCodeWriter);
+	g_signal_handlers_destroy (self);
 	_g_free0 (self->priv->_filename);
 	_g_free0 (self->priv->source_filename);
 	_g_free0 (self->priv->temp_filename);

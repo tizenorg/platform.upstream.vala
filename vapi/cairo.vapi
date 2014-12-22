@@ -169,7 +169,10 @@ namespace Cairo {
 		DEFAULT,
 		NONE,
 		GRAY,
-		SUBPIXEL
+		SUBPIXEL,
+		FAST,
+		GOOD,
+		BEST
 	}
 
 	[CCode (cname = "cairo_fill_rule_t", has_type_id = false)]
@@ -367,7 +370,9 @@ namespace Cairo {
 		SOLID,
 		SURFACE,
 		LINEAR,
-		RADIAL
+		RADIAL,
+		MESH,
+		RASTER_SOURCE
 	}
 
 	[Compact]
@@ -474,7 +479,8 @@ namespace Cairo {
 		TOY,
 		FT,
 		WIN32,
-		ATSUI
+		QUARTZ,
+		USER
 	}
 
 	[Compact]
@@ -589,7 +595,9 @@ namespace Cairo {
 		SCRIPT,
 		XCB,
 		XLIB,
-		XML
+		XML,
+		COGL,
+		WIN32
 	}
 
 	[Compact]
@@ -630,6 +638,8 @@ namespace Cairo {
 	public class Surface {
 		[CCode (cname = "cairo_surface_create_similar")]
 		public Surface.similar (Surface other, Content content, int width, int height);
+		[CCode (cname = "cairo_surface_create_similar_image")]
+		public Surface.similar_image (Surface other, Format format, int width, int height);
 		[CCode (cname = "cairo_surface_create_for_rectangle")]
 		public Surface.for_rectangle (Surface target, double x, double y, double width, double height);
 		public void copy_page ();
@@ -638,23 +648,66 @@ namespace Cairo {
 		public void get_font_options (out FontOptions options);
 		public Content get_content ();
 		public Device get_device ();
+		public void get_device_offset (out double x_offset, out double y_offset);
+		public void get_device_scale (out double x_scale, out double y_scale);
 		public void get_fallback_resolution (out double x_pixels_per_inch, out double y_pixels_per_inch);
 		public uint get_reference_count ();
+		public SurfaceType get_type ();
 		public bool has_show_text_glyphs ();
 		public void mark_dirty ();
 		public void mark_dirty_rectangle (int x, int y, int width, int height);
+		public Surface map_to_image (RectangleInt extents);
 		public void set_device_offset (double x_offset, double y_offset);
-		public void get_device_offset (out double x_offset, out double y_offset);
+		public void set_device_scale (double x_scale, double y_scale);
 		public void set_fallback_resolution (double x_pixels_per_inch, double y_pixels_per_inch);
 		public void show_page ();
 		public Status status ();
-		public SurfaceType get_type ();
+		public bool supports_mime_type (string mime_type);
+		public void unmap_image (Surface image);
 
 		public Status write_to_png (string filename);
 		public Status write_to_png_stream (WriteFunc write_func);
 
 		[CCode (cname = "cairo_win32_surface_get_image")]
 		public Surface? win32_get_image ();
+	}
+
+	[Compact]
+	[CCode (ref_function = "cairo_device_reference", unref_function = "cairo_device_destroy", cname = "cairo_device_t", cheader_filename = "cairo.h")]
+	public class DeviceObserver {
+		protected DeviceObserver ();
+		public double elapsed ();
+		public double fill_elapsed ();
+		public double glyphs_elapsed ();
+		public double mask_elapsed ();
+		public double paint_elapsed ();
+		public double stroke_elapsed ();
+		public Status print (WriteFunc write_func);
+	}
+
+	[Compact]
+	[CCode (ref_function = "cairo_surface_reference", unref_function = "cairo_surface_destroy", cname = "cairo_surface_t", cheader_filename = "cairo.h")]
+	public class SurfaceObserver {
+		[CCode (cname = "cairo_surface_create_observer")]
+		public SurfaceObserver (Surface target, SurfaceObserverMode mode);
+		public Status add_fill_callback (SurfaceObserverCallback func);
+		public Status add_finish_callback (SurfaceObserverCallback func);
+		public Status add_flush_callback (SurfaceObserverCallback func);
+		public Status add_glyphs_callback (SurfaceObserverCallback func);
+		public Status add_mask_callback (SurfaceObserverCallback func);
+		public Status add_paint_callback (SurfaceObserverCallback func);
+		public Status add_stroke_callback (SurfaceObserverCallback func);
+		public double elapsed ();
+		public Status print (WriteFunc write_func);
+	}
+
+	[CCode (cname = "cairo_surface_observer_callback_t", instance_pos = 2.9)]
+	public delegate void SurfaceObserverCallback (SurfaceObserver observer, Surface target);
+
+	[CCode (cname = "cairo_surface_observer_mode_t", has_type_id = false)]
+	public enum SurfaceObserverMode {
+		NORMAL,
+		RECORD_OPERATIONS
 	}
 
 	[CCode (cname = "cairo_content_t", has_type_id = false)]
@@ -676,7 +729,21 @@ namespace Cairo {
 		WIN32,
 		BEOS,
 		DIRECTFB,
-		SVG
+		SVG,
+		OS2,
+		WIN32_PRINTING,
+		QUARTZ_IMAGE,
+		SCRIPT,
+		QT,
+		RECORDING,
+		VG,
+		GL,
+		DRM,
+		TEE,
+		XML,
+		SKIA,
+		SUBSURFACE,
+		COGL
 	}
 
 	[CCode (cname = "cairo_format_t", has_type_id = false)]
@@ -685,7 +752,8 @@ namespace Cairo {
 		RGB24,
 		A8,
 		A1,
-		RGB16_565;
+		RGB16_565,
+		RGB30;
 
 		public int stride_for_width (int width);
 	}
@@ -903,7 +971,10 @@ namespace Cairo {
 		INVALID_SIZE,
 		USER_FONT_NOT_IMPLEMENTED,
 		DEVICE_TYPE_MISMATCH,
-		DEVICE_ERROR;
+		DEVICE_ERROR,
+		INVALID_MESH_CONSTRUCTION,
+		DEVICE_FINISHED,
+		JBIG2_GLOBAL_MISSING;
 		[CCode (cname = "cairo_status_to_string")]
 		public unowned string to_string ();
 	}
@@ -914,6 +985,10 @@ namespace Cairo {
 		public const string JPEG;
 		public const string PNG;
 		public const string URI;
+		public const string UNIQUE_ID;
+		public const string JBIG2;
+		public const string JBIG2_GLOBAL;
+		public const string JBIG2_GLOBAL_ID;
 	}
 
 	public int version ();

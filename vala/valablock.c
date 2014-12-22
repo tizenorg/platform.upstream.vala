@@ -2524,12 +2524,12 @@ void vala_block_set_captured (ValaBlock* self, gboolean value) {
 
 static void vala_block_class_init (ValaBlockClass * klass) {
 	vala_block_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_block_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_block_finalize;
 	g_type_class_add_private (klass, sizeof (ValaBlockPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_block_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_block_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_block_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_block_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_block_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_block_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_block_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_block_real_emit;
 }
 
 

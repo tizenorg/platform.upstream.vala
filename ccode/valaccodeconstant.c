@@ -455,9 +455,9 @@ void vala_ccode_constant_set_name (ValaCCodeConstant* self, const gchar* value) 
 
 static void vala_ccode_constant_class_init (ValaCCodeConstantClass * klass) {
 	vala_ccode_constant_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_constant_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_constant_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeConstantPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_constant_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_constant_real_write;
 }
 
 

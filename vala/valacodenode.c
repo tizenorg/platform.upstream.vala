@@ -1593,17 +1593,17 @@ void vala_value_take_code_node (GValue* value, gpointer v_object) {
 
 static void vala_code_node_class_init (ValaCodeNodeClass * klass) {
 	vala_code_node_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_code_node_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_code_node_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCodeNodePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_code_node_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_code_node_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_code_node_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_code_node_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_code_node_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_code_node_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_code_node_real_to_string;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_code_node_real_get_defined_variables;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_code_node_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_code_node_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_code_node_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_code_node_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_code_node_real_emit;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_code_node_real_replace_type;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_code_node_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->to_string = vala_code_node_real_to_string;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_code_node_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_code_node_real_get_used_variables;
 }
 
 
@@ -1616,6 +1616,7 @@ static void vala_code_node_instance_init (ValaCodeNode * self) {
 static void vala_code_node_finalize (ValaCodeNode* obj) {
 	ValaCodeNode * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_CODE_NODE, ValaCodeNode);
+	g_signal_handlers_destroy (self);
 	_vala_source_reference_unref0 (self->priv->_source_reference);
 	__g_list_free__vala_code_node_unref0_0 (self->attributes);
 	_vala_iterable_unref0 (self->priv->_error_types);
@@ -1785,7 +1786,7 @@ void vala_value_take_attribute_cache (GValue* value, gpointer v_object) {
 
 static void vala_attribute_cache_class_init (ValaAttributeCacheClass * klass) {
 	vala_attribute_cache_parent_class = g_type_class_peek_parent (klass);
-	VALA_ATTRIBUTE_CACHE_CLASS (klass)->finalize = vala_attribute_cache_finalize;
+	((ValaAttributeCacheClass *) klass)->finalize = vala_attribute_cache_finalize;
 }
 
 
@@ -1797,6 +1798,7 @@ static void vala_attribute_cache_instance_init (ValaAttributeCache * self) {
 static void vala_attribute_cache_finalize (ValaAttributeCache* obj) {
 	ValaAttributeCache * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_ATTRIBUTE_CACHE, ValaAttributeCache);
+	g_signal_handlers_destroy (self);
 }
 
 

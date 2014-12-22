@@ -1004,7 +1004,7 @@ void vala_value_take_ccode_file (GValue* value, gpointer v_object) {
 
 static void vala_ccode_file_class_init (ValaCCodeFileClass * klass) {
 	vala_ccode_file_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_FILE_CLASS (klass)->finalize = vala_ccode_file_finalize;
+	((ValaCCodeFileClass *) klass)->finalize = vala_ccode_file_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeFilePrivate));
 }
 
@@ -1053,6 +1053,7 @@ static void vala_ccode_file_instance_init (ValaCCodeFile * self) {
 static void vala_ccode_file_finalize (ValaCCodeFile* obj) {
 	ValaCCodeFile * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_CCODE_FILE, ValaCCodeFile);
+	g_signal_handlers_destroy (self);
 	_vala_iterable_unref0 (self->priv->declarations);
 	_vala_iterable_unref0 (self->priv->includes);
 	_vala_ccode_node_unref0 (self->priv->comments);

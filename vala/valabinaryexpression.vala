@@ -186,6 +186,7 @@ public class Vala.BinaryExpression : Expression {
 
 			var ma = new MemberAccess.simple (local.name, source_reference);
 			ma.target_type = target_type;
+			ma.formal_target_type = formal_target_type;
 			ma.check (context);
 
 			parent_node.replace_expression (this, ma);
@@ -422,12 +423,12 @@ public class Vala.BinaryExpression : Expression {
 			right.target_type.value_owned = false;
 
 			if (left.value_type.nullable != right.value_type.nullable) {
-				// if only one operand is nullable, make sure the other operand is promoted to nullable as well
-				if (!left.value_type.nullable) {
-					left.target_type.nullable = true;
-				} else if (!right.value_type.nullable) {
-					right.target_type.nullable = true;
-				}
+				// if only one operand is nullable, make sure the other
+				// operand is promoted to nullable as well,
+				// reassign both, as get_arithmetic_result_type doesn't
+				// take nullability into account
+				left.target_type.nullable = true;
+				right.target_type.nullable = true;
 			}
 
 			value_type = context.analyzer.bool_type;

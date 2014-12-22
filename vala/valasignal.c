@@ -1542,12 +1542,12 @@ static void vala_signal_set_default_handler (ValaSignal* self, ValaMethod* value
 
 static void vala_signal_class_init (ValaSignalClass * klass) {
 	vala_signal_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_signal_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_signal_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSignalPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_signal_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_signal_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_signal_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_signal_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_signal_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_signal_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_signal_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_signal_real_check;
 }
 
 

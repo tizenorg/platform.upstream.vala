@@ -292,9 +292,9 @@ void vala_ccode_member_access_set_is_pointer (ValaCCodeMemberAccess* self, gbool
 
 static void vala_ccode_member_access_class_init (ValaCCodeMemberAccessClass * klass) {
 	vala_ccode_member_access_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_member_access_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_member_access_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeMemberAccessPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_member_access_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_member_access_real_write;
 }
 
 

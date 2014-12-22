@@ -298,9 +298,9 @@ void vala_ccode_do_statement_set_condition (ValaCCodeDoStatement* self, ValaCCod
 
 static void vala_ccode_do_statement_class_init (ValaCCodeDoStatementClass * klass) {
 	vala_ccode_do_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_do_statement_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_do_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeDoStatementPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_do_statement_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_do_statement_real_write;
 }
 
 

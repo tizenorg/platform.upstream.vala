@@ -1283,13 +1283,13 @@ void vala_local_variable_set_no_init (ValaLocalVariable* self, gboolean value) {
 
 static void vala_local_variable_class_init (ValaLocalVariableClass * klass) {
 	vala_local_variable_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_local_variable_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_local_variable_finalize;
 	g_type_class_add_private (klass, sizeof (ValaLocalVariablePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_local_variable_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_local_variable_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_local_variable_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_local_variable_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_local_variable_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_local_variable_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_local_variable_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_local_variable_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_local_variable_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_local_variable_real_check;
 }
 
 

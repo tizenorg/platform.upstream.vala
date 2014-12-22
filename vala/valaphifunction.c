@@ -339,7 +339,7 @@ void vala_value_take_phi_function (GValue* value, gpointer v_object) {
 
 static void vala_phi_function_class_init (ValaPhiFunctionClass * klass) {
 	vala_phi_function_parent_class = g_type_class_peek_parent (klass);
-	VALA_PHI_FUNCTION_CLASS (klass)->finalize = vala_phi_function_finalize;
+	((ValaPhiFunctionClass *) klass)->finalize = vala_phi_function_finalize;
 	g_type_class_add_private (klass, sizeof (ValaPhiFunctionPrivate));
 }
 
@@ -353,6 +353,7 @@ static void vala_phi_function_instance_init (ValaPhiFunction * self) {
 static void vala_phi_function_finalize (ValaPhiFunction* obj) {
 	ValaPhiFunction * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_PHI_FUNCTION, ValaPhiFunction);
+	g_signal_handlers_destroy (self);
 	_vala_code_node_unref0 (self->priv->_original_variable);
 	_vala_iterable_unref0 (self->priv->_operands);
 }

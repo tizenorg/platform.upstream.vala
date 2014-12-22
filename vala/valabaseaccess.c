@@ -605,11 +605,11 @@ static void vala_base_access_real_emit (ValaCodeNode* base, ValaCodeGenerator* c
 
 static void vala_base_access_class_init (ValaBaseAccessClass * klass) {
 	vala_base_access_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_base_access_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_base_access_real_to_string;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_base_access_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_base_access_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_base_access_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_base_access_real_accept;
+	((ValaCodeNodeClass *) klass)->to_string = vala_base_access_real_to_string;
+	((ValaExpressionClass *) klass)->is_pure = vala_base_access_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_base_access_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_base_access_real_emit;
 }
 
 

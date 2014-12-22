@@ -201,10 +201,10 @@ void vala_struct_register_function_set_struct_reference (ValaStructRegisterFunct
 
 static void vala_struct_register_function_class_init (ValaStructRegisterFunctionClass * klass) {
 	vala_struct_register_function_parent_class = g_type_class_peek_parent (klass);
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->finalize = vala_struct_register_function_finalize;
+	((ValaTypeRegisterFunctionClass *) klass)->finalize = vala_struct_register_function_finalize;
 	g_type_class_add_private (klass, sizeof (ValaStructRegisterFunctionPrivate));
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_type_declaration = vala_struct_register_function_real_get_type_declaration;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_accessibility = vala_struct_register_function_real_get_accessibility;
+	((ValaTypeRegisterFunctionClass *) klass)->get_type_declaration = vala_struct_register_function_real_get_type_declaration;
+	((ValaTypeRegisterFunctionClass *) klass)->get_accessibility = vala_struct_register_function_real_get_accessibility;
 }
 
 

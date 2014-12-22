@@ -2625,18 +2625,18 @@ void vala_unary_expression_set_inner (ValaUnaryExpression* self, ValaExpression*
 
 static void vala_unary_expression_class_init (ValaUnaryExpressionClass * klass) {
 	vala_unary_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_unary_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_unary_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaUnaryExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_unary_expression_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_unary_expression_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_unary_expression_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_unary_expression_real_to_string;
-	VALA_EXPRESSION_CLASS (klass)->is_constant = vala_unary_expression_real_is_constant;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_unary_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_unary_expression_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_unary_expression_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_unary_expression_real_get_defined_variables;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_unary_expression_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->accept = vala_unary_expression_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_unary_expression_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_unary_expression_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->to_string = vala_unary_expression_real_to_string;
+	((ValaExpressionClass *) klass)->is_constant = vala_unary_expression_real_is_constant;
+	((ValaExpressionClass *) klass)->is_pure = vala_unary_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_unary_expression_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_unary_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_unary_expression_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_unary_expression_real_get_used_variables;
 }
 
 

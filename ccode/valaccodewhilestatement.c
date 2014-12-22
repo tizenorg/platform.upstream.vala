@@ -268,9 +268,9 @@ void vala_ccode_while_statement_set_body (ValaCCodeWhileStatement* self, ValaCCo
 
 static void vala_ccode_while_statement_class_init (ValaCCodeWhileStatementClass * klass) {
 	vala_ccode_while_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_while_statement_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_while_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeWhileStatementPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_while_statement_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_while_statement_real_write;
 }
 
 

@@ -853,14 +853,14 @@ void vala_object_type_set_type_symbol (ValaObjectType* self, ValaObjectTypeSymbo
 
 static void vala_object_type_class_init (ValaObjectTypeClass * klass) {
 	vala_object_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_object_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_object_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaObjectTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_object_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->stricter = vala_object_type_real_stricter;
-	VALA_DATA_TYPE_CLASS (klass)->is_invokable = vala_object_type_real_is_invokable;
-	VALA_DATA_TYPE_CLASS (klass)->get_return_type = vala_object_type_real_get_return_type;
-	VALA_DATA_TYPE_CLASS (klass)->get_parameters = vala_object_type_real_get_parameters;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_object_type_real_check;
+	((ValaDataTypeClass *) klass)->copy = vala_object_type_real_copy;
+	((ValaDataTypeClass *) klass)->stricter = vala_object_type_real_stricter;
+	((ValaDataTypeClass *) klass)->is_invokable = vala_object_type_real_is_invokable;
+	((ValaDataTypeClass *) klass)->get_return_type = vala_object_type_real_get_return_type;
+	((ValaDataTypeClass *) klass)->get_parameters = vala_object_type_real_get_parameters;
+	((ValaCodeNodeClass *) klass)->check = vala_object_type_real_check;
 }
 
 

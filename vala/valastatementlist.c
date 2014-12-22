@@ -442,10 +442,10 @@ gint vala_statement_list_get_length (ValaStatementList* self) {
 
 static void vala_statement_list_class_init (ValaStatementListClass * klass) {
 	vala_statement_list_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_statement_list_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_statement_list_finalize;
 	g_type_class_add_private (klass, sizeof (ValaStatementListPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_statement_list_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_statement_list_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_statement_list_real_accept;
+	((ValaCodeNodeClass *) klass)->emit = vala_statement_list_real_emit;
 }
 
 

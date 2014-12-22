@@ -883,16 +883,16 @@ void vala_delegate_type_set_is_called_once (ValaDelegateType* self, gboolean val
 
 static void vala_delegate_type_class_init (ValaDelegateTypeClass * klass) {
 	vala_delegate_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_delegate_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_delegate_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDelegateTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->is_invokable = vala_delegate_type_real_is_invokable;
-	VALA_DATA_TYPE_CLASS (klass)->get_return_type = vala_delegate_type_real_get_return_type;
-	VALA_DATA_TYPE_CLASS (klass)->get_parameters = vala_delegate_type_real_get_parameters;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_delegate_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_delegate_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->is_accessible = vala_delegate_type_real_is_accessible;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_delegate_type_real_check;
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_delegate_type_real_is_disposable;
+	((ValaDataTypeClass *) klass)->is_invokable = vala_delegate_type_real_is_invokable;
+	((ValaDataTypeClass *) klass)->get_return_type = vala_delegate_type_real_get_return_type;
+	((ValaDataTypeClass *) klass)->get_parameters = vala_delegate_type_real_get_parameters;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_delegate_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_delegate_type_real_copy;
+	((ValaDataTypeClass *) klass)->is_accessible = vala_delegate_type_real_is_accessible;
+	((ValaCodeNodeClass *) klass)->check = vala_delegate_type_real_check;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_delegate_type_real_is_disposable;
 }
 
 

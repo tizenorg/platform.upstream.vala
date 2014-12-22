@@ -78,7 +78,8 @@ public class Vala.GirParser : CodeVisitor {
 		INSTANCE_IDX,
 		EXPERIMENTAL,
 		FLOATING,
-		TYPE_ID;
+		TYPE_ID,
+		RETURN_VOID;
 
 		public static ArgumentType? from_string (string name) {
 			var enum_class = (EnumClass) typeof(ArgumentType).class_ref ();
@@ -523,6 +524,11 @@ public class Vala.GirParser : CodeVisitor {
 		// alias-specific
 		public DataType base_type;
 
+		public bool deprecated = false;
+		public uint64 deprecated_version = 0;
+		public string? deprecated_since = null;
+		public string? deprecated_replacement = null;
+
 		public Node (string? name) {
 			this.name = name;
 		}
@@ -633,11 +639,40 @@ public class Vala.GirParser : CodeVisitor {
 
 			var prefix = symbol.get_attribute_string ("CCode", "lower_case_cprefix");
 			if (prefix == null && (symbol is ObjectTypeSymbol || symbol is Struct)) {
-				if (metadata.has_argument (ArgumentType.CPREFIX)) {
+				if (metadata.has_argument (ArgumentType.LOWER_CASE_CPREFIX)) {
+					prefix = metadata.get_string (ArgumentType.LOWER_CASE_CPREFIX);
+				} else if (metadata.has_argument (ArgumentType.CPREFIX)) {
 					prefix = metadata.get_string (ArgumentType.CPREFIX);
 				} else {
 					prefix = symbol.get_attribute_string ("CCode", "cprefix");
 				}
+			}
+
+			if (prefix == null && girdata != null && (girdata.contains ("c:symbol-prefix") || girdata.contains("c:symbol-prefixes"))) {
+				/* Use the prefix in the gir. We look up prefixes up to the root.
+				   If some node does not have girdata, we ignore it as i might be
+				   a namespace created due to reparenting. */
+				unowned Node cur = this;
+				do {
+					if (cur.girdata != null) {
+						var p = cur.girdata["c:symbol-prefix"];
+						if (p == null) {
+							p = cur.girdata["c:symbol-prefixes"];
+							if (p != null) {
+								var idx = p.index_of (",");
+								if (idx >= 0) {
+									p = p.substring (0, idx);
+								}
+							}
+						}
+
+						if (p != null) {
+							prefix = p+"_"+prefix;
+						}
+					}
+
+					cur = cur.parent;
+				} while (cur != null);
 			}
 
 			if (prefix == null) {
@@ -672,8 +707,12 @@ public class Vala.GirParser : CodeVisitor {
 				return "";
 			}
 			var prefix = symbol.get_attribute_string ("CCode", "cprefix");
-			if (prefix == null && girdata != null) {
+			if (prefix == null && girdata != null && girdata["c:identifier-prefixes"] != null) {
 				prefix = girdata["c:identifier-prefixes"];
+				int idx = prefix.index_of (",");
+				if (idx != -1) {
+					prefix = prefix.substring (0, idx);
+				}
 			}
 			if (prefix == null) {
 				if (symbol is Enum || symbol is ErrorDomain) {
@@ -747,6 +786,26 @@ public class Vala.GirParser : CodeVisitor {
 				return symbol.source_reference.file.get_cinclude_filename ();
 			}
 			return "";
+		}
+
+		private static uint64 parse_version_string (string version) {
+			int64 res = 0;
+			int shift = 16;
+			string[] tokens = version.split (".", 3);
+
+			foreach (unowned string token in tokens) {
+				int64 t;
+
+				if (!int64.try_parse (token, out t))
+					return 0;
+				if (t > 0xffff)
+					return 0;
+
+				res |= (t << shift);
+				shift -= 8;
+			}
+
+			return res;
 		}
 
 		public void process (GirParser parser) {
@@ -1034,21 +1093,29 @@ public class Vala.GirParser : CodeVisitor {
 					}
 				}
 
-				// deprecation
+				// deprecated
 				if (metadata.has_argument (ArgumentType.REPLACEMENT)) {
-					symbol.set_attribute_string ("Deprecated", "replacement", metadata.get_string (ArgumentType.REPLACEMENT));
+					deprecated = true;
+					deprecated_replacement = metadata.get_string (ArgumentType.REPLACEMENT);
 				}
 				if (metadata.has_argument (ArgumentType.DEPRECATED_SINCE)) {
-					symbol.set_attribute_string ("Deprecated", "since",  metadata.get_string (ArgumentType.DEPRECATED_SINCE));
+					deprecated = true;
+					deprecated_since = metadata.get_string (ArgumentType.DEPRECATED_SINCE);
 				} else if (girdata["deprecated-version"] != null) {
-					symbol.set_attribute_string ("Deprecated", "since", girdata.get ("deprecated-version"));
+					deprecated = true;
+					deprecated_since = girdata.get ("deprecated-version");
 				}
 				if (metadata.has_argument (ArgumentType.DEPRECATED)) {
-					if (metadata.get_bool (ArgumentType.DEPRECATED)) {						
-						symbol.set_attribute ("Deprecated", true);
+					deprecated = metadata.get_bool (ArgumentType.DEPRECATED, true);
+					if (!deprecated) {
+						deprecated_since = null;
+						deprecated_replacement = null;
 					}
 				} else if (girdata["deprecated"] != null) {
-					symbol.set_attribute ("Deprecated", true);
+					deprecated = true;
+				}
+				if (deprecated_since != null) {
+					deprecated_version = parse_version_string (deprecated_since);
 				}
 
 				// experimental
@@ -1068,11 +1135,7 @@ public class Vala.GirParser : CodeVisitor {
 
 				// lower_case_cprefix
 				if (get_lower_case_cprefix () != get_default_lower_case_cprefix ()) {
-					if (symbol is Class) {
-						symbol.set_attribute_string ("CCode", "cprefix", get_lower_case_cprefix ());
-					} else {
-						symbol.set_attribute_string ("CCode", "lower_case_cprefix", get_lower_case_cprefix ());
-					}
+					symbol.set_attribute_string ("CCode", "lower_case_cprefix", get_lower_case_cprefix ());
 				}
 				// lower_case_csuffix
 				if (get_lower_case_csuffix () != get_default_lower_case_csuffix ()) {
@@ -1089,6 +1152,23 @@ public class Vala.GirParser : CodeVisitor {
 
 			if (!(new_symbol && merged) && is_container (symbol)) {
 				foreach (var node in members) {
+					if (this.deprecated_version > 0 && node.deprecated_version > 0) {
+						if (this.deprecated_version <= node.deprecated_version) {
+							node.deprecated = false;
+							node.deprecated_since = null;
+							node.deprecated_replacement = null;
+						}
+					}
+					if (node.deprecated) {
+						node.symbol.set_attribute ("Deprecated", true);
+					}
+					if (node.deprecated_since != null) {
+						node.symbol.set_attribute_string ("Deprecated", "since", node.deprecated_since);
+					}
+					if (node.deprecated_replacement != null) {
+						node.symbol.set_attribute_string ("Deprecated", "replacement", node.deprecated_replacement);
+					}
+
 					if (node.new_symbol && !node.merged && !metadata.get_bool (ArgumentType.HIDDEN)) {
 						add_symbol_to_container (symbol, node.symbol);
 					}
@@ -1221,6 +1301,7 @@ public class Vala.GirParser : CodeVisitor {
 	public void parse_file (SourceFile source_file) {
 		metadata_stack = new ArrayList<Metadata> ();
 		metadata = Metadata.empty;
+		cheader_filenames = null;
 
 		this.current_source_file = source_file;
 		reader = new MarkupReader (source_file.filename);
@@ -1593,6 +1674,7 @@ public class Vala.GirParser : CodeVisitor {
 		}
 
 		if (array_data != null && array_data.length != 0) {
+			type.value_owned = true;
 			type = new ArrayType (type, (int) array_data.length - 1, source_reference);
 		}
 
@@ -1626,6 +1708,7 @@ public class Vala.GirParser : CodeVisitor {
 			}
 
 			if (!(type is ArrayType) && metadata.get_bool (ArgumentType.ARRAY)) {
+				type.value_owned = true;
 				type = new ArrayType (type, 1, type.source_reference);
 				changed = true;
 			}
@@ -1856,6 +1939,13 @@ public class Vala.GirParser : CodeVisitor {
 		start_element ("namespace");
 
 		string? cprefix = reader.get_attribute ("c:identifier-prefixes");
+		if (cprefix != null) {
+			int idx = cprefix.index_of (",");
+			if (idx != -1) {
+				cprefix = cprefix.substring (0, idx);
+			}
+		}
+
 		string? lower_case_cprefix = reader.get_attribute ("c:symbol-prefixes");
 		string vala_namespace = cprefix;
 		string gir_namespace = reader.get_attribute ("name");
@@ -2216,6 +2306,7 @@ public class Vala.GirParser : CodeVisitor {
 		start_element ("return-value");
 
 		string transfer = reader.get_attribute ("transfer-ownership");
+		string nullable = reader.get_attribute ("nullable");
 		string allow_none = reader.get_attribute ("allow-none");
 		next ();
 
@@ -2226,7 +2317,7 @@ public class Vala.GirParser : CodeVisitor {
 		if (transfer == "full" || transfer == "container") {
 			type.value_owned = true;
 		}
-		if (allow_none == "1") {
+		if (nullable == "1" || allow_none == "1") {
 			type.nullable = true;
 		}
 		type = element_get_type (type, true, ref no_array_length, ref array_null_terminated);
@@ -2241,7 +2332,11 @@ public class Vala.GirParser : CodeVisitor {
 		closure_idx = -1;
 		destroy_idx = -1;
 
-		start_element ("parameter");
+		string element_type = reader.name;
+		if (current_token != MarkupTokenType.START_ELEMENT || (element_type != "parameter" && element_type != "instance-parameter")) {
+			Report.error (get_current_src (), "expected start element of `parameter' or `instance-parameter'");
+		}
+		start_element (element_type);
 		string name = reader.get_attribute ("name");
 		if (name == null) {
 			name = default_name;
@@ -2259,6 +2354,7 @@ public class Vala.GirParser : CodeVisitor {
 			direction = reader.get_attribute ("direction");
 		}
 		string transfer = reader.get_attribute ("transfer-ownership");
+		string nullable = reader.get_attribute ("nullable");
 		string allow_none = reader.get_attribute ("allow-none");
 
 		scope = element_get_string ("scope", ArgumentType.SCOPE);
@@ -2292,7 +2388,7 @@ public class Vala.GirParser : CodeVisitor {
 			if (transfer == "full" || transfer == "container" || destroy != null) {
 				type.value_owned = true;
 			}
-			if (allow_none == "1" && direction != "out") {
+			if (nullable == "1" || (allow_none == "1" && direction != "out")) {
 				type.nullable = true;
 			}
 
@@ -2331,7 +2427,7 @@ public class Vala.GirParser : CodeVisitor {
 				param.initializer = null;
 			}
 		}
-		end_element ("parameter");
+		end_element (element_type);
 		return param;
 	}
 
@@ -2368,6 +2464,7 @@ public class Vala.GirParser : CodeVisitor {
 				}
 				next ();
 				var element_type = parse_type ();
+				element_type.value_owned = true;
 				end_element ("array");
 				return new ArrayType (element_type, 1, src);
 			}
@@ -2415,7 +2512,9 @@ public class Vala.GirParser : CodeVisitor {
 		} else if (type_name == "gpointer") {
 			type = new PointerType (new VoidType (get_current_src ()), get_current_src ());
 		} else if (type_name == "GObject.Strv") {
-			type = new ArrayType (new UnresolvedType.from_symbol (new UnresolvedSymbol (null, "string")), 1, get_current_src ());
+			var element_type = new UnresolvedType.from_symbol (new UnresolvedSymbol (null, "string"));
+			element_type.value_owned = true;
+			type = new ArrayType (element_type, 1, get_current_src ());
 			no_array_length = true;
 			array_null_terminated = true;
 		} else {
@@ -2713,6 +2812,7 @@ public class Vala.GirParser : CodeVisitor {
 		start_element ("field");
 		push_node (element_get_name (), false);
 
+		string nullable = reader.get_attribute ("nullable");
 		string allow_none = reader.get_attribute ("allow-none");
 		next ();
 
@@ -2738,7 +2838,7 @@ public class Vala.GirParser : CodeVisitor {
 			}
 			field.set_attribute_bool ("CCode", "array_null_terminated", true);
 		}
-		if (allow_none == "1") {
+		if (nullable == "1" || allow_none == "1") {
 			type.nullable = true;
 		}
 		current.symbol = field;
@@ -2962,7 +3062,8 @@ public class Vala.GirParser : CodeVisitor {
 			next ();
 
 			while (current_token == MarkupTokenType.START_ELEMENT) {
-				if (reader.name == "instance-parameter") {
+				if (reader.name == "instance-parameter" &&
+				    !(symbol_type == "function" || symbol_type == "constructor")) {
 					skip_element ();
 					continue;
 				}
@@ -3098,9 +3199,9 @@ public class Vala.GirParser : CodeVisitor {
 			} else if (reader.name == "method") {
 				parse_method ("method");
 				var cname = old_current.get_cname ();
-				if (cname.has_suffix ("_ref")) {
+				if (cname.has_suffix ("_ref") && (ref_method == null || old_current.name == "ref")) {
 					ref_method = old_current;
-				} else if (cname.has_suffix ("_unref")) {
+				} else if (cname.has_suffix ("_unref") && (unref_method == null || old_current.name == "unref")) {
 					unref_method = old_current;
 				}
 			} else if (reader.name == "function") {
@@ -3352,6 +3453,16 @@ public class Vala.GirParser : CodeVisitor {
 			cl.comment = alias.comment;
 			cl.external = true;
 			alias.symbol = cl;
+		} else if (type_sym is Interface) {
+			// this is not a correct alias, but what can we do otherwise?
+			var iface = new Interface (alias.name, alias.source_reference);
+			iface.access = SymbolAccessibility.PUBLIC;
+			if (base_type != null) {
+				iface.add_prerequisite (base_type);
+			}
+			iface.comment = alias.comment;
+			iface.external = true;
+			alias.symbol = iface;
 		} else if (type_sym is Delegate) {
 			var orig = (Delegate) type_sym;
 			if (base_node != null) {
@@ -3421,8 +3532,10 @@ public class Vala.GirParser : CodeVisitor {
 					if (last_param.param.variable_type is UnresolvedType) {
 						var st = resolve_symbol (node.parent, ((UnresolvedType) last_param.param.variable_type).unresolved_symbol) as Struct;
 						if (st != null && !st.is_simple_type () && !last_param.param.variable_type.nullable) {
-							last_param.keep = false;
-							return_type = last_param.param.variable_type.copy ();
+							if (!node.metadata.get_bool (ArgumentType.RETURN_VOID, false)) {
+								last_param.keep = false;
+								return_type = last_param.param.variable_type.copy ();
+							}
 						}
 					}
 				}

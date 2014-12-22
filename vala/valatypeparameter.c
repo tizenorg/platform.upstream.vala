@@ -504,7 +504,7 @@ gboolean vala_typeparameter_equals (ValaTypeParameter* self, ValaTypeParameter* 
 
 static void vala_typeparameter_class_init (ValaTypeParameterClass * klass) {
 	vala_typeparameter_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_typeparameter_real_accept;
+	((ValaCodeNodeClass *) klass)->accept = vala_typeparameter_real_accept;
 }
 
 

@@ -1005,12 +1005,12 @@ void vala_object_type_symbol_add_hidden_method (ValaObjectTypeSymbol* self, Vala
 
 static void vala_object_type_symbol_class_init (ValaObjectTypeSymbolClass * klass) {
 	vala_object_type_symbol_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_object_type_symbol_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_object_type_symbol_finalize;
 	g_type_class_add_private (klass, sizeof (ValaObjectTypeSymbolPrivate));
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_methods = vala_object_type_symbol_real_get_methods;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_signals = vala_object_type_symbol_real_get_signals;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_properties = vala_object_type_symbol_real_get_properties;
-	VALA_TYPESYMBOL_CLASS (klass)->get_type_parameter_index = vala_object_type_symbol_real_get_type_parameter_index;
+	((ValaObjectTypeSymbolClass *) klass)->get_methods = vala_object_type_symbol_real_get_methods;
+	((ValaObjectTypeSymbolClass *) klass)->get_signals = vala_object_type_symbol_real_get_signals;
+	((ValaObjectTypeSymbolClass *) klass)->get_properties = vala_object_type_symbol_real_get_properties;
+	((ValaTypeSymbolClass *) klass)->get_type_parameter_index = vala_object_type_symbol_real_get_type_parameter_index;
 }
 
 

@@ -1093,7 +1093,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp112_ = type_param;
 			_tmp113_ = vala_symbol_get_name ((ValaSymbol*) _tmp112_);
 			_tmp114_ = _tmp113_;
-			_tmp115_ = g_utf8_strdown (_tmp114_, (gssize) (-1));
+			_tmp115_ = g_ascii_strdown (_tmp114_, (gssize) (-1));
 			_tmp116_ = _tmp115_;
 			_tmp117_ = g_strdup_printf ("%s_type", _tmp116_);
 			_g_free0 (func_name);
@@ -1102,7 +1102,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp118_ = type_param;
 			_tmp119_ = vala_symbol_get_name ((ValaSymbol*) _tmp118_);
 			_tmp120_ = _tmp119_;
-			_tmp121_ = g_utf8_strdown (_tmp120_, (gssize) (-1));
+			_tmp121_ = g_ascii_strdown (_tmp120_, (gssize) (-1));
 			_tmp122_ = _tmp121_;
 			_tmp123_ = g_strdup_printf ("\"%s-type\"", _tmp122_);
 			_tmp124_ = _tmp123_;
@@ -1117,7 +1117,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp129_ = func_name;
 			_tmp130_ = g_strdup_printf ("%s_%s", _tmp128_, _tmp129_);
 			_tmp131_ = _tmp130_;
-			_tmp132_ = g_utf8_strup (_tmp131_, (gssize) (-1));
+			_tmp132_ = g_ascii_strup (_tmp131_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp132_;
 			_g_free0 (_tmp131_);
@@ -1183,7 +1183,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp168_ = type_param;
 			_tmp169_ = vala_symbol_get_name ((ValaSymbol*) _tmp168_);
 			_tmp170_ = _tmp169_;
-			_tmp171_ = g_utf8_strdown (_tmp170_, (gssize) (-1));
+			_tmp171_ = g_ascii_strdown (_tmp170_, (gssize) (-1));
 			_tmp172_ = _tmp171_;
 			_tmp173_ = g_strdup_printf ("%s_dup_func", _tmp172_);
 			_g_free0 (func_name);
@@ -1192,7 +1192,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp174_ = type_param;
 			_tmp175_ = vala_symbol_get_name ((ValaSymbol*) _tmp174_);
 			_tmp176_ = _tmp175_;
-			_tmp177_ = g_utf8_strdown (_tmp176_, (gssize) (-1));
+			_tmp177_ = g_ascii_strdown (_tmp176_, (gssize) (-1));
 			_tmp178_ = _tmp177_;
 			_tmp179_ = g_strdup_printf ("\"%s-dup-func\"", _tmp178_);
 			_tmp180_ = _tmp179_;
@@ -1207,7 +1207,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp185_ = func_name;
 			_tmp186_ = g_strdup_printf ("%s_%s", _tmp184_, _tmp185_);
 			_tmp187_ = _tmp186_;
-			_tmp188_ = g_utf8_strup (_tmp187_, (gssize) (-1));
+			_tmp188_ = g_ascii_strup (_tmp187_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp188_;
 			_g_free0 (_tmp187_);
@@ -1268,7 +1268,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp221_ = type_param;
 			_tmp222_ = vala_symbol_get_name ((ValaSymbol*) _tmp221_);
 			_tmp223_ = _tmp222_;
-			_tmp224_ = g_utf8_strdown (_tmp223_, (gssize) (-1));
+			_tmp224_ = g_ascii_strdown (_tmp223_, (gssize) (-1));
 			_tmp225_ = _tmp224_;
 			_tmp226_ = g_strdup_printf ("%s_destroy_func", _tmp225_);
 			_g_free0 (func_name);
@@ -1277,7 +1277,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp227_ = type_param;
 			_tmp228_ = vala_symbol_get_name ((ValaSymbol*) _tmp227_);
 			_tmp229_ = _tmp228_;
-			_tmp230_ = g_utf8_strdown (_tmp229_, (gssize) (-1));
+			_tmp230_ = g_ascii_strdown (_tmp229_, (gssize) (-1));
 			_tmp231_ = _tmp230_;
 			_tmp232_ = g_strdup_printf ("\"%s-destroy-func\"", _tmp231_);
 			_tmp233_ = _tmp232_;
@@ -1292,7 +1292,7 @@ static void vala_gobject_module_real_generate_class_init (ValaGTypeModule* base,
 			_tmp238_ = func_name;
 			_tmp239_ = g_strdup_printf ("%s_%s", _tmp237_, _tmp238_);
 			_tmp240_ = _tmp239_;
-			_tmp241_ = g_utf8_strup (_tmp240_, (gssize) (-1));
+			_tmp241_ = g_ascii_strup (_tmp240_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp241_;
 			_g_free0 (_tmp240_);
@@ -3192,7 +3192,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp243_ = type_param;
 			_tmp244_ = vala_symbol_get_name ((ValaSymbol*) _tmp243_);
 			_tmp245_ = _tmp244_;
-			_tmp246_ = g_utf8_strdown (_tmp245_, (gssize) (-1));
+			_tmp246_ = g_ascii_strdown (_tmp245_, (gssize) (-1));
 			_tmp247_ = _tmp246_;
 			_tmp248_ = g_strdup_printf ("%s_type", _tmp247_);
 			_g_free0 (func_name);
@@ -3204,7 +3204,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp252_ = func_name;
 			_tmp253_ = g_strdup_printf ("%s_%s", _tmp251_, _tmp252_);
 			_tmp254_ = _tmp253_;
-			_tmp255_ = g_utf8_strup (_tmp254_, (gssize) (-1));
+			_tmp255_ = g_ascii_strup (_tmp254_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp255_;
 			_g_free0 (_tmp254_);
@@ -3248,7 +3248,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp279_ = type_param;
 			_tmp280_ = vala_symbol_get_name ((ValaSymbol*) _tmp279_);
 			_tmp281_ = _tmp280_;
-			_tmp282_ = g_utf8_strdown (_tmp281_, (gssize) (-1));
+			_tmp282_ = g_ascii_strdown (_tmp281_, (gssize) (-1));
 			_tmp283_ = _tmp282_;
 			_tmp284_ = g_strdup_printf ("%s_dup_func", _tmp283_);
 			_g_free0 (func_name);
@@ -3260,7 +3260,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp288_ = func_name;
 			_tmp289_ = g_strdup_printf ("%s_%s", _tmp287_, _tmp288_);
 			_tmp290_ = _tmp289_;
-			_tmp291_ = g_utf8_strup (_tmp290_, (gssize) (-1));
+			_tmp291_ = g_ascii_strup (_tmp290_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp291_;
 			_g_free0 (_tmp290_);
@@ -3304,7 +3304,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp315_ = type_param;
 			_tmp316_ = vala_symbol_get_name ((ValaSymbol*) _tmp315_);
 			_tmp317_ = _tmp316_;
-			_tmp318_ = g_utf8_strdown (_tmp317_, (gssize) (-1));
+			_tmp318_ = g_ascii_strdown (_tmp317_, (gssize) (-1));
 			_tmp319_ = _tmp318_;
 			_tmp320_ = g_strdup_printf ("%s_destroy_func", _tmp319_);
 			_g_free0 (func_name);
@@ -3316,7 +3316,7 @@ static void vala_gobject_module_add_set_property_function (ValaGObjectModule* se
 			_tmp324_ = func_name;
 			_tmp325_ = g_strdup_printf ("%s_%s", _tmp323_, _tmp324_);
 			_tmp326_ = _tmp325_;
-			_tmp327_ = g_utf8_strup (_tmp326_, (gssize) (-1));
+			_tmp327_ = g_ascii_strup (_tmp326_, (gssize) (-1));
 			_g_free0 (enum_value);
 			enum_value = _tmp327_;
 			_g_free0 (_tmp326_);
@@ -5573,19 +5573,19 @@ ValaGObjectModule* vala_gobject_module_new (void) {
 
 static void vala_gobject_module_class_init (ValaGObjectModuleClass * klass) {
 	vala_gobject_module_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_VISITOR_CLASS (klass)->finalize = vala_gobject_module_finalize;
+	((ValaCodeVisitorClass *) klass)->finalize = vala_gobject_module_finalize;
 	g_type_class_add_private (klass, sizeof (ValaGObjectModulePrivate));
-	VALA_CODE_VISITOR_CLASS (klass)->visit_class = vala_gobject_module_real_visit_class;
-	VALA_GTYPE_MODULE_CLASS (klass)->generate_class_init = vala_gobject_module_real_generate_class_init;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_constructor = vala_gobject_module_real_visit_constructor;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_dynamic_property_getter_cname = vala_gobject_module_real_get_dynamic_property_getter_cname;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_dynamic_property_setter_cname = vala_gobject_module_real_get_dynamic_property_setter_cname;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_dynamic_signal_cname = vala_gobject_module_real_get_dynamic_signal_cname;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_dynamic_signal_connect_wrapper_name = vala_gobject_module_real_get_dynamic_signal_connect_wrapper_name;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->get_dynamic_signal_connect_after_wrapper_name = vala_gobject_module_real_get_dynamic_signal_connect_after_wrapper_name;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_property = vala_gobject_module_real_visit_property;
-	VALA_CCODE_BASE_MODULE_CLASS (klass)->is_gobject_property = vala_gobject_module_real_is_gobject_property;
-	VALA_CODE_VISITOR_CLASS (klass)->visit_method_call = vala_gobject_module_real_visit_method_call;
+	((ValaCodeVisitorClass *) klass)->visit_class = vala_gobject_module_real_visit_class;
+	((ValaGTypeModuleClass *) klass)->generate_class_init = vala_gobject_module_real_generate_class_init;
+	((ValaCodeVisitorClass *) klass)->visit_constructor = vala_gobject_module_real_visit_constructor;
+	((ValaCCodeBaseModuleClass *) klass)->get_dynamic_property_getter_cname = vala_gobject_module_real_get_dynamic_property_getter_cname;
+	((ValaCCodeBaseModuleClass *) klass)->get_dynamic_property_setter_cname = vala_gobject_module_real_get_dynamic_property_setter_cname;
+	((ValaCCodeBaseModuleClass *) klass)->get_dynamic_signal_cname = vala_gobject_module_real_get_dynamic_signal_cname;
+	((ValaCCodeBaseModuleClass *) klass)->get_dynamic_signal_connect_wrapper_name = vala_gobject_module_real_get_dynamic_signal_connect_wrapper_name;
+	((ValaCCodeBaseModuleClass *) klass)->get_dynamic_signal_connect_after_wrapper_name = vala_gobject_module_real_get_dynamic_signal_connect_after_wrapper_name;
+	((ValaCodeVisitorClass *) klass)->visit_property = vala_gobject_module_real_visit_property;
+	((ValaCCodeBaseModuleClass *) klass)->is_gobject_property = vala_gobject_module_real_is_gobject_property;
+	((ValaCodeVisitorClass *) klass)->visit_method_call = vala_gobject_module_real_visit_method_call;
 }
 
 

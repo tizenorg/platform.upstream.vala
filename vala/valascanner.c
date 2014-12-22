@@ -310,7 +310,7 @@ GType vala_comment_get_type (void) G_GNUC_CONST;
 static GType vala_scanner_conditional_get_type (void) G_GNUC_CONST G_GNUC_UNUSED;
 static ValaScannerConditional* vala_scanner_conditional_dup (const ValaScannerConditional* self);
 static void vala_scanner_conditional_free (ValaScannerConditional* self);
-static GType vala_scanner_state_get_type (void) G_GNUC_UNUSED;
+static GType vala_scanner_state_get_type (void) G_GNUC_CONST G_GNUC_UNUSED;
 #define VALA_SCANNER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), VALA_TYPE_SCANNER, ValaScannerPrivate))
 enum  {
 	VALA_SCANNER_DUMMY_PROPERTY
@@ -6612,7 +6612,7 @@ void vala_value_take_scanner (GValue* value, gpointer v_object) {
 
 static void vala_scanner_class_init (ValaScannerClass * klass) {
 	vala_scanner_parent_class = g_type_class_peek_parent (klass);
-	VALA_SCANNER_CLASS (klass)->finalize = vala_scanner_finalize;
+	((ValaScannerClass *) klass)->finalize = vala_scanner_finalize;
 	g_type_class_add_private (klass, sizeof (ValaScannerPrivate));
 }
 
@@ -6626,6 +6626,7 @@ static void vala_scanner_instance_init (ValaScanner * self) {
 static void vala_scanner_finalize (ValaScanner* obj) {
 	ValaScanner * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_SCANNER, ValaScanner);
+	g_signal_handlers_destroy (self);
 	_vala_source_file_unref0 (self->priv->_source_file);
 	_vala_comment_unref0 (self->priv->_comment);
 	self->priv->conditional_stack = (g_free (self->priv->conditional_stack), NULL);

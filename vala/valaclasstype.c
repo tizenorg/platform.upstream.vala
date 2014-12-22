@@ -495,9 +495,9 @@ void vala_class_type_set_class_symbol (ValaClassType* self, ValaClass* value) {
 
 static void vala_class_type_class_init (ValaClassTypeClass * klass) {
 	vala_class_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_class_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_class_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaClassTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_class_type_real_copy;
+	((ValaDataTypeClass *) klass)->copy = vala_class_type_real_copy;
 }
 
 

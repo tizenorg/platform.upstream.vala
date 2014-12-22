@@ -396,11 +396,11 @@ static void vala_null_literal_real_emit (ValaCodeNode* base, ValaCodeGenerator* 
 
 static void vala_null_literal_class_init (ValaNullLiteralClass * klass) {
 	vala_null_literal_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_null_literal_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->to_string = vala_null_literal_real_to_string;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_null_literal_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_null_literal_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_null_literal_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_null_literal_real_accept;
+	((ValaCodeNodeClass *) klass)->to_string = vala_null_literal_real_to_string;
+	((ValaExpressionClass *) klass)->is_pure = vala_null_literal_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_null_literal_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_null_literal_real_emit;
 }
 
 

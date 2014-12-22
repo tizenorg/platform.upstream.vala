@@ -293,9 +293,9 @@ void vala_using_directive_set_namespace_symbol (ValaUsingDirective* self, ValaSy
 
 static void vala_using_directive_class_init (ValaUsingDirectiveClass * klass) {
 	vala_using_directive_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_using_directive_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_using_directive_finalize;
 	g_type_class_add_private (klass, sizeof (ValaUsingDirectivePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_using_directive_real_accept;
+	((ValaCodeNodeClass *) klass)->accept = vala_using_directive_real_accept;
 }
 
 

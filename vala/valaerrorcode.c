@@ -624,11 +624,11 @@ void vala_error_code_set_value (ValaErrorCode* self, ValaExpression* value) {
 
 static void vala_error_code_class_init (ValaErrorCodeClass * klass) {
 	vala_error_code_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_error_code_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_error_code_finalize;
 	g_type_class_add_private (klass, sizeof (ValaErrorCodePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_error_code_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_error_code_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_error_code_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_error_code_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_error_code_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_error_code_real_check;
 }
 
 

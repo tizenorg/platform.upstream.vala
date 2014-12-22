@@ -241,9 +241,9 @@ namespace Gdl {
 	[CCode (cheader_filename = "gdl/gdl.h", type_id = "gdl_dock_placeholder_get_type ()")]
 	public class DockPlaceholder : Gdl.DockObject, Atk.Implementor, Gtk.Buildable {
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
-		[Deprecated]
+		[Deprecated (since = "3.6")]
 		public DockPlaceholder (string name, Gdl.DockObject object, Gdl.DockPlacement position, bool sticky);
-		[Deprecated]
+		[Deprecated (since = "3.6")]
 		public void attach (Gdl.DockObject object);
 		[NoAccessorMethod]
 		public bool floating { get; construct; }
@@ -266,15 +266,15 @@ namespace Gdl {
 	public class DockTablabel : Gtk.Bin, Atk.Implementor, Gtk.Buildable {
 		public bool active;
 		public uint drag_handle_size;
-		public Gdk.EventButton drag_start_event;
+		public weak Gdk.EventButton drag_start_event;
 		public weak Gdk.Window event_window;
 		public bool pre_drag;
 		[CCode (has_construct_function = false, type = "GtkWidget*")]
 		[Deprecated (since = "3.6")]
 		public DockTablabel (Gdl.DockItem item);
-		[Deprecated]
+		[Deprecated (since = "3.6")]
 		public void activate ();
-		[Deprecated]
+		[Deprecated (since = "3.6")]
 		public void deactivate ();
 		[NoAccessorMethod]
 		public Gdl.DockItem item { owned get; set; }

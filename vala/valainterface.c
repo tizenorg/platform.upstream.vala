@@ -3264,27 +3264,27 @@ static gboolean vala_interface_real_check (ValaCodeNode* base, ValaCodeContext* 
 
 static void vala_interface_class_init (ValaInterfaceClass * klass) {
 	vala_interface_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_interface_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_interface_finalize;
 	g_type_class_add_private (klass, sizeof (ValaInterfacePrivate));
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_interface_real_add_method;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_methods = vala_interface_real_get_methods;
-	VALA_SYMBOL_CLASS (klass)->add_field = vala_interface_real_add_field;
-	VALA_SYMBOL_CLASS (klass)->add_constant = vala_interface_real_add_constant;
-	VALA_SYMBOL_CLASS (klass)->add_property = vala_interface_real_add_property;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_properties = vala_interface_real_get_properties;
-	VALA_SYMBOL_CLASS (klass)->add_signal = vala_interface_real_add_signal;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_signals = vala_interface_real_get_signals;
-	VALA_INTERFACE_CLASS (klass)->get_virtuals = vala_interface_real_get_virtuals;
-	VALA_SYMBOL_CLASS (klass)->add_class = vala_interface_real_add_class;
-	VALA_SYMBOL_CLASS (klass)->add_struct = vala_interface_real_add_struct;
-	VALA_SYMBOL_CLASS (klass)->add_enum = vala_interface_real_add_enum;
-	VALA_SYMBOL_CLASS (klass)->add_delegate = vala_interface_real_add_delegate;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_interface_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_interface_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_interface_real_is_reference_type;
-	VALA_TYPESYMBOL_CLASS (klass)->is_subtype_of = vala_interface_real_is_subtype_of;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_interface_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_interface_real_check;
+	((ValaSymbolClass *) klass)->add_method = vala_interface_real_add_method;
+	((ValaObjectTypeSymbolClass *) klass)->get_methods = vala_interface_real_get_methods;
+	((ValaSymbolClass *) klass)->add_field = vala_interface_real_add_field;
+	((ValaSymbolClass *) klass)->add_constant = vala_interface_real_add_constant;
+	((ValaSymbolClass *) klass)->add_property = vala_interface_real_add_property;
+	((ValaObjectTypeSymbolClass *) klass)->get_properties = vala_interface_real_get_properties;
+	((ValaSymbolClass *) klass)->add_signal = vala_interface_real_add_signal;
+	((ValaObjectTypeSymbolClass *) klass)->get_signals = vala_interface_real_get_signals;
+	((ValaInterfaceClass *) klass)->get_virtuals = vala_interface_real_get_virtuals;
+	((ValaSymbolClass *) klass)->add_class = vala_interface_real_add_class;
+	((ValaSymbolClass *) klass)->add_struct = vala_interface_real_add_struct;
+	((ValaSymbolClass *) klass)->add_enum = vala_interface_real_add_enum;
+	((ValaSymbolClass *) klass)->add_delegate = vala_interface_real_add_delegate;
+	((ValaCodeNodeClass *) klass)->accept = vala_interface_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_interface_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_interface_real_is_reference_type;
+	((ValaTypeSymbolClass *) klass)->is_subtype_of = vala_interface_real_is_subtype_of;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_interface_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_interface_real_check;
 }
 
 

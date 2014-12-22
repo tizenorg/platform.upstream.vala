@@ -665,7 +665,7 @@ void vala_subroutine_set_body (ValaSubroutine* self, ValaBlock* value) {
 
 static void vala_subroutine_class_init (ValaSubroutineClass * klass) {
 	vala_subroutine_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_subroutine_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_subroutine_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSubroutinePrivate));
 }
 

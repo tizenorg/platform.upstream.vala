@@ -948,7 +948,7 @@ static gint vala_vapi_gen_main (gchar** args, int args_length1) {
 		g_option_context_add_main_entries (_tmp2_, VALA_VAPI_GEN_options, NULL);
 		_tmp3_ = opt_context;
 		g_option_context_parse (_tmp3_, &args_length1, &args, &_inner_error_);
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			_g_option_context_free0 (opt_context);
 			if (_inner_error_->domain == G_OPTION_ERROR) {
 				goto __catch3_g_option_error;
@@ -987,7 +987,7 @@ static gint vala_vapi_gen_main (gchar** args, int args_length1) {
 		return result;
 	}
 	__finally3:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return 0;

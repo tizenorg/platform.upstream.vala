@@ -401,10 +401,10 @@ void vala_value_type_set_type_symbol (ValaValueType* self, ValaTypeSymbol* value
 
 static void vala_value_type_class_init (ValaValueTypeClass * klass) {
 	vala_value_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_value_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_value_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaValueTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_value_type_real_is_disposable;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_value_type_real_check;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_value_type_real_is_disposable;
+	((ValaCodeNodeClass *) klass)->check = vala_value_type_real_check;
 }
 
 

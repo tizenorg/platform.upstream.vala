@@ -42,6 +42,11 @@ public class Vala.CodeContext {
 	public bool deprecated { get; set; }
 
 	/**
+	 * Hide the symbols marked as internal
+	 */
+	public bool hide_internal { get; set; }
+
+	/**
 	 * Do not warn when using experimental features.
 	 */
 	public bool experimental { get; set; }
@@ -167,6 +172,11 @@ public class Vala.CodeContext {
 	public bool nostdpkg { get; set; }
 
 	public bool use_fast_vapi { get; set; }
+
+	/**
+	 * Include comments in generated vapi.
+	 */
+	public bool vapi_comments { get; set; }
 
 	/**
 	 * Returns true if the target version of glib is greater than or 

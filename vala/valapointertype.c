@@ -1875,19 +1875,19 @@ void vala_pointer_type_set_base_type (ValaPointerType* self, ValaDataType* value
 
 static void vala_pointer_type_class_init (ValaPointerTypeClass * klass) {
 	vala_pointer_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_pointer_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_pointer_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaPointerTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_pointer_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_pointer_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_pointer_type_real_compatible;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_pointer_type_real_get_member;
-	VALA_DATA_TYPE_CLASS (klass)->get_pointer_member = vala_pointer_type_real_get_pointer_member;
-	VALA_DATA_TYPE_CLASS (klass)->is_accessible = vala_pointer_type_real_is_accessible;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_pointer_type_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_pointer_type_real_replace_type;
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_pointer_type_real_is_disposable;
-	VALA_DATA_TYPE_CLASS (klass)->get_actual_type = vala_pointer_type_real_get_actual_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_pointer_type_real_check;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_pointer_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_pointer_type_real_copy;
+	((ValaDataTypeClass *) klass)->compatible = vala_pointer_type_real_compatible;
+	((ValaDataTypeClass *) klass)->get_member = vala_pointer_type_real_get_member;
+	((ValaDataTypeClass *) klass)->get_pointer_member = vala_pointer_type_real_get_pointer_member;
+	((ValaDataTypeClass *) klass)->is_accessible = vala_pointer_type_real_is_accessible;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_pointer_type_real_accept_children;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_pointer_type_real_replace_type;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_pointer_type_real_is_disposable;
+	((ValaDataTypeClass *) klass)->get_actual_type = vala_pointer_type_real_get_actual_type;
+	((ValaCodeNodeClass *) klass)->check = vala_pointer_type_real_check;
 }
 
 

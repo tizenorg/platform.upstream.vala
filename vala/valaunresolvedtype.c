@@ -741,11 +741,11 @@ void vala_unresolved_type_set_unresolved_symbol (ValaUnresolvedType* self, ValaU
 
 static void vala_unresolved_type_class_init (ValaUnresolvedTypeClass * klass) {
 	vala_unresolved_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_unresolved_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_unresolved_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaUnresolvedTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_unresolved_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_unresolved_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_unresolved_type_real_is_disposable;
+	((ValaDataTypeClass *) klass)->copy = vala_unresolved_type_real_copy;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_unresolved_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_unresolved_type_real_is_disposable;
 }
 
 

@@ -115,9 +115,9 @@ public struct uchar {
 [IntegerType (rank = 6)]
 public struct int {
 	[CCode (cname = "G_MININT")]
-	public static int MIN;
+	public const int MIN;
 	[CCode (cname = "G_MAXINT")]
-	public static int MAX;
+	public const int MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%i");
@@ -155,9 +155,9 @@ public struct int {
 [IntegerType (rank = 7)]
 public struct uint {
 	[CCode (cname = "0")]
-	public static uint MIN;
+	public const uint MIN;
 	[CCode (cname = "G_MAXUINT")]
-	public static uint MAX;
+	public const uint MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%u");
@@ -189,9 +189,9 @@ public struct uint {
 [IntegerType (rank = 4, min = -32768, max = 32767)]
 public struct short {
 	[CCode (cname = "G_MINSHORT")]
-	public static short MIN;
+	public const short MIN;
 	[CCode (cname = "G_MAXSHORT")]
-	public static short MAX;
+	public const short MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%hi");
@@ -212,9 +212,9 @@ public struct short {
 [IntegerType (rank = 5, min = 0, max = 65535)]
 public struct ushort {
 	[CCode (cname = "0U")]
-	public static ushort MIN;
+	public const ushort MIN;
 	[CCode (cname = "G_MAXUSHORT")]
-	public static ushort MAX;
+	public const ushort MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%hu");
@@ -233,9 +233,9 @@ public struct ushort {
 [IntegerType (rank = 8)]
 public struct long {
 	[CCode (cname = "G_MINLONG")]
-	public static long MIN;
+	public const long MIN;
 	[CCode (cname = "G_MAXLONG")]
-	public static long MAX;
+	public const long MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%li");
@@ -269,9 +269,9 @@ public struct long {
 [IntegerType (rank = 9)]
 public struct ulong {
 	[CCode (cname = "0UL")]
-	public static ulong MIN;
+	public const ulong MIN;
 	[CCode (cname = "G_MAXULONG")]
-	public static ulong MAX;
+	public const ulong MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%lu");
@@ -300,9 +300,9 @@ public struct ulong {
 [IntegerType (rank = 9)]
 public struct size_t {
 	[CCode (cname = "0UL")]
-	public static ulong MIN;
+	public const ulong MIN;
 	[CCode (cname = "G_MAXSIZE")]
-	public static ulong MAX;
+	public const ulong MAX;
 
 	[CCode (cname = "G_GSIZE_FORMAT")]
 	public const string FORMAT;
@@ -329,9 +329,9 @@ public struct size_t {
 [IntegerType (rank = 8)]
 public struct ssize_t {
 	[CCode (cname = "G_MINSSIZE")]
-	public static long MIN;
+	public const long MIN;
 	[CCode (cname = "G_MAXSSIZE")]
-	public static long MAX;
+	public const long MAX;
 
 	[CCode (cname = "G_GSSIZE_FORMAT")]
 	public const string FORMAT;
@@ -355,9 +355,9 @@ public struct ssize_t {
 [IntegerType (rank = 1, min = -128, max = 127)]
 public struct int8 {
 	[CCode (cname = "G_MININT8")]
-	public static int8 MIN;
+	public const int8 MIN;
 	[CCode (cname = "G_MAXINT8")]
-	public static int8 MAX;
+	public const int8 MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%hhi");
@@ -376,9 +376,9 @@ public struct int8 {
 [IntegerType (rank = 3, min = 0, max = 255)]
 public struct uint8 {
 	[CCode (cname = "0U")]
-	public static uint8 MIN;
+	public const uint8 MIN;
 	[CCode (cname = "G_MAXUINT8")]
-	public static uint8 MAX;
+	public const uint8 MAX;
 
 	[CCode (cname = "g_strdup_printf", instance_pos = -1)]
 	public string to_string (string format = "%hhu");
@@ -397,9 +397,9 @@ public struct uint8 {
 [IntegerType (rank = 4, min = -32768, max = 32767)]
 public struct int16 {
 	[CCode (cname = "G_MININT16")]
-	public static int16 MIN;
+	public const int16 MIN;
 	[CCode (cname = "G_MAXINT16")]
-	public static int16 MAX;
+	public const int16 MAX;
 
 	[CCode (cname = "G_GINT16_FORMAT")]
 	public const string FORMAT;
@@ -433,9 +433,9 @@ public struct int16 {
 [IntegerType (rank = 5, min = 0, max = 65535)]
 public struct uint16 {
 	[CCode (cname = "0U")]
-	public static uint16 MIN;
+	public const uint16 MIN;
 	[CCode (cname = "G_MAXUINT16")]
-	public static uint16 MAX;
+	public const uint16 MAX;
 
 	[CCode (cname = "G_GUINT16_FORMAT")]
 	public const string FORMAT;
@@ -481,9 +481,9 @@ public struct uint16 {
 [IntegerType (rank = 6)]
 public struct int32 {
 	[CCode (cname = "G_MININT32")]
-	public static int32 MIN;
+	public const int32 MIN;
 	[CCode (cname = "G_MAXINT32")]
-	public static int32 MAX;
+	public const int32 MAX;
 
 	[CCode (cname = "G_GINT32_FORMAT")]
 	public const string FORMAT;
@@ -517,9 +517,9 @@ public struct int32 {
 [IntegerType (rank = 7)]
 public struct uint32 {
 	[CCode (cname = "0U")]
-	public static uint32 MIN;
+	public const uint32 MIN;
 	[CCode (cname = "G_MAXUINT32")]
-	public static uint32 MAX;
+	public const uint32 MAX;
 
 	[CCode (cname = "G_GUINT32_FORMAT")]
 	public const string FORMAT;
@@ -565,9 +565,9 @@ public struct uint32 {
 [IntegerType (rank = 10)]
 public struct int64 {
 	[CCode (cname = "G_MININT64")]
-	public static int64 MIN;
+	public const int64 MIN;
 	[CCode (cname = "G_MAXINT64")]
-	public static int64 MAX;
+	public const int64 MAX;
 
 	[CCode (cname = "G_GINT64_FORMAT")]
 	public const string FORMAT;
@@ -622,9 +622,9 @@ public struct int64 {
 [IntegerType (rank = 11)]
 public struct uint64 {
 	[CCode (cname = "0ULL")]
-	public static uint64 MIN;
+	public const uint64 MIN;
 	[CCode (cname = "G_MAXUINT64")]
-	public static uint64 MAX;
+	public const uint64 MAX;
 
 	[CCode (cname = "G_GUINT64_FORMAT")]
 	public const string FORMAT;
@@ -674,35 +674,35 @@ public struct uint64 {
 [FloatingType (rank = 1)]
 public struct float {
 	[CCode (cname = "FLT_ROUNDS")]
-	public static int ROUNDS;
+	public const int ROUNDS;
 	[CCode (cname = "FLT_RADIX")]
-	public static int RADIX;
+	public const int RADIX;
 	[CCode (cname = "FLT_MANT_DIG")]
-	public static int MANT_DIG;
+	public const int MANT_DIG;
 	[CCode (cname = "FLT_DIG")]
-	public static int DIG;
+	public const int DIG;
 
 	[CCode (cname = "FLT_MIN_EXP")]
-	public static int MIN_EXP;
+	public const int MIN_EXP;
 	[CCode (cname = "FLT_MAX_EXP")]
-	public static int MAX_EXP;
+	public const int MAX_EXP;
 
 	[CCode (cname = "FLT_MIN_10_EXP")]
-	public static int MIN_10_EXP;
+	public const int MIN_10_EXP;
 	[CCode (cname = "FLT_MAX_10_EXP")]
-	public static int MAX_10_EXP;
+	public const int MAX_10_EXP;
 
 	[CCode (cname = "FLT_EPSILON")]
-	public static float EPSILON;
+	public const float EPSILON;
 	[CCode (cname = "FLT_MIN")]
-	public static float MIN;
+	public const float MIN;
 	[CCode (cname = "FLT_MAX")]
-	public static float MAX;
+	public const float MAX;
 
 	[CCode (cname = "NAN")]
-	public static float NAN;
+	public const float NAN;
 	[CCode (cname = "INFINITY")]
-	public static float INFINITY;
+	public const float INFINITY;
 
 	[CCode (cname = "isnan")]
 	public bool is_nan ();
@@ -730,31 +730,31 @@ public struct float {
 [FloatingType (rank = 2)]
 public struct double {
 	[CCode (cname = "DBL_MANT_DIG")]
-	public static int MANT_DIG;
+	public const int MANT_DIG;
 	[CCode (cname = "DBL_DIG")]
-	public static int DIG;
+	public const int DIG;
 
 	[CCode (cname = "DBL_MIN_EXP")]
-	public static int MIN_EXP;
+	public const int MIN_EXP;
 	[CCode (cname = "DBL_MAX_EXP")]
-	public static int MAX_EXP;
+	public const int MAX_EXP;
 
 	[CCode (cname = "DBL_MIN_10_EXP")]
-	public static int MIN_10_EXP;
+	public const int MIN_10_EXP;
 	[CCode (cname = "DBL_MAX_10_EXP")]
-	public static int MAX_10_EXP;
+	public const int MAX_10_EXP;
 
 	[CCode (cname = "DBL_EPSILON")]
-	public static double EPSILON;
+	public const double EPSILON;
 	[CCode (cname = "DBL_MIN")]
-	public static double MIN;
+	public const double MIN;
 	[CCode (cname = "DBL_MAX")]
-	public static double MAX;
+	public const double MAX;
 
 	[CCode (cname = "((double) NAN)")]
-	public static double NAN;
+	public const double NAN;
 	[CCode (cname = "((double) INFINITY)")]
-	public static double INFINITY;
+	public const double INFINITY;
 
 	[CCode (cname = "isnan")]
 	public bool is_nan ();
@@ -960,7 +960,7 @@ public class string {
 	[CCode (cname = "g_stpcpy")]
 	private static void* copy_to_buffer (void* dest, string src);
 	[CCode (cname = "_vala_g_strjoinv")]
-	public static string joinv (string? separator, string[]? str_array) {
+	public static string joinv (string? separator, string?[]? str_array) {
 		if (separator == null) {
 			separator = "";
 		}
@@ -968,19 +968,19 @@ public class string {
 			int i;
 			size_t len = 1;
 			for (i = 0 ; (str_array.length != -1 && i < str_array.length) || (str_array.length == -1 && str_array[i] != null) ; i++) {
-				len += (str_array[i] != null) ? str_array[i].length : 0;
+				len += (str_array[i] != null) ? ((!) str_array[i]).length : 0;
 			}
 			if (i == 0) {
 				return "";
 			}
 			str_array.length = i;
-			len += separator.length * (i - 1);
+			len += ((!) separator).length * (i - 1);
 
 			string* res = GLib.malloc (len);
-			void* ptr = string.copy_to_buffer ((void*) res, str_array[0]);
+			void* ptr = string.copy_to_buffer ((void*) res, (!) str_array[0]);
 			for (i = 1 ; i < str_array.length ; i++) {
-				ptr = string.copy_to_buffer (ptr, separator);
-				ptr = string.copy_to_buffer (ptr, str_array[i] ?? "");
+				ptr = string.copy_to_buffer (ptr, (!) separator);
+				ptr = string.copy_to_buffer (ptr, (str_array[i] != null) ? ((!) str_array[i]) : "");
 			}
 
 			return (owned) res;
@@ -1171,6 +1171,10 @@ public class string {
 	public int ascii_casecmp (string s2);
 	[CCode (cname = "g_ascii_strncasecmp")]
 	public int ascii_ncasecmp (string s2, size_t n);
+	[CCode (cname = "g_ascii_strup")]
+	public string ascii_up (ssize_t len = -1);
+	[CCode (cname = "g_ascii_strdown")]
+	public string ascii_down (ssize_t len = -1);
 
 	[CCode (cname = "g_utf8_skip")]
 	public static char[] skip;
@@ -1671,6 +1675,12 @@ namespace GLib {
 		public static bool remove (uint id);
 		public static bool remove_by_funcs_user_data (void* user_data);
 		public static bool remove_by_user_data (void* user_data);
+#if GLIB_2_32
+		[CCode (cname = "G_SOURCE_CONTINUE")]
+		public static const bool CONTINUE;
+		[CCode (cname = "G_SOURCE_REMOVE")]
+		public static const bool REMOVE;
+#endif
 
 		protected abstract bool prepare (out int timeout_);
 		protected abstract bool check ();
@@ -1765,7 +1775,7 @@ namespace GLib {
 	}
 
 #if GLIB_2_32
-	[CCode (destroy_function = "g_mutex_clear")]
+	[CCode (destroy_function = "g_mutex_clear", lvalue_access = false)]
 	public struct Mutex {
 #else
 	[Compact]
@@ -1840,6 +1850,7 @@ namespace GLib {
 	}
 
 	[CCode (destroy_function = "g_static_private_free", default_value = "G_STATIC_PRIVATE_INIT")]
+	[Deprecated (since = "glib-2.32")]
 	public struct StaticPrivate {
 		public StaticPrivate ();
 		public void* get ();
@@ -1847,7 +1858,7 @@ namespace GLib {
 	}
 
 #if GLIB_2_32
-	[CCode (destroy_function = "g_cond_clear")]
+	[CCode (destroy_function = "g_cond_clear", lvalue_access = false)]
 	public struct Cond {
 #else
 	[Compact]
@@ -2317,7 +2328,7 @@ namespace GLib {
 	public class Hmac {
 		public Hmac (ChecksumType digest_type, [CCode (array_length_type = "gsize")] uint8[] key);
 		public Hmac copy ();
-		public void update ([CCode (array_length_type = "gssize")] uint8[] data, size_t length);
+		public void update ([CCode (array_length_type = "gssize")] uint8[] data);
 		public unowned string get_string ();
 		public void get_digest ([CCode (array_length = false)] uint8[] buffer, ref size_t digest_len);
 		[CCode (cname = "g_compute_hmac_for_data")]
@@ -2681,7 +2692,7 @@ namespace GLib {
 		[CCode (cname = "g_get_environ", array_length = false, array_null_terminated = true)]
 		public static string[] get ();
 		[CCode (cname = "g_environ_getenv")]
-		public static string? get_variable ([CCode (array_length = false, array_null_terminated = true)] string[]? envp, string variable);
+		public static unowned string? get_variable ([CCode (array_length = false, array_null_terminated = true)] string[]? envp, string variable);
 		[CCode (cname = "g_environ_setenv", array_length = false, array_null_terminated = true)]
 		public static string[] set_variable ([CCode (array_length = false, array_null_terminated = true)] owned string[]? envp, string variable, string value, bool overwrite = true);
 		[CCode (cname = "g_environ_unsetenv", array_length = false, array_null_terminated = true)]
@@ -3235,11 +3246,7 @@ namespace GLib {
 	}
 
 	[Compact]
-#if GLIB_2_22
 	[CCode (ref_function = "g_mapped_file_ref", unref_function = "g_mapped_file_unref")]
-#else
-	[CCode (free_function = "g_mapped_file_free")]
-#endif
 	public class MappedFile {
 		public MappedFile (string filename, bool writable) throws FileError;
 		public size_t get_length ();
@@ -3306,6 +3313,7 @@ namespace GLib {
 		public void set_translate_func (TranslateFunc func, DestroyNotify? destroy_notify);
 		public void set_translation_domain (string domain);
 		public bool parse ([CCode (array_length_pos = 0.9)] ref unowned string[] argv) throws OptionError;
+		public bool parse_strv ([CCode (array_length = false, array_null_terminated = true)] ref string[] argv) throws OptionError;
 		public void set_help_enabled (bool help_enabled);
 		public bool get_help_enabled ();
 		public void set_ignore_unknown_options (bool ignore_unknown);
@@ -3361,9 +3369,9 @@ namespace GLib {
 	public class OptionGroup {
 		public OptionGroup (string name, string description, string help_description, void* user_data = null, DestroyNotify? destroy = null);
 		public void add_entries ([CCode (array_length = false)] OptionEntry[] entries);
-		public void set_parse_hooks (OptionParseFunc pre_parse_func, OptionParseFunc post_parse_hook);
-		public void set_error_hook (OptionErrorFunc error_func);
-		public void set_translate_func (TranslateFunc func, DestroyNotify? destroy_notify);
+		public void set_parse_hooks (OptionParseFunc? pre_parse_func, OptionParseFunc? post_parse_hook);
+		public void set_error_hook (OptionErrorFunc? error_func);
+		public void set_translate_func (owned TranslateFunc? func);
 		public void set_translation_domain (string domain);
 	}
 
@@ -4066,7 +4074,6 @@ namespace GLib {
 		public Sequence ();
 		public int get_length ();
 		public void @foreach (Func<G> func);
-		public static void foreach_range (SequenceIter<G> begin, SequenceIter<G> end, Func<G> func);
 		public void sort (CompareDataFunc<G> cmp_func);
 		public void sort_iter (SequenceIterCompareFunc<G> func);
 		public SequenceIter<G> get_begin_iter ();
@@ -4074,23 +4081,37 @@ namespace GLib {
 		public SequenceIter<G> get_iter_at_pos (int pos);
 		public SequenceIter<G> append (owned G data);
 		public SequenceIter<G> prepend (owned G data);
-		public static SequenceIter<G> insert_before (SequenceIter<G> iter, owned G data);
-		public static void move (SequenceIter<G> src, SequenceIter<G> dest);
-		public static void swap (SequenceIter<G> src, SequenceIter<G> dest);
 		public SequenceIter<G> insert_sorted (owned G data, CompareDataFunc<G> cmp_func);
 		public SequenceIter<G> insert_sorted_iter (owned G data, SequenceIterCompareFunc<G> iter_cmp);
-		public static void sort_changed (SequenceIter<G> iter, CompareDataFunc<G> cmp_func);
-		public static void sort_changed_iter (SequenceIter<G> iter, SequenceIterCompareFunc<G> iter_cmp);
-		public static void remove (SequenceIter<G> iter);
-		public static void remove_range (SequenceIter<G> begin, SequenceIter<G> end);
-		public static void move_range (SequenceIter<G> dest, SequenceIter<G> begin, SequenceIter<G> end);
 		public SequenceIter<G> search (G data, CompareDataFunc<G> cmp_func);
 		public SequenceIter<G> search_iter (G data, SequenceIterCompareFunc<G> iter_cmp);
-		public static unowned G get (SequenceIter<G> iter);
-		public static void set (SequenceIter<G> iter, owned G data);
-		public static SequenceIter<G> range_get_midpoint (SequenceIter<G> begin, SequenceIter<G> end);
 		public SequenceIter<G> lookup (G data, CompareDataFunc<G> cmp_func);
 		public SequenceIter<G> lookup_iter (G data, SequenceIterCompareFunc<G> iter_cmp);
+
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.foreach_range")]
+		public static void foreach_range (SequenceIter<G> begin, SequenceIter<G> end, Func<G> func);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.insert_before")]
+		public static SequenceIter<G> insert_before (SequenceIter<G> iter, owned G data);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.move_to")]
+		public static void move (SequenceIter<G> src, SequenceIter<G> dest);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.swap")]
+		public static void swap (SequenceIter<G> src, SequenceIter<G> dest);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.sort_changed")]
+		public static void sort_changed (SequenceIter<G> iter, CompareDataFunc<G> cmp_func);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.sort_changed_iter")]
+		public static void sort_changed_iter (SequenceIter<G> iter, SequenceIterCompareFunc<G> iter_cmp);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.remove")]
+		public static void remove (SequenceIter<G> iter);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.remove_range")]
+		public static void remove_range (SequenceIter<G> begin, SequenceIter<G> end);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.move_range")]
+		public static void move_range (SequenceIter<G> dest, SequenceIter<G> begin, SequenceIter<G> end);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.get")]
+		public static unowned G get (SequenceIter<G> iter);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.set")]
+		public static void set (SequenceIter<G> iter, owned G data);
+		[Deprecated (since = "vala-0.26", replacement = "SequenceIter.range_get_midpoint")]
+		public static SequenceIter<G> range_get_midpoint (SequenceIter<G> begin, SequenceIter<G> end);
 	}
 
 	[Compact]
@@ -4102,13 +4123,33 @@ namespace GLib {
 		public SequenceIter<G> prev ();
 		public int get_position ();
 		public SequenceIter<G> move (int delta);
-		public Sequence<G> get_sequence ();
+		public unowned Sequence<G> get_sequence ();
 		public int compare (SequenceIter<G> other);
 
+		[CCode (cname = "g_sequence_foreach_range")]
+		public void foreach_range (SequenceIter<G> end, Func<G> func);
+		[CCode (cname = "g_sequence_insert_before")]
+		public SequenceIter<G> insert_before (owned G data);
+		[CCode (cname = "g_sequence_move")]
+		public void move_to (SequenceIter<G> dest);
+		[CCode (cname = "g_sequence_swap")]
+		public void swap (SequenceIter<G> dest);
+		[CCode (cname = "g_sequence_sort_changed")]
+		public void sort_changed (CompareDataFunc<G> cmp_func);
+		[CCode (cname = "g_sequence_sort_changed_iter")]
+		public void sort_changed_iter (SequenceIterCompareFunc<G> iter_cmp);
+		[CCode (cname = "g_sequence_remove")]
+		public void remove ();
+		[CCode (cname = "g_sequence_remove_range")]
+		public void remove_range (SequenceIter<G> end);
+		[CCode (cname = "g_sequence_move_range")]
+		public void move_range (SequenceIter<G> begin, SequenceIter<G> end);
 		[CCode (cname = "g_sequence_get")]
 		public unowned G get ();
 		[CCode (cname = "g_sequence_set")]
 		public void set (owned G data);
+		[CCode (cname = "g_sequence_range_get_midpoint")]
+		public SequenceIter<G> range_get_midpoint (SequenceIter<G> end);
 	}
 
 	public delegate int SequenceIterCompareFunc<G> (SequenceIter<G> a, SequenceIter<G> b);
@@ -4123,6 +4164,7 @@ namespace GLib {
 		public HashTable.full (HashFunc<K>? hash_func, EqualFunc<K>? key_equal_func, DestroyNotify? key_destroy_func, DestroyNotify? value_destroy_func);
 		public void insert (owned K key, owned V value);
 		public void replace (owned K key, owned V value);
+		[Deprecated (since = "vala-0.26", replacement = "GenericSet.add")]
 		public void add (owned K key);
 		public unowned V? lookup (K key);
 		public bool lookup_extended (K lookup_key, out unowned K orig_key, out unowned V value);
@@ -4143,6 +4185,18 @@ namespace GLib {
 		public uint size ();
 		public bool steal (K key);
 		public void steal_all ();
+		[CCode (cname = "_vala_g_hash_table_take")]
+		public V? take (K key, out bool exists = null) {
+			GLib.HashTable<K,V>? ht = null;
+			void** htp = &ht;
+			*htp = this.lookup (key);
+			exists = this.steal (key);
+			return ht;
+		}
+		public uint length {
+			[CCode (cname = "g_hash_table_size")]
+			get;
+		}
 	}
 
 	public struct HashTableIter<K,V> {
@@ -4151,6 +4205,39 @@ namespace GLib {
 		public void remove ();
 		public void steal ();
 		public unowned GLib.HashTable<K,V> get_hash_table ();
+	}
+
+	[Compact, CCode (cname = "GHashTable", lower_case_cprefix = "g_hash_table_", ref_function = "g_hash_table_ref", unref_function = "g_hash_table_unref", type_id = "G_TYPE_HASH_TABLE", type_signature = "a{%s}")]
+	public class GenericSet<T> {
+		[CCode (cname = "g_hash_table_new_full", simple_generics = true)]
+		public GenericSet (HashFunc<T>? hash_func, EqualFunc<T>? equal_func, GLib.DestroyNotify? always_pass_null_here = null);
+		public void add (owned T value);
+		public bool contains (T valule);
+		public bool remove (T value);
+		public void remove_all ();
+		public GLib.List<unowned T> get_values ();
+		[CCode (cname = "g_hash_table_iter_init", instance_pos = -1)]
+		public GLib.GenericSetIter<T> iterator ();
+		[CCode (cname = "_vala_g_hash_set_foreach")]
+		public void @foreach (GLib.Func<T> func) {
+			((GLib.HashTable<unowned T,T>) this).foreach ((k, v) => func (v));
+		}
+		public uint length {
+			[CCode (cname = "g_hash_table_size")]
+			get;
+		}
+	}
+
+	[CCode (cname = "GHashTableIter", lower_case_cprefix = "g_hash_table_iter_")]
+	public struct GenericSetIter<T> {
+		[CCode (cname = "_vala_hash_set_next_value")]
+		public unowned T? next_value () {
+			void* vi = &this;
+			GLib.HashTableIter<unowned T,T>* htp = vi;
+			unowned T? value;
+			return htp->next (out value, null) ? value : null;
+		}
+		public void remove ();
 	}
 
 	[CCode (has_target = false)]
@@ -4250,12 +4337,8 @@ namespace GLib {
 
 	/* Pointer Arrays */
 
-	[Compact]
-#if GLIB_2_22
+	[Compact, Deprecated (since = "vala-0.26", replacement="GenericArray")]
 	[CCode (ref_function = "g_ptr_array_ref", unref_function = "g_ptr_array_unref", type_id = "G_TYPE_PTR_ARRAY")]
-#else
-	[CCode (free_function = "g_ptr_array_free")]
-#endif
 	public class PtrArray {
 		public PtrArray ();
 		public PtrArray.with_free_func (GLib.DestroyNotify? element_free_func);
@@ -4283,8 +4366,13 @@ namespace GLib {
 	[CCode (cname = "GPtrArray", cprefix = "g_ptr_array_", ref_function = "g_ptr_array_ref", unref_function = "g_ptr_array_unref", type_id = "G_TYPE_PTR_ARRAY")]
 	[GIR (name = "PtrArray")]
 	public class GenericArray<G> {
+#if GLIB_2_30
+		[CCode (cname = "g_ptr_array_new_full", simple_generics = true)]
+		public GenericArray (uint reserved_size = 0);
+#else
 		[CCode (cname = "g_ptr_array_new_with_free_func", simple_generics = true)]
 		public GenericArray ();
+#endif
 		public void add (owned G data);
 		public void foreach (GLib.Func<G> func);
 		[CCode (cname = "g_ptr_array_index")]
@@ -4369,11 +4457,7 @@ namespace GLib {
 	/* Byte Arrays */
 
 	[Compact]
-#if GLIB_2_22
 	[CCode (cprefix = "g_byte_array_", ref_function = "g_byte_array_ref", unref_function = "g_byte_array_unref", type_id = "G_TYPE_BYTE_ARRAY")]
-#else
-	[CCode (cprefix = "g_byte_array_", free_function = "g_byte_array_free")]
-#endif
 	public class ByteArray {
 		public ByteArray ();
 		[CCode (cname = "g_byte_array_sized_new")]
@@ -4500,14 +4584,12 @@ namespace GLib {
 	/* GArray */
 
 	[Compact]
-#if GLIB_2_22
 	[CCode (ref_function = "g_array_ref", unref_function = "g_array_unref", type_id = "G_TYPE_ARRAY")]
-#else
-	[CCode (free_function = "g_array_free")]
-#endif
 	public class Array<G> {
 		[CCode (cname = "len")]
 		public uint length;
+		[CCode (cname = "data", array_length_cname = "len", array_length_type = "uint")]
+		public G[] data;
 
 		public Array (bool zero_terminated = true, bool clear = true, ulong element_size = 0);
 		[CCode (cname = "g_array_sized_new")]
@@ -4543,11 +4625,7 @@ namespace GLib {
 	public delegate int TreeSearchFunc<K> (K key);
 
 	[Compact]
-#if GLIB_2_22
 	[CCode (ref_function = "g_tree_ref", unref_function = "g_tree_unref")]
-#else
-	[CCode (free_function = "g_tree_destroy")]
-#endif
 	public class Tree<K,V> {
 		[CCode (cname = "g_tree_new_full", simple_generics = true)]
 		public Tree (CompareDataFunc<K> key_compare_func);
@@ -4833,6 +4911,18 @@ namespace GLib {
 		[CCode (array_length_type = "size_t")]
 		public string[] dup_bytestring_array ();
 
+		#if GLIB_2_30
+		public Variant.objv (string[] value);
+		[CCode (array_length_type = "size_t")]
+		#if VALA_0_26
+		public (unowned string)[] get_objv ();
+		#else
+		public string*[] get_objv ();
+		#endif
+		[CCode (array_length_type = "size_t")]
+		public string[] dup_objv ();
+		#endif
+
 		public Variant (string format, ...);
 		// note: the function changes its behaviour when end_ptr is null, so 'out char *' is wrong
 		public Variant.va (string format, char **end_ptr, va_list *app);
@@ -4933,7 +5023,7 @@ namespace GLib {
 
 	[Compact, CCode (ref_function = "g_variant_dict_ref", unref_function = "g_variant_dict_unref")]
 	public class VariantDict {
-		public VariantDict (GLib.Variant from_asv);
+		public VariantDict (GLib.Variant? from_asv = null);
 		public bool lookup (string key, string format_string, ...);
 		public GLib.Variant lookup_value (string key, GLib.VariantType expected_type);
 		public bool contains (string key);
@@ -4941,6 +5031,7 @@ namespace GLib {
 		public void insert_value (string key, GLib.Variant value);
 		public bool remove (string key);
 		public void clear ();
+		[CCode (returns_floating_reference = true)]
 		public GLib.Variant end ();
 	}
 

@@ -723,11 +723,11 @@ static gboolean vala_destructor_real_get_has_result (ValaSubroutine* base) {
 
 static void vala_destructor_class_init (ValaDestructorClass * klass) {
 	vala_destructor_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_destructor_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_destructor_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDestructorPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_destructor_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_destructor_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_destructor_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_destructor_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_destructor_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_destructor_real_check;
 	VALA_SUBROUTINE_CLASS (klass)->get_has_result = vala_destructor_real_get_has_result;
 }
 

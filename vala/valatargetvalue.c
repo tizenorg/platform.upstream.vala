@@ -280,7 +280,7 @@ void vala_value_take_target_value (GValue* value, gpointer v_object) {
 
 static void vala_target_value_class_init (ValaTargetValueClass * klass) {
 	vala_target_value_parent_class = g_type_class_peek_parent (klass);
-	VALA_TARGET_VALUE_CLASS (klass)->finalize = vala_target_value_finalize;
+	((ValaTargetValueClass *) klass)->finalize = vala_target_value_finalize;
 	g_type_class_add_private (klass, sizeof (ValaTargetValuePrivate));
 }
 
@@ -294,6 +294,7 @@ static void vala_target_value_instance_init (ValaTargetValue * self) {
 static void vala_target_value_finalize (ValaTargetValue* obj) {
 	ValaTargetValue * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_TARGET_VALUE, ValaTargetValue);
+	g_signal_handlers_destroy (self);
 	_vala_code_node_unref0 (self->priv->_value_type);
 	_vala_code_node_unref0 (self->priv->_actual_value_type);
 }

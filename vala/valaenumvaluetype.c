@@ -651,10 +651,10 @@ static ValaSymbol* vala_enum_value_type_real_get_member (ValaDataType* base, con
 
 static void vala_enum_value_type_class_init (ValaEnumValueTypeClass * klass) {
 	vala_enum_value_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_enum_value_type_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_enum_value_type_finalize;
 	g_type_class_add_private (klass, sizeof (ValaEnumValueTypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_enum_value_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_enum_value_type_real_get_member;
+	((ValaDataTypeClass *) klass)->copy = vala_enum_value_type_real_copy;
+	((ValaDataTypeClass *) klass)->get_member = vala_enum_value_type_real_get_member;
 }
 
 

@@ -572,10 +572,10 @@ static gchar* vala_null_type_real_to_qualified_string (ValaDataType* base, ValaS
 
 static void vala_null_type_class_init (ValaNullTypeClass * klass) {
 	vala_null_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->compatible = vala_null_type_real_compatible;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_null_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->is_disposable = vala_null_type_real_is_disposable;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_null_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->compatible = vala_null_type_real_compatible;
+	((ValaDataTypeClass *) klass)->copy = vala_null_type_real_copy;
+	((ValaDataTypeClass *) klass)->is_disposable = vala_null_type_real_is_disposable;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_null_type_real_to_qualified_string;
 }
 
 

@@ -323,9 +323,9 @@ void vala_ccode_function_call_set_call (ValaCCodeFunctionCall* self, ValaCCodeEx
 
 static void vala_ccode_function_call_class_init (ValaCCodeFunctionCallClass * klass) {
 	vala_ccode_function_call_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_function_call_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_function_call_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeFunctionCallPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_function_call_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_function_call_real_write;
 }
 
 

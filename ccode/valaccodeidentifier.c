@@ -194,9 +194,9 @@ void vala_ccode_identifier_set_name (ValaCCodeIdentifier* self, const gchar* val
 
 static void vala_ccode_identifier_class_init (ValaCCodeIdentifierClass * klass) {
 	vala_ccode_identifier_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_identifier_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_identifier_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeIdentifierPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_identifier_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_identifier_real_write;
 }
 
 

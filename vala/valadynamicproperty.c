@@ -556,9 +556,9 @@ void vala_dynamic_property_set_dynamic_type (ValaDynamicProperty* self, ValaData
 
 static void vala_dynamic_property_class_init (ValaDynamicPropertyClass * klass) {
 	vala_dynamic_property_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_dynamic_property_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_dynamic_property_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDynamicPropertyPrivate));
-	VALA_CODE_NODE_CLASS (klass)->check = vala_dynamic_property_real_check;
+	((ValaCodeNodeClass *) klass)->check = vala_dynamic_property_real_check;
 }
 
 

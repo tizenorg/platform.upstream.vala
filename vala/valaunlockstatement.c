@@ -510,11 +510,11 @@ void vala_unlock_statement_set_resource (ValaUnlockStatement* self, ValaExpressi
 
 static void vala_unlock_statement_class_init (ValaUnlockStatementClass * klass) {
 	vala_unlock_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_unlock_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_unlock_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaUnlockStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_unlock_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_unlock_statement_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_unlock_statement_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_unlock_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->check = vala_unlock_statement_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_unlock_statement_real_emit;
 }
 
 

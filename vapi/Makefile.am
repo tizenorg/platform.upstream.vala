@@ -2,7 +2,7 @@ NULL =
 
 vapidir = $(pkgdatadir)/vapi
 
-libvala@PACKAGE_SUFFIX@.vapi: ../gee/gee.vapi ../ccode/ccode.vapi ../vala/vala.vapi ../codegen/codegen.vapi
+libvala@PACKAGE_SUFFIX@.vapi: $(top_srcdir)/gee/gee.vapi $(top_srcdir)/ccode/ccode.vapi $(top_srcdir)/vala/vala.vapi $(top_srcdir)/codegen/codegen.vapi
 	cat $^ > $@
 
 dist_vapi_DATA = \
@@ -120,6 +120,8 @@ dist_vapi_DATA = \
 	gstreamer-video-0.10.deps \
 	gstreamer-video-0.10.vapi \
 	gstreamer-1.0.vapi \
+	gstreamer-allocators-1.0.vapi \
+	gstreamer-allocators-1.0.deps \
 	gstreamer-app-1.0.vapi \
 	gstreamer-app-1.0.deps \
 	gstreamer-audio-1.0.vapi \
@@ -136,6 +138,8 @@ dist_vapi_DATA = \
 	gstreamer-net-1.0.deps \
 	gstreamer-pbutils-1.0.vapi \
 	gstreamer-pbutils-1.0.deps \
+	gstreamer-riff-1.0.deps \
+	gstreamer-riff-1.0.vapi \
 	gstreamer-rtp-1.0.vapi \
 	gstreamer-rtp-1.0.deps \
 	gstreamer-rtsp-1.0.vapi \
@@ -284,6 +288,10 @@ dist_vapi_DATA = \
 	vte-2.90.vapi \
 	webkit-1.0.deps \
 	webkit-1.0.vapi \
+	webkit2gtk-4.0.vapi \
+	webkit2gtk-4.0.deps \
+	webkit2gtk-web-extension-4.0.vapi \
+	webkit2gtk-web-extension-4.0.deps \
 	x11.vapi \
 	xcb.vapi \
 	xcb-icccm.vapi \
@@ -306,7 +314,6 @@ GIDL_BINDINGS = \
 	gdl-1.0 \
 	gdu \
 	gdk-gtk \
-	gedit-2.20 \
 	gio-unix-2.0 \
 	gnome-desktop-2.0 \
 	gnome-keyring-1 \
@@ -365,10 +372,12 @@ GSTREAMER_1_0_BINDINGS = \
 	gstreamer-check-1.0 \
 	gstreamer-controller-1.0 \
 	gstreamer-net-1.0 \
+	gstreamer-allocators-1.0 \
 	gstreamer-app-1.0 \
 	gstreamer-audio-1.0 \
 	gstreamer-fft-1.0 \
 	gstreamer-pbutils-1.0 \
+	gstreamer-riff-1.0 \
 	gstreamer-rtp-1.0 \
 	gstreamer-sdp-1.0 \
 	gstreamer-rtsp-1.0 \
@@ -388,7 +397,6 @@ GIR_BINDINGS = \
 	gdk-3.0 \
 	gdk-pixbuf-2.0 \
 	gdl-3.0 \
-	gedit \
 	geocode-glib-1.0 \
 	gio-2.0 \
 	gobject-introspection-1.0 \
@@ -400,7 +408,6 @@ GIR_BINDINGS = \
 	libnotify \
 	libpeas-1.0 \
 	libpeas-gtk-1.0 \
-	librsvg-2.0 \
 	libsoup-2.4 \
 	libwnck-3.0 \
 	mx-1.0 \
@@ -411,6 +418,8 @@ GIR_BINDINGS = \
 	rest-0.7 \
 	udisks2 \
 	vte-2.90 \
+	webkit2gtk-4.0 \
+	webkit2gtk-web-extension-4.0 \
 	$(GSTREAMER_1_0_BINDINGS) \
 	$(NULL)
 
@@ -450,7 +459,7 @@ clutter-gtk-1.0:
 	$(GENVAPI) --library $(srcdir)/clutter-gtk-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/GtkClutter-1.0-custom.vala --pkg clutter-1.0 --pkg gtk+-3.0 --pkg cogl-pango-1.0 $(GIRDIR)/GtkClutter-1.0.gir
 
 clutter-gst-1.0:
-	$(GENVAPI) --library $(srcdir)/clutter-gst-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/ClutterGst-1.0-custom.vala --pkg clutter-1.0 --pkg gstreamer-base-0.10 --pkg gstreamer-video-0.10 gstreamer-interfaces-0.10.vapi $(GIRDIR)/ClutterGst-1.0.gir
+	$(GENVAPI) --library $(srcdir)/clutter-gst-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/ClutterGst-1.0-custom.vala --pkg clutter-1.0 --pkg gstreamer-base-0.10 --pkg gstreamer-video-0.10 --pkg gstreamer-interfaces-0.10 --pkg gstreamer-audio-0.10 $(GIRDIR)/ClutterGst-1.0.gir
 
 clutter-gst-2.0:
 	$(GENVAPI) --library $(srcdir)/clutter-gst-2.0 --metadatadir $(METADATADIR) $(METADATADIR)/ClutterGst-2.0-custom.vala --pkg cogl-1.0 --pkg clutter-1.0 --pkg gstreamer-base-1.0 --pkg gstreamer-video-1.0 $(GIRDIR)/ClutterGst-2.0.gir
@@ -581,6 +590,9 @@ gstreamer-video-0.10:
 gstreamer-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Gst-1.0-custom.vala $(GIRDIR)/Gst-1.0.gir
 
+gstreamer-allocators-1.0:
+	$(GENVAPI) --library $(srcdir)/gstreamer-allocators-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstAllocators-1.0.gir
+
 gstreamer-app-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-app-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstApp-1.0.gir
 
@@ -605,6 +617,9 @@ gstreamer-net-1.0:
 gstreamer-pbutils-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-pbutils-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstPbutils-1.0.gir
 
+gstreamer-riff-1.0:
+	$(GENVAPI) --library $(srcdir)/gstreamer-riff-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRiff-1.0.gir
+
 gstreamer-rtp-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-rtp-1.0 --pkg gstreamer-base-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtp-1.0.gir
 
@@ -612,7 +627,7 @@ gstreamer-rtsp-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-rtsp-1.0 --pkg gstreamer-sdp-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtsp-1.0.gir
 
 gstreamer-rtsp-server-1.0:
-	$(GENVAPI) --library $(srcdir)/gstreamer-rtsp-server-1.0 --pkg gstreamer-rtsp-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtspServer-1.0.gir
+	$(GENVAPI) --library $(srcdir)/gstreamer-rtsp-server-1.0 --pkg gstreamer-rtsp-1.0 --pkg gstreamer-net-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstRtspServer-1.0.gir
 
 gstreamer-sdp-1.0:
 	$(GENVAPI) --library $(srcdir)/gstreamer-sdp-1.0 --pkg gstreamer-1.0 --metadatadir $(METADATADIR) $(GIRDIR)/GstSdp-1.0.gir
@@ -645,7 +660,7 @@ hildon-fm-2:
 	$(GENVAPI) --library $(srcdir)/hildon-fm-2 $(PACKAGESDIR)/hildon-fm-2/hildon-fm-2.gi
 
 json-glib-1.0:
-	$(GENVAPI) --library $(srcdir)/json-glib-1.0 --metadatadir $(METADATADIR) $(METADATADIR)/Json-1.0-custom.vala --pkg gio-2.0 $(GIRDIR)/Json-1.0.gir
+	$(GENVAPI) --library $(srcdir)/json-glib-1.0 --metadatadir $(METADATADIR) --pkg gio-2.0 $(METADATADIR)/Json-1.0-custom.vala $(GIRDIR)/Json-1.0.gir
 
 libepc-1.0:
 	$(GENVAPI) --library $(srcdir)/libepc-1.0 $(PACKAGESDIR)/libepc-1.0/libepc-1.0.gi
@@ -757,3 +772,9 @@ vte-2.90:
 
 webkit-1.0:
 	$(GENVAPI) --library $(srcdir)/webkit-1.0 $(PACKAGESDIR)/webkit-1.0/webkit-1.0.gi
+
+webkit2gtk-4.0:
+	$(GENVAPI) --library $(srcdir)/webkit2gtk-4.0 --metadatadir $(METADATADIR) --pkg gtk+-3.0 --pkg libsoup-2.4 $(GIRDIR)/WebKit2-4.0.gir
+
+webkit2gtk-web-extension-4.0:
+	$(GENVAPI) --library $(srcdir)/webkit2gtk-web-extension-4.0 --metadatadir $(METADATADIR) --pkg gtk+-3.0 $(GIRDIR)/WebKit2WebExtension-4.0.gir

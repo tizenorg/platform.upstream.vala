@@ -608,7 +608,7 @@ void vala_attribute_set_name (ValaAttribute* self, const gchar* value) {
 
 static void vala_attribute_class_init (ValaAttributeClass * klass) {
 	vala_attribute_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_attribute_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_attribute_finalize;
 	g_type_class_add_private (klass, sizeof (ValaAttributePrivate));
 }
 

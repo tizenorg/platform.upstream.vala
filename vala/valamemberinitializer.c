@@ -235,6 +235,8 @@ static gboolean vala_member_initializer_real_check (ValaCodeNode* base, ValaCode
 gboolean vala_code_node_check (ValaCodeNode* self, ValaCodeContext* context);
 static void vala_member_initializer_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen);
 void vala_code_node_emit (ValaCodeNode* self, ValaCodeGenerator* codegen);
+static void vala_member_initializer_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection);
+void vala_code_node_get_used_variables (ValaCodeNode* self, ValaCollection* collection);
 static void vala_member_initializer_real_replace_expression (ValaCodeNode* base, ValaExpression* old_node, ValaExpression* new_node);
 const gchar* vala_member_initializer_get_name (ValaMemberInitializer* self);
 void vala_code_node_set_parent_node (ValaCodeNode* self, ValaCodeNode* value);
@@ -317,6 +319,20 @@ static void vala_member_initializer_real_emit (ValaCodeNode* base, ValaCodeGener
 	_tmp1_ = _tmp0_;
 	_tmp2_ = codegen;
 	vala_code_node_emit ((ValaCodeNode*) _tmp1_, _tmp2_);
+}
+
+
+static void vala_member_initializer_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection) {
+	ValaMemberInitializer * self;
+	ValaExpression* _tmp0_ = NULL;
+	ValaExpression* _tmp1_ = NULL;
+	ValaCollection* _tmp2_ = NULL;
+	self = (ValaMemberInitializer*) base;
+	g_return_if_fail (collection != NULL);
+	_tmp0_ = vala_member_initializer_get_initializer (self);
+	_tmp1_ = _tmp0_;
+	_tmp2_ = collection;
+	vala_code_node_get_used_variables ((ValaCodeNode*) _tmp1_, _tmp2_);
 }
 
 
@@ -409,12 +425,13 @@ void vala_member_initializer_set_symbol_reference (ValaMemberInitializer* self, 
 
 static void vala_member_initializer_class_init (ValaMemberInitializerClass * klass) {
 	vala_member_initializer_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_member_initializer_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_member_initializer_finalize;
 	g_type_class_add_private (klass, sizeof (ValaMemberInitializerPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_member_initializer_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_member_initializer_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_member_initializer_real_emit;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_member_initializer_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->accept = vala_member_initializer_real_accept;
+	((ValaCodeNodeClass *) klass)->check = vala_member_initializer_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_member_initializer_real_emit;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_member_initializer_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_member_initializer_real_replace_expression;
 }
 
 

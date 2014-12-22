@@ -394,9 +394,9 @@ static ValaSymbol* vala_generic_type_real_get_member (ValaDataType* base, const 
 
 static void vala_generic_type_class_init (ValaGenericTypeClass * klass) {
 	vala_generic_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_generic_type_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_generic_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->get_member = vala_generic_type_real_get_member;
+	((ValaDataTypeClass *) klass)->copy = vala_generic_type_real_copy;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_generic_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->get_member = vala_generic_type_real_get_member;
 }
 
 

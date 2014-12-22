@@ -361,10 +361,10 @@ void vala_field_prototype_set_field_symbol (ValaFieldPrototype* self, ValaField*
 
 static void vala_field_prototype_class_init (ValaFieldPrototypeClass * klass) {
 	vala_field_prototype_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_field_prototype_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_field_prototype_finalize;
 	g_type_class_add_private (klass, sizeof (ValaFieldPrototypePrivate));
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_field_prototype_real_copy;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_field_prototype_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_field_prototype_real_copy;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_field_prototype_real_to_qualified_string;
 }
 
 

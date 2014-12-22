@@ -41,7 +41,7 @@ typedef struct _ValaMarkupReader ValaMarkupReader;
 typedef struct _ValaMarkupReaderClass ValaMarkupReaderClass;
 typedef struct _ValaMarkupReaderPrivate ValaMarkupReaderPrivate;
 #define _g_free0(var) (var = (g_free (var), NULL))
-#define _g_mapped_file_free0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_free (var), NULL)))
+#define _g_mapped_file_unref0(var) ((var == NULL) ? NULL : (var = (g_mapped_file_unref (var), NULL)))
 #define _vala_map_unref0(var) ((var == NULL) ? NULL : (var = (vala_map_unref (var), NULL)))
 
 #define VALA_TYPE_SOURCE_REFERENCE (vala_source_reference_get_type ())
@@ -166,9 +166,9 @@ ValaMarkupReader* vala_markup_reader_construct (GType object_type, const gchar* 
 		_tmp2_ = filename;
 		_tmp3_ = g_mapped_file_new (_tmp2_, FALSE, &_inner_error_);
 		_tmp1_ = _tmp3_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			if (_inner_error_->domain == G_FILE_ERROR) {
-				goto __catch9_g_file_error;
+				goto __catch11_g_file_error;
 			}
 			g_critical ("file %s: line %d: unexpected error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 			g_clear_error (&_inner_error_);
@@ -176,7 +176,7 @@ ValaMarkupReader* vala_markup_reader_construct (GType object_type, const gchar* 
 		}
 		_tmp4_ = _tmp1_;
 		_tmp1_ = NULL;
-		_g_mapped_file_free0 (self->priv->mapped_file);
+		_g_mapped_file_unref0 (self->priv->mapped_file);
 		self->priv->mapped_file = _tmp4_;
 		_tmp5_ = self->priv->mapped_file;
 		_tmp6_ = g_mapped_file_get_contents (_tmp5_);
@@ -189,10 +189,10 @@ ValaMarkupReader* vala_markup_reader_construct (GType object_type, const gchar* 
 		self->priv->current = _tmp10_;
 		self->priv->line = 1;
 		self->priv->column = 1;
-		_g_mapped_file_free0 (_tmp1_);
+		_g_mapped_file_unref0 (_tmp1_);
 	}
-	goto __finally9;
-	__catch9_g_file_error:
+	goto __finally11;
+	__catch11_g_file_error:
 	{
 		GError* e = NULL;
 		const gchar* _tmp11_ = NULL;
@@ -211,8 +211,8 @@ ValaMarkupReader* vala_markup_reader_construct (GType object_type, const gchar* 
 		_g_free0 (_tmp15_);
 		_g_error_free0 (e);
 	}
-	__finally9:
-	if (_inner_error_ != NULL) {
+	__finally11:
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return NULL;
@@ -1437,7 +1437,7 @@ static void vala_markup_reader_finalize (GObject* obj) {
 	_g_free0 (self->priv->_filename);
 	_g_free0 (self->priv->_name);
 	_g_free0 (self->priv->_content);
-	_g_mapped_file_free0 (self->priv->mapped_file);
+	_g_mapped_file_unref0 (self->priv->mapped_file);
 	_vala_map_unref0 (self->priv->attributes);
 	G_OBJECT_CLASS (vala_markup_reader_parent_class)->finalize (obj);
 }

@@ -369,6 +369,8 @@ void vala_data_type_set_value_owned (ValaDataType* self, gboolean value);
 void vala_expression_set_value_type (ValaExpression* self, ValaDataType* value);
 static void vala_array_creation_expression_real_emit (ValaCodeNode* base, ValaCodeGenerator* codegen);
 void vala_code_node_emit (ValaCodeNode* self, ValaCodeGenerator* codegen);
+static void vala_array_creation_expression_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection);
+void vala_code_node_get_used_variables (ValaCodeNode* self, ValaCollection* collection);
 static void vala_array_creation_expression_finalize (ValaCodeNode* obj);
 
 
@@ -1285,6 +1287,71 @@ static void vala_array_creation_expression_real_emit (ValaCodeNode* base, ValaCo
 }
 
 
+static void vala_array_creation_expression_real_get_used_variables (ValaCodeNode* base, ValaCollection* collection) {
+	ValaArrayCreationExpression * self;
+	ValaInitializerList* _tmp13_ = NULL;
+	ValaInitializerList* _tmp14_ = NULL;
+	self = (ValaArrayCreationExpression*) base;
+	g_return_if_fail (collection != NULL);
+	{
+		ValaList* _e_list = NULL;
+		ValaList* _tmp0_ = NULL;
+		ValaList* _tmp1_ = NULL;
+		gint _e_size = 0;
+		ValaList* _tmp2_ = NULL;
+		gint _tmp3_ = 0;
+		gint _tmp4_ = 0;
+		gint _e_index = 0;
+		_tmp0_ = self->priv->sizes;
+		_tmp1_ = _vala_iterable_ref0 (_tmp0_);
+		_e_list = _tmp1_;
+		_tmp2_ = _e_list;
+		_tmp3_ = vala_collection_get_size ((ValaCollection*) _tmp2_);
+		_tmp4_ = _tmp3_;
+		_e_size = _tmp4_;
+		_e_index = -1;
+		while (TRUE) {
+			gint _tmp5_ = 0;
+			gint _tmp6_ = 0;
+			gint _tmp7_ = 0;
+			ValaExpression* e = NULL;
+			ValaList* _tmp8_ = NULL;
+			gint _tmp9_ = 0;
+			gpointer _tmp10_ = NULL;
+			ValaExpression* _tmp11_ = NULL;
+			ValaCollection* _tmp12_ = NULL;
+			_tmp5_ = _e_index;
+			_e_index = _tmp5_ + 1;
+			_tmp6_ = _e_index;
+			_tmp7_ = _e_size;
+			if (!(_tmp6_ < _tmp7_)) {
+				break;
+			}
+			_tmp8_ = _e_list;
+			_tmp9_ = _e_index;
+			_tmp10_ = vala_list_get (_tmp8_, _tmp9_);
+			e = (ValaExpression*) _tmp10_;
+			_tmp11_ = e;
+			_tmp12_ = collection;
+			vala_code_node_get_used_variables ((ValaCodeNode*) _tmp11_, _tmp12_);
+			_vala_code_node_unref0 (e);
+		}
+		_vala_iterable_unref0 (_e_list);
+	}
+	_tmp13_ = vala_array_creation_expression_get_initializer_list (self);
+	_tmp14_ = _tmp13_;
+	if (_tmp14_ != NULL) {
+		ValaInitializerList* _tmp15_ = NULL;
+		ValaInitializerList* _tmp16_ = NULL;
+		ValaCollection* _tmp17_ = NULL;
+		_tmp15_ = vala_array_creation_expression_get_initializer_list (self);
+		_tmp16_ = _tmp15_;
+		_tmp17_ = collection;
+		vala_code_node_get_used_variables ((ValaCodeNode*) _tmp16_, _tmp17_);
+	}
+}
+
+
 ValaDataType* vala_array_creation_expression_get_element_type (ValaArrayCreationExpression* self) {
 	ValaDataType* result;
 	ValaDataType* _tmp0_ = NULL;
@@ -1357,15 +1424,16 @@ void vala_array_creation_expression_set_initializer_list (ValaArrayCreationExpre
 
 static void vala_array_creation_expression_class_init (ValaArrayCreationExpressionClass * klass) {
 	vala_array_creation_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_array_creation_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_array_creation_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaArrayCreationExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_array_creation_expression_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_array_creation_expression_real_accept;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_array_creation_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->replace_expression = vala_array_creation_expression_real_replace_expression;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_array_creation_expression_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_array_creation_expression_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_array_creation_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_array_creation_expression_real_accept_children;
+	((ValaCodeNodeClass *) klass)->accept = vala_array_creation_expression_real_accept;
+	((ValaExpressionClass *) klass)->is_pure = vala_array_creation_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->replace_expression = vala_array_creation_expression_real_replace_expression;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_array_creation_expression_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_array_creation_expression_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_array_creation_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_array_creation_expression_real_get_used_variables;
 }
 
 

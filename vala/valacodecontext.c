@@ -235,6 +235,7 @@ struct _ValaCodeContextPrivate {
 	gboolean _assert;
 	gboolean _checking;
 	gboolean _deprecated;
+	gboolean _hide_internal;
 	gboolean _experimental;
 	gboolean _experimental_non_null;
 	gboolean _gobject_tracing;
@@ -261,6 +262,7 @@ struct _ValaCodeContextPrivate {
 	gboolean _version_header;
 	gboolean _nostdpkg;
 	gboolean _use_fast_vapi;
+	gboolean _vapi_comments;
 	ValaReport* _report;
 	ValaMethod* _entry_point;
 	gchar* _entry_point_name;
@@ -417,6 +419,8 @@ gboolean vala_code_context_get_checking (ValaCodeContext* self);
 void vala_code_context_set_checking (ValaCodeContext* self, gboolean value);
 gboolean vala_code_context_get_deprecated (ValaCodeContext* self);
 void vala_code_context_set_deprecated (ValaCodeContext* self, gboolean value);
+gboolean vala_code_context_get_hide_internal (ValaCodeContext* self);
+void vala_code_context_set_hide_internal (ValaCodeContext* self, gboolean value);
 gboolean vala_code_context_get_experimental (ValaCodeContext* self);
 void vala_code_context_set_experimental (ValaCodeContext* self, gboolean value);
 gboolean vala_code_context_get_experimental_non_null (ValaCodeContext* self);
@@ -466,6 +470,8 @@ gboolean vala_code_context_get_nostdpkg (ValaCodeContext* self);
 void vala_code_context_set_nostdpkg (ValaCodeContext* self, gboolean value);
 gboolean vala_code_context_get_use_fast_vapi (ValaCodeContext* self);
 void vala_code_context_set_use_fast_vapi (ValaCodeContext* self, gboolean value);
+gboolean vala_code_context_get_vapi_comments (ValaCodeContext* self);
+void vala_code_context_set_vapi_comments (ValaCodeContext* self, gboolean value);
 gboolean vala_code_context_get_save_csources (ValaCodeContext* self);
 void vala_code_context_set_report (ValaCodeContext* self, ValaReport* value);
 ValaMethod* vala_code_context_get_entry_point (ValaCodeContext* self);
@@ -893,7 +899,7 @@ gboolean vala_code_context_add_packages_from_file (ValaCodeContext* self, const 
 		g_file_get_contents (_tmp2_, &_tmp3_, NULL, &_inner_error_);
 		_g_free0 (contents);
 		contents = _tmp3_;
-		if (_inner_error_ != NULL) {
+		if (G_UNLIKELY (_inner_error_ != NULL)) {
 			_g_free0 (contents);
 			if (_inner_error_->domain == G_FILE_ERROR) {
 				goto __catch0_g_file_error;
@@ -959,7 +965,7 @@ gboolean vala_code_context_add_packages_from_file (ValaCodeContext* self, const 
 		return result;
 	}
 	__finally0:
-	if (_inner_error_ != NULL) {
+	if (G_UNLIKELY (_inner_error_ != NULL)) {
 		g_critical ("file %s: line %d: uncaught error: %s (%s, %d)", __FILE__, __LINE__, _inner_error_->message, g_quark_to_string (_inner_error_->domain), _inner_error_->code);
 		g_clear_error (&_inner_error_);
 		return FALSE;
@@ -1852,7 +1858,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		gint _tmp43__length1 = 0;
 		const gchar* _tmp44_ = NULL;
 		void* _tmp45_ = NULL;
-		const gchar* _tmp59_ = NULL;
+		const gchar* _tmp62_ = NULL;
 		len = (gsize) 1;
 		{
 			gboolean _tmp9_ = FALSE;
@@ -1929,7 +1935,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 					_tmp25__length1 = str_array_length1;
 					_tmp26_ = i;
 					_tmp27_ = _tmp25_[_tmp26_];
-					_tmp28_ = strlen (_tmp27_);
+					_tmp28_ = strlen ((const gchar*) _tmp27_);
 					_tmp29_ = _tmp28_;
 					_tmp21_ = _tmp29_;
 				} else {
@@ -1951,7 +1957,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		_tmp34_ = str_array_length1;
 		_tmp35_ = len;
 		_tmp36_ = separator;
-		_tmp37_ = strlen (_tmp36_);
+		_tmp37_ = strlen ((const gchar*) _tmp36_);
 		_tmp38_ = _tmp37_;
 		_tmp39_ = i;
 		len = _tmp35_ + (_tmp38_ * (_tmp39_ - 1));
@@ -1962,7 +1968,7 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 		_tmp43_ = str_array;
 		_tmp43__length1 = str_array_length1;
 		_tmp44_ = _tmp43_[0];
-		_tmp45_ = g_stpcpy ((void*) _tmp42_, _tmp44_);
+		_tmp45_ = g_stpcpy ((void*) _tmp42_, (const gchar*) _tmp44_);
 		ptr = _tmp45_;
 		{
 			gboolean _tmp46_ = FALSE;
@@ -1980,8 +1986,8 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 				gint _tmp54__length1 = 0;
 				gint _tmp55_ = 0;
 				const gchar* _tmp56_ = NULL;
-				void* _tmp57_ = NULL;
-				void* _tmp58_ = NULL;
+				void* _tmp60_ = NULL;
+				void* _tmp61_ = NULL;
 				if (!_tmp46_) {
 					gint _tmp47_ = 0;
 					_tmp47_ = i;
@@ -1996,29 +2002,38 @@ static gchar* _vala_g_strjoinv (const gchar* separator, gchar** str_array, int s
 				}
 				_tmp50_ = ptr;
 				_tmp51_ = separator;
-				_tmp52_ = g_stpcpy (_tmp50_, _tmp51_);
+				_tmp52_ = g_stpcpy (_tmp50_, (const gchar*) _tmp51_);
 				ptr = _tmp52_;
 				_tmp54_ = str_array;
 				_tmp54__length1 = str_array_length1;
 				_tmp55_ = i;
 				_tmp56_ = _tmp54_[_tmp55_];
-				_tmp53_ = _tmp56_;
-				if (_tmp53_ == NULL) {
+				if (_tmp56_ != NULL) {
+					gchar** _tmp57_ = NULL;
+					gint _tmp57__length1 = 0;
+					gint _tmp58_ = 0;
+					const gchar* _tmp59_ = NULL;
+					_tmp57_ = str_array;
+					_tmp57__length1 = str_array_length1;
+					_tmp58_ = i;
+					_tmp59_ = _tmp57_[_tmp58_];
+					_tmp53_ = (const gchar*) _tmp59_;
+				} else {
 					_tmp53_ = "";
 				}
-				_tmp57_ = ptr;
-				_tmp58_ = g_stpcpy (_tmp57_, _tmp53_);
-				ptr = _tmp58_;
+				_tmp60_ = ptr;
+				_tmp61_ = g_stpcpy (_tmp60_, _tmp53_);
+				ptr = _tmp61_;
 			}
 		}
-		_tmp59_ = res;
+		_tmp62_ = res;
 		res = NULL;
-		result = (gchar*) _tmp59_;
+		result = (gchar*) _tmp62_;
 		return result;
 	} else {
-		gchar* _tmp60_ = NULL;
-		_tmp60_ = g_strdup ("");
-		result = _tmp60_;
+		gchar* _tmp63_ = NULL;
+		_tmp63_ = g_strdup ("");
+		result = _tmp63_;
 		return result;
 	}
 }
@@ -2360,6 +2375,24 @@ void vala_code_context_set_deprecated (ValaCodeContext* self, gboolean value) {
 	g_return_if_fail (self != NULL);
 	_tmp0_ = value;
 	self->priv->_deprecated = _tmp0_;
+}
+
+
+gboolean vala_code_context_get_hide_internal (ValaCodeContext* self) {
+	gboolean result;
+	gboolean _tmp0_ = FALSE;
+	g_return_val_if_fail (self != NULL, FALSE);
+	_tmp0_ = self->priv->_hide_internal;
+	result = _tmp0_;
+	return result;
+}
+
+
+void vala_code_context_set_hide_internal (ValaCodeContext* self, gboolean value) {
+	gboolean _tmp0_ = FALSE;
+	g_return_if_fail (self != NULL);
+	_tmp0_ = value;
+	self->priv->_hide_internal = _tmp0_;
 }
 
 
@@ -2860,6 +2893,24 @@ void vala_code_context_set_use_fast_vapi (ValaCodeContext* self, gboolean value)
 }
 
 
+gboolean vala_code_context_get_vapi_comments (ValaCodeContext* self) {
+	gboolean result;
+	gboolean _tmp0_ = FALSE;
+	g_return_val_if_fail (self != NULL, FALSE);
+	_tmp0_ = self->priv->_vapi_comments;
+	result = _tmp0_;
+	return result;
+}
+
+
+void vala_code_context_set_vapi_comments (ValaCodeContext* self, gboolean value) {
+	gboolean _tmp0_ = FALSE;
+	g_return_if_fail (self != NULL);
+	_tmp0_ = value;
+	self->priv->_vapi_comments = _tmp0_;
+}
+
+
 gboolean vala_code_context_get_save_csources (ValaCodeContext* self) {
 	gboolean result;
 	gboolean _tmp0_ = FALSE;
@@ -3166,12 +3217,11 @@ void vala_value_take_code_context (GValue* value, gpointer v_object) {
 
 
 static void vala_code_context_class_init (ValaCodeContextClass * klass) {
-	GStaticPrivate _tmp0_ = G_STATIC_PRIVATE_INIT;
 	vala_code_context_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_CONTEXT_CLASS (klass)->finalize = vala_code_context_finalize;
+	((ValaCodeContextClass *) klass)->finalize = vala_code_context_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCodeContextPrivate));
-	g_static_private_init (&_tmp0_);
-	vala_code_context_context_stack_key = _tmp0_;
+	g_static_private_init (&vala_code_context_context_stack_key);
+	vala_code_context_context_stack_key = vala_code_context_context_stack_key;
 }
 
 
@@ -3212,6 +3262,7 @@ static void vala_code_context_instance_init (ValaCodeContext * self) {
 static void vala_code_context_finalize (ValaCodeContext* obj) {
 	ValaCodeContext * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_CODE_CONTEXT, ValaCodeContext);
+	g_signal_handlers_destroy (self);
 	_g_free0 (self->priv->_header_filename);
 	_g_free0 (self->priv->_internal_header_filename);
 	_g_free0 (self->priv->_includedir);

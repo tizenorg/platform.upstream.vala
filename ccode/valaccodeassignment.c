@@ -376,10 +376,10 @@ void vala_ccode_assignment_set_right (ValaCCodeAssignment* self, ValaCCodeExpres
 
 static void vala_ccode_assignment_class_init (ValaCCodeAssignmentClass * klass) {
 	vala_ccode_assignment_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_assignment_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_assignment_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeAssignmentPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_assignment_real_write;
-	VALA_CCODE_EXPRESSION_CLASS (klass)->write_inner = vala_ccode_assignment_real_write_inner;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_assignment_real_write;
+	((ValaCCodeExpressionClass *) klass)->write_inner = vala_ccode_assignment_real_write_inner;
 }
 
 

@@ -1669,12 +1669,12 @@ static gboolean vala_template_real_check (ValaCodeNode* base, ValaCodeContext* c
 
 static void vala_template_class_init (ValaTemplateClass * klass) {
 	vala_template_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_template_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_template_finalize;
 	g_type_class_add_private (klass, sizeof (ValaTemplatePrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_template_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_template_real_accept_children;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_template_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_template_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_template_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_template_real_accept_children;
+	((ValaExpressionClass *) klass)->is_pure = vala_template_real_is_pure;
+	((ValaCodeNodeClass *) klass)->check = vala_template_real_check;
 }
 
 

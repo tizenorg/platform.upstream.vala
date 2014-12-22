@@ -690,11 +690,11 @@ void vala_while_statement_set_body (ValaWhileStatement* self, ValaBlock* value) 
 
 static void vala_while_statement_class_init (ValaWhileStatementClass * klass) {
 	vala_while_statement_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_while_statement_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_while_statement_finalize;
 	g_type_class_add_private (klass, sizeof (ValaWhileStatementPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_while_statement_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_while_statement_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_while_statement_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_while_statement_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_while_statement_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_while_statement_real_check;
 }
 
 

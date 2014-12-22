@@ -78,9 +78,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+DIST_COMMON = $(top_srcdir)/Makefile.common $(srcdir)/Makefile.in \
+	$(srcdir)/Makefile.am $(top_srcdir)/build-aux/depcomp \
+	$(codegeninclude_HEADERS)
 subdir = codegen
-DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/build-aux/depcomp $(codegeninclude_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -124,8 +125,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libvala@PACKAGE_SUFFIX@_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) ../vala/libvalacore.la \
-	../ccode/libvalaccode.la $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(top_builddir)/vala/libvalacore.la \
+	$(top_builddir)/ccode/libvalaccode.la $(am__DEPENDENCIES_1)
 am__objects_1 =
 am__objects_2 = valaccodearraymodule.lo valaccodeassignmentmodule.lo \
 	valaccodeattribute.lo valaccodebasemodule.lo \
@@ -322,7 +323,6 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
-gen_introspect_decl = @gen_introspect_decl@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -351,8 +351,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-vala_gen_introspect_decl = @vala_gen_introspect_decl@
-vapigen_decl = @vapigen_decl@
+VALA_V = $(VALA_V_$(V))
+VALA_V_ = $(VALA_V_$(AM_DEFAULT_VERBOSITY))
+VALA_V_0 = @echo "  VALAC " $^;
 NULL = 
 AM_CPPFLAGS = \
 	$(COVERAGE_CFLAGS) \
@@ -412,8 +413,8 @@ libvala@PACKAGE_SUFFIX@_la_LDFLAGS = -no-undefined
 libvala@PACKAGE_SUFFIX@_la_LIBADD = \
 	$(COVERAGE_LIBS) \
 	$(GLIB_LIBS) \
-	../vala/libvalacore.la \
-	../ccode/libvalaccode.la \
+	$(top_builddir)/vala/libvalacore.la \
+	$(top_builddir)/ccode/libvalaccode.la \
 	$(NULL)
 
 EXTRA_DIST = $(libvala_la_VALASOURCES) codegen.vapi codegen.vala.stamp
@@ -423,15 +424,12 @@ MAINTAINERCLEANFILES = \
 	$(libvala_la_VALASOURCES:.vala=.c) \
 	$(NULL)
 
-VALA_V = $(VALA_V_$(V))
-VALA_V_ = $(VALA_V_$(AM_DEFAULT_VERBOSITY))
-VALA_V_0 = @echo "  VALAC " $^;
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/Makefile.common $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -452,6 +450,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe);; \
 	esac;
+$(top_srcdir)/Makefile.common:
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -797,7 +796,17 @@ uninstall-am: uninstall-codegenincludeHEADERS uninstall-libLTLIBRARIES
 
 
 codegen.vapi codegen.vala.stamp: $(libvala_la_VALASOURCES)
-	$(VALA_V)$(VALAC) $(COVERAGE_VALAFLAGS) $(VALAFLAGS) -C --vapidir $(srcdir)/../vapi --pkg gobject-2.0 --vapidir $(srcdir)/../gee --pkg gee --vapidir $(srcdir)/../ccode --pkg ccode --vapidir $(srcdir)/../vala --pkg vala -H valacodegen.h --library codegen $^
+	$(VALA_V)$(VALAC) \
+		$(COVERAGE_VALAFLAGS) \
+		$(VALAFLAGS) \
+		-C \
+		--vapidir $(top_srcdir)/vapi --pkg gobject-2.0 \
+		--vapidir $(top_srcdir)/gee --pkg gee \
+		--vapidir $(top_srcdir)/ccode --pkg ccode \
+		--vapidir $(top_srcdir)/vala --pkg vala \
+		-H valacodegen.h \
+		--library codegen \
+		$^
 	@touch $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

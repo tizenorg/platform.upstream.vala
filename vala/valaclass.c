@@ -1420,6 +1420,7 @@ const gchar* vala_creation_method_get_class_name (ValaCreationMethod* self);
 void vala_report_error (ValaSourceReference* source, const gchar* message);
 gchar* vala_symbol_get_full_name (ValaSymbol* self);
 void vala_code_node_set_error (ValaCodeNode* self, gboolean value);
+ValaDataType* vala_method_get_base_interface_type (ValaMethod* self);
 static ValaList* vala_class_real_get_methods (ValaObjectTypeSymbol* base);
 static void vala_class_real_add_property (ValaSymbol* base, ValaProperty* prop);
 void vala_property_set_this_parameter (ValaProperty* self, ValaParameter* value);
@@ -1555,12 +1556,12 @@ GType vala_source_file_type_get_type (void) G_GNUC_CONST;
 ValaSourceFileType vala_symbol_get_source_type (ValaSymbol* self);
 ValaList* vala_object_type_symbol_get_methods (ValaObjectTypeSymbol* self);
 gboolean vala_method_get_is_abstract (ValaMethod* self);
-ValaSymbol* vala_scope_lookup (ValaScope* self, const gchar* name);
 gboolean vala_symbol_check_deprecated (ValaSymbol* self, ValaSourceReference* source_ref);
 gboolean vala_symbol_check_experimental (ValaSymbol* self, ValaSourceReference* source_ref);
 void vala_symbol_set_used (ValaSymbol* self, gboolean value);
 ValaList* vala_object_type_symbol_get_properties (ValaObjectTypeSymbol* self);
 gboolean vala_property_get_is_abstract (ValaProperty* self);
+ValaSymbol* vala_scope_lookup (ValaScope* self, const gchar* name);
 gboolean vala_class_get_is_abstract (ValaClass* self);
 ValaSymbol* vala_semantic_analyzer_symbol_lookup_inherited (ValaSymbol* sym, const gchar* name);
 gboolean vala_method_get_overrides (ValaMethod* self);
@@ -1879,12 +1880,9 @@ static void vala_class_real_add_method (ValaSymbol* base, ValaMethod* m) {
 	ValaMethod* _tmp65_ = NULL;
 	ValaList* _tmp93_ = NULL;
 	ValaMethod* _tmp94_ = NULL;
-	ValaScope* _tmp95_ = NULL;
-	ValaScope* _tmp96_ = NULL;
-	ValaMethod* _tmp97_ = NULL;
-	const gchar* _tmp98_ = NULL;
-	const gchar* _tmp99_ = NULL;
-	ValaMethod* _tmp100_ = NULL;
+	ValaMethod* _tmp95_ = NULL;
+	ValaDataType* _tmp96_ = NULL;
+	ValaDataType* _tmp97_ = NULL;
 	self = (ValaClass*) base;
 	g_return_if_fail (m != NULL);
 	_tmp1_ = m;
@@ -2115,13 +2113,32 @@ static void vala_class_real_add_method (ValaSymbol* base, ValaMethod* m) {
 	_tmp93_ = self->priv->methods;
 	_tmp94_ = m;
 	vala_collection_add ((ValaCollection*) _tmp93_, _tmp94_);
-	_tmp95_ = vala_symbol_get_scope ((ValaSymbol*) self);
-	_tmp96_ = _tmp95_;
-	_tmp97_ = m;
-	_tmp98_ = vala_symbol_get_name ((ValaSymbol*) _tmp97_);
-	_tmp99_ = _tmp98_;
-	_tmp100_ = m;
-	vala_scope_add (_tmp96_, _tmp99_, (ValaSymbol*) _tmp100_);
+	_tmp95_ = m;
+	_tmp96_ = vala_method_get_base_interface_type (_tmp95_);
+	_tmp97_ = _tmp96_;
+	if (_tmp97_ == NULL) {
+		ValaScope* _tmp98_ = NULL;
+		ValaScope* _tmp99_ = NULL;
+		ValaMethod* _tmp100_ = NULL;
+		const gchar* _tmp101_ = NULL;
+		const gchar* _tmp102_ = NULL;
+		ValaMethod* _tmp103_ = NULL;
+		_tmp98_ = vala_symbol_get_scope ((ValaSymbol*) self);
+		_tmp99_ = _tmp98_;
+		_tmp100_ = m;
+		_tmp101_ = vala_symbol_get_name ((ValaSymbol*) _tmp100_);
+		_tmp102_ = _tmp101_;
+		_tmp103_ = m;
+		vala_scope_add (_tmp99_, _tmp102_, (ValaSymbol*) _tmp103_);
+	} else {
+		ValaScope* _tmp104_ = NULL;
+		ValaScope* _tmp105_ = NULL;
+		ValaMethod* _tmp106_ = NULL;
+		_tmp104_ = vala_symbol_get_scope ((ValaSymbol*) self);
+		_tmp105_ = _tmp104_;
+		_tmp106_ = m;
+		vala_scope_add (_tmp105_, NULL, (ValaSymbol*) _tmp106_);
+	}
 }
 
 
@@ -3514,16 +3531,16 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 	gint _tmp341_ = 0;
 	ValaSourceFileType _tmp369_ = 0;
 	ValaSourceFileType _tmp370_ = 0;
-	ValaCodeContext* _tmp559_ = NULL;
-	ValaSemanticAnalyzer* _tmp560_ = NULL;
-	ValaSemanticAnalyzer* _tmp561_ = NULL;
-	ValaSourceFile* _tmp562_ = NULL;
-	ValaCodeContext* _tmp563_ = NULL;
-	ValaSemanticAnalyzer* _tmp564_ = NULL;
-	ValaSemanticAnalyzer* _tmp565_ = NULL;
-	ValaSymbol* _tmp566_ = NULL;
-	gboolean _tmp567_ = FALSE;
-	gboolean _tmp568_ = FALSE;
+	ValaCodeContext* _tmp578_ = NULL;
+	ValaSemanticAnalyzer* _tmp579_ = NULL;
+	ValaSemanticAnalyzer* _tmp580_ = NULL;
+	ValaSourceFile* _tmp581_ = NULL;
+	ValaCodeContext* _tmp582_ = NULL;
+	ValaSemanticAnalyzer* _tmp583_ = NULL;
+	ValaSemanticAnalyzer* _tmp584_ = NULL;
+	ValaSymbol* _tmp585_ = NULL;
+	gboolean _tmp586_ = FALSE;
+	gboolean _tmp587_ = FALSE;
 	self = (ValaClass*) base;
 	g_return_val_if_fail (context != NULL, FALSE);
 	_tmp0_ = vala_code_node_get_checked ((ValaCodeNode*) self);
@@ -4697,7 +4714,7 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 	_tmp369_ = vala_symbol_get_source_type ((ValaSymbol*) self);
 	_tmp370_ = _tmp369_;
 	if (_tmp370_ == VALA_SOURCE_FILE_TYPE_SOURCE) {
-		gboolean _tmp483_ = FALSE;
+		gboolean _tmp502_ = FALSE;
 		{
 			ValaList* _base_type_list = NULL;
 			ValaList* _tmp371_ = NULL;
@@ -4811,98 +4828,159 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 							_tmp405_ = vala_method_get_is_abstract (_tmp404_);
 							_tmp406_ = _tmp405_;
 							if (_tmp406_) {
-								ValaSymbol* sym = NULL;
+								gboolean implemented = FALSE;
 								ValaClass* base_class = NULL;
 								ValaClass* _tmp407_ = NULL;
-								ValaSymbol* _tmp421_ = NULL;
-								sym = NULL;
+								gboolean _tmp447_ = FALSE;
+								implemented = FALSE;
 								_tmp407_ = _vala_code_node_ref0 (self);
 								base_class = _tmp407_;
 								while (TRUE) {
-									gboolean _tmp408_ = FALSE;
-									ValaClass* _tmp409_ = NULL;
-									ValaClass* _tmp411_ = NULL;
-									ValaScope* _tmp412_ = NULL;
-									ValaScope* _tmp413_ = NULL;
-									ValaMethod* _tmp414_ = NULL;
-									const gchar* _tmp415_ = NULL;
-									const gchar* _tmp416_ = NULL;
-									ValaSymbol* _tmp417_ = NULL;
-									ValaClass* _tmp418_ = NULL;
-									ValaClass* _tmp419_ = NULL;
-									ValaClass* _tmp420_ = NULL;
-									_tmp409_ = base_class;
-									if (_tmp409_ != NULL) {
-										ValaSymbol* _tmp410_ = NULL;
-										_tmp410_ = sym;
-										_tmp408_ = !G_TYPE_CHECK_INSTANCE_TYPE (_tmp410_, VALA_TYPE_METHOD);
-									} else {
-										_tmp408_ = FALSE;
-									}
-									if (!_tmp408_) {
+									ValaClass* _tmp408_ = NULL;
+									ValaClass* _tmp444_ = NULL;
+									ValaClass* _tmp445_ = NULL;
+									ValaClass* _tmp446_ = NULL;
+									_tmp408_ = base_class;
+									if (!(_tmp408_ != NULL)) {
 										break;
 									}
-									_tmp411_ = base_class;
-									_tmp412_ = vala_symbol_get_scope ((ValaSymbol*) _tmp411_);
-									_tmp413_ = _tmp412_;
-									_tmp414_ = m;
-									_tmp415_ = vala_symbol_get_name ((ValaSymbol*) _tmp414_);
-									_tmp416_ = _tmp415_;
-									_tmp417_ = vala_scope_lookup (_tmp413_, _tmp416_);
-									_vala_code_node_unref0 (sym);
-									sym = _tmp417_;
-									_tmp418_ = base_class;
-									_tmp419_ = _tmp418_->priv->_base_class;
-									_tmp420_ = _vala_code_node_ref0 (_tmp419_);
+									{
+										ValaList* _impl_list = NULL;
+										ValaClass* _tmp409_ = NULL;
+										ValaList* _tmp410_ = NULL;
+										gint _impl_size = 0;
+										ValaList* _tmp411_ = NULL;
+										gint _tmp412_ = 0;
+										gint _tmp413_ = 0;
+										gint _impl_index = 0;
+										_tmp409_ = base_class;
+										_tmp410_ = vala_object_type_symbol_get_methods ((ValaObjectTypeSymbol*) _tmp409_);
+										_impl_list = _tmp410_;
+										_tmp411_ = _impl_list;
+										_tmp412_ = vala_collection_get_size ((ValaCollection*) _tmp411_);
+										_tmp413_ = _tmp412_;
+										_impl_size = _tmp413_;
+										_impl_index = -1;
+										while (TRUE) {
+											gint _tmp414_ = 0;
+											gint _tmp415_ = 0;
+											gint _tmp416_ = 0;
+											ValaMethod* impl = NULL;
+											ValaList* _tmp417_ = NULL;
+											gint _tmp418_ = 0;
+											gpointer _tmp419_ = NULL;
+											gboolean _tmp420_ = FALSE;
+											ValaMethod* _tmp421_ = NULL;
+											const gchar* _tmp422_ = NULL;
+											const gchar* _tmp423_ = NULL;
+											ValaMethod* _tmp424_ = NULL;
+											const gchar* _tmp425_ = NULL;
+											const gchar* _tmp426_ = NULL;
+											_tmp414_ = _impl_index;
+											_impl_index = _tmp414_ + 1;
+											_tmp415_ = _impl_index;
+											_tmp416_ = _impl_size;
+											if (!(_tmp415_ < _tmp416_)) {
+												break;
+											}
+											_tmp417_ = _impl_list;
+											_tmp418_ = _impl_index;
+											_tmp419_ = vala_list_get (_tmp417_, _tmp418_);
+											impl = (ValaMethod*) _tmp419_;
+											_tmp421_ = impl;
+											_tmp422_ = vala_symbol_get_name ((ValaSymbol*) _tmp421_);
+											_tmp423_ = _tmp422_;
+											_tmp424_ = m;
+											_tmp425_ = vala_symbol_get_name ((ValaSymbol*) _tmp424_);
+											_tmp426_ = _tmp425_;
+											if (g_strcmp0 (_tmp423_, _tmp426_) == 0) {
+												gboolean _tmp427_ = FALSE;
+												ValaMethod* _tmp428_ = NULL;
+												ValaDataType* _tmp429_ = NULL;
+												ValaDataType* _tmp430_ = NULL;
+												_tmp428_ = impl;
+												_tmp429_ = vala_method_get_base_interface_type (_tmp428_);
+												_tmp430_ = _tmp429_;
+												if (_tmp430_ == NULL) {
+													_tmp427_ = TRUE;
+												} else {
+													ValaMethod* _tmp431_ = NULL;
+													ValaDataType* _tmp432_ = NULL;
+													ValaDataType* _tmp433_ = NULL;
+													ValaTypeSymbol* _tmp434_ = NULL;
+													ValaTypeSymbol* _tmp435_ = NULL;
+													ValaInterface* _tmp436_ = NULL;
+													_tmp431_ = impl;
+													_tmp432_ = vala_method_get_base_interface_type (_tmp431_);
+													_tmp433_ = _tmp432_;
+													_tmp434_ = vala_data_type_get_data_type (_tmp433_);
+													_tmp435_ = _tmp434_;
+													_tmp436_ = iface;
+													_tmp427_ = _tmp435_ == G_TYPE_CHECK_INSTANCE_CAST (_tmp436_, VALA_TYPE_TYPESYMBOL, ValaTypeSymbol);
+												}
+												_tmp420_ = _tmp427_;
+											} else {
+												_tmp420_ = FALSE;
+											}
+											if (_tmp420_) {
+												ValaMethod* _tmp437_ = NULL;
+												ValaSourceReference* _tmp438_ = NULL;
+												ValaSourceReference* _tmp439_ = NULL;
+												ValaMethod* _tmp440_ = NULL;
+												ValaSourceReference* _tmp441_ = NULL;
+												ValaSourceReference* _tmp442_ = NULL;
+												ValaMethod* _tmp443_ = NULL;
+												_tmp437_ = impl;
+												_tmp438_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+												_tmp439_ = _tmp438_;
+												vala_symbol_check_deprecated ((ValaSymbol*) _tmp437_, _tmp439_);
+												_tmp440_ = impl;
+												_tmp441_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+												_tmp442_ = _tmp441_;
+												vala_symbol_check_experimental ((ValaSymbol*) _tmp440_, _tmp442_);
+												_tmp443_ = impl;
+												vala_symbol_set_used ((ValaSymbol*) _tmp443_, TRUE);
+												implemented = TRUE;
+												_vala_code_node_unref0 (impl);
+												break;
+											}
+											_vala_code_node_unref0 (impl);
+										}
+										_vala_iterable_unref0 (_impl_list);
+									}
+									_tmp444_ = base_class;
+									_tmp445_ = _tmp444_->priv->_base_class;
+									_tmp446_ = _vala_code_node_ref0 (_tmp445_);
 									_vala_code_node_unref0 (base_class);
-									base_class = _tmp420_;
+									base_class = _tmp446_;
 								}
-								_tmp421_ = sym;
-								if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp421_, VALA_TYPE_METHOD)) {
-									ValaSymbol* _tmp422_ = NULL;
-									ValaSourceReference* _tmp423_ = NULL;
-									ValaSourceReference* _tmp424_ = NULL;
-									ValaSymbol* _tmp425_ = NULL;
-									ValaSourceReference* _tmp426_ = NULL;
-									ValaSourceReference* _tmp427_ = NULL;
-									ValaSymbol* _tmp428_ = NULL;
-									_tmp422_ = sym;
-									_tmp423_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp424_ = _tmp423_;
-									vala_symbol_check_deprecated (_tmp422_, _tmp424_);
-									_tmp425_ = sym;
-									_tmp426_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp427_ = _tmp426_;
-									vala_symbol_check_experimental (_tmp425_, _tmp427_);
-									_tmp428_ = sym;
-									vala_symbol_set_used (_tmp428_, TRUE);
-								} else {
-									ValaSourceReference* _tmp429_ = NULL;
-									ValaSourceReference* _tmp430_ = NULL;
-									gchar* _tmp431_ = NULL;
-									gchar* _tmp432_ = NULL;
-									ValaMethod* _tmp433_ = NULL;
-									gchar* _tmp434_ = NULL;
-									gchar* _tmp435_ = NULL;
-									gchar* _tmp436_ = NULL;
-									gchar* _tmp437_ = NULL;
+								_tmp447_ = implemented;
+								if (!_tmp447_) {
+									ValaSourceReference* _tmp448_ = NULL;
+									ValaSourceReference* _tmp449_ = NULL;
+									gchar* _tmp450_ = NULL;
+									gchar* _tmp451_ = NULL;
+									ValaMethod* _tmp452_ = NULL;
+									gchar* _tmp453_ = NULL;
+									gchar* _tmp454_ = NULL;
+									gchar* _tmp455_ = NULL;
+									gchar* _tmp456_ = NULL;
 									vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
-									_tmp429_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp430_ = _tmp429_;
-									_tmp431_ = vala_symbol_get_full_name ((ValaSymbol*) self);
-									_tmp432_ = _tmp431_;
-									_tmp433_ = m;
-									_tmp434_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp433_);
-									_tmp435_ = _tmp434_;
-									_tmp436_ = g_strdup_printf ("`%s' does not implement interface method `%s'", _tmp432_, _tmp435_);
-									_tmp437_ = _tmp436_;
-									vala_report_error (_tmp430_, _tmp437_);
-									_g_free0 (_tmp437_);
-									_g_free0 (_tmp435_);
-									_g_free0 (_tmp432_);
+									_tmp448_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+									_tmp449_ = _tmp448_;
+									_tmp450_ = vala_symbol_get_full_name ((ValaSymbol*) self);
+									_tmp451_ = _tmp450_;
+									_tmp452_ = m;
+									_tmp453_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp452_);
+									_tmp454_ = _tmp453_;
+									_tmp455_ = g_strdup_printf ("`%s' does not implement interface method `%s'", _tmp451_, _tmp454_);
+									_tmp456_ = _tmp455_;
+									vala_report_error (_tmp449_, _tmp456_);
+									_g_free0 (_tmp456_);
+									_g_free0 (_tmp454_);
+									_g_free0 (_tmp451_);
 								}
 								_vala_code_node_unref0 (base_class);
-								_vala_code_node_unref0 (sym);
 							}
 							_vala_code_node_unref0 (m);
 						}
@@ -4910,136 +4988,136 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 					}
 					{
 						ValaList* _prop_list = NULL;
-						ValaInterface* _tmp438_ = NULL;
-						ValaList* _tmp439_ = NULL;
+						ValaInterface* _tmp457_ = NULL;
+						ValaList* _tmp458_ = NULL;
 						gint _prop_size = 0;
-						ValaList* _tmp440_ = NULL;
-						gint _tmp441_ = 0;
-						gint _tmp442_ = 0;
+						ValaList* _tmp459_ = NULL;
+						gint _tmp460_ = 0;
+						gint _tmp461_ = 0;
 						gint _prop_index = 0;
-						_tmp438_ = iface;
-						_tmp439_ = vala_object_type_symbol_get_properties ((ValaObjectTypeSymbol*) _tmp438_);
-						_prop_list = _tmp439_;
-						_tmp440_ = _prop_list;
-						_tmp441_ = vala_collection_get_size ((ValaCollection*) _tmp440_);
-						_tmp442_ = _tmp441_;
-						_prop_size = _tmp442_;
+						_tmp457_ = iface;
+						_tmp458_ = vala_object_type_symbol_get_properties ((ValaObjectTypeSymbol*) _tmp457_);
+						_prop_list = _tmp458_;
+						_tmp459_ = _prop_list;
+						_tmp460_ = vala_collection_get_size ((ValaCollection*) _tmp459_);
+						_tmp461_ = _tmp460_;
+						_prop_size = _tmp461_;
 						_prop_index = -1;
 						while (TRUE) {
-							gint _tmp443_ = 0;
-							gint _tmp444_ = 0;
-							gint _tmp445_ = 0;
+							gint _tmp462_ = 0;
+							gint _tmp463_ = 0;
+							gint _tmp464_ = 0;
 							ValaProperty* prop = NULL;
-							ValaList* _tmp446_ = NULL;
-							gint _tmp447_ = 0;
-							gpointer _tmp448_ = NULL;
-							ValaProperty* _tmp449_ = NULL;
-							gboolean _tmp450_ = FALSE;
-							gboolean _tmp451_ = FALSE;
-							_tmp443_ = _prop_index;
-							_prop_index = _tmp443_ + 1;
-							_tmp444_ = _prop_index;
-							_tmp445_ = _prop_size;
-							if (!(_tmp444_ < _tmp445_)) {
+							ValaList* _tmp465_ = NULL;
+							gint _tmp466_ = 0;
+							gpointer _tmp467_ = NULL;
+							ValaProperty* _tmp468_ = NULL;
+							gboolean _tmp469_ = FALSE;
+							gboolean _tmp470_ = FALSE;
+							_tmp462_ = _prop_index;
+							_prop_index = _tmp462_ + 1;
+							_tmp463_ = _prop_index;
+							_tmp464_ = _prop_size;
+							if (!(_tmp463_ < _tmp464_)) {
 								break;
 							}
-							_tmp446_ = _prop_list;
-							_tmp447_ = _prop_index;
-							_tmp448_ = vala_list_get (_tmp446_, _tmp447_);
-							prop = (ValaProperty*) _tmp448_;
-							_tmp449_ = prop;
-							_tmp450_ = vala_property_get_is_abstract (_tmp449_);
-							_tmp451_ = _tmp450_;
-							if (_tmp451_) {
+							_tmp465_ = _prop_list;
+							_tmp466_ = _prop_index;
+							_tmp467_ = vala_list_get (_tmp465_, _tmp466_);
+							prop = (ValaProperty*) _tmp467_;
+							_tmp468_ = prop;
+							_tmp469_ = vala_property_get_is_abstract (_tmp468_);
+							_tmp470_ = _tmp469_;
+							if (_tmp470_) {
 								ValaSymbol* sym = NULL;
 								ValaClass* base_class = NULL;
-								ValaClass* _tmp452_ = NULL;
-								ValaSymbol* _tmp466_ = NULL;
+								ValaClass* _tmp471_ = NULL;
+								ValaSymbol* _tmp485_ = NULL;
 								sym = NULL;
-								_tmp452_ = _vala_code_node_ref0 (self);
-								base_class = _tmp452_;
+								_tmp471_ = _vala_code_node_ref0 (self);
+								base_class = _tmp471_;
 								while (TRUE) {
-									gboolean _tmp453_ = FALSE;
-									ValaClass* _tmp454_ = NULL;
-									ValaClass* _tmp456_ = NULL;
-									ValaScope* _tmp457_ = NULL;
-									ValaScope* _tmp458_ = NULL;
-									ValaProperty* _tmp459_ = NULL;
-									const gchar* _tmp460_ = NULL;
-									const gchar* _tmp461_ = NULL;
-									ValaSymbol* _tmp462_ = NULL;
-									ValaClass* _tmp463_ = NULL;
-									ValaClass* _tmp464_ = NULL;
-									ValaClass* _tmp465_ = NULL;
-									_tmp454_ = base_class;
-									if (_tmp454_ != NULL) {
-										ValaSymbol* _tmp455_ = NULL;
-										_tmp455_ = sym;
-										_tmp453_ = !G_TYPE_CHECK_INSTANCE_TYPE (_tmp455_, VALA_TYPE_PROPERTY);
+									gboolean _tmp472_ = FALSE;
+									ValaClass* _tmp473_ = NULL;
+									ValaClass* _tmp475_ = NULL;
+									ValaScope* _tmp476_ = NULL;
+									ValaScope* _tmp477_ = NULL;
+									ValaProperty* _tmp478_ = NULL;
+									const gchar* _tmp479_ = NULL;
+									const gchar* _tmp480_ = NULL;
+									ValaSymbol* _tmp481_ = NULL;
+									ValaClass* _tmp482_ = NULL;
+									ValaClass* _tmp483_ = NULL;
+									ValaClass* _tmp484_ = NULL;
+									_tmp473_ = base_class;
+									if (_tmp473_ != NULL) {
+										ValaSymbol* _tmp474_ = NULL;
+										_tmp474_ = sym;
+										_tmp472_ = !G_TYPE_CHECK_INSTANCE_TYPE (_tmp474_, VALA_TYPE_PROPERTY);
 									} else {
-										_tmp453_ = FALSE;
+										_tmp472_ = FALSE;
 									}
-									if (!_tmp453_) {
+									if (!_tmp472_) {
 										break;
 									}
-									_tmp456_ = base_class;
-									_tmp457_ = vala_symbol_get_scope ((ValaSymbol*) _tmp456_);
-									_tmp458_ = _tmp457_;
-									_tmp459_ = prop;
-									_tmp460_ = vala_symbol_get_name ((ValaSymbol*) _tmp459_);
-									_tmp461_ = _tmp460_;
-									_tmp462_ = vala_scope_lookup (_tmp458_, _tmp461_);
-									_vala_code_node_unref0 (sym);
-									sym = _tmp462_;
-									_tmp463_ = base_class;
-									_tmp464_ = _tmp463_->priv->_base_class;
-									_tmp465_ = _vala_code_node_ref0 (_tmp464_);
-									_vala_code_node_unref0 (base_class);
-									base_class = _tmp465_;
-								}
-								_tmp466_ = sym;
-								if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp466_, VALA_TYPE_PROPERTY)) {
-									ValaSymbol* _tmp467_ = NULL;
-									ValaSourceReference* _tmp468_ = NULL;
-									ValaSourceReference* _tmp469_ = NULL;
-									ValaSymbol* _tmp470_ = NULL;
-									ValaSourceReference* _tmp471_ = NULL;
-									ValaSourceReference* _tmp472_ = NULL;
-									ValaSymbol* _tmp473_ = NULL;
-									_tmp467_ = sym;
-									_tmp468_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp469_ = _tmp468_;
-									vala_symbol_check_deprecated (_tmp467_, _tmp469_);
-									_tmp470_ = sym;
-									_tmp471_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp472_ = _tmp471_;
-									vala_symbol_check_experimental (_tmp470_, _tmp472_);
-									_tmp473_ = sym;
-									vala_symbol_set_used (_tmp473_, TRUE);
-								} else {
-									ValaSourceReference* _tmp474_ = NULL;
-									ValaSourceReference* _tmp475_ = NULL;
-									gchar* _tmp476_ = NULL;
-									gchar* _tmp477_ = NULL;
-									ValaProperty* _tmp478_ = NULL;
-									gchar* _tmp479_ = NULL;
-									gchar* _tmp480_ = NULL;
-									gchar* _tmp481_ = NULL;
-									gchar* _tmp482_ = NULL;
-									vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
-									_tmp474_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-									_tmp475_ = _tmp474_;
-									_tmp476_ = vala_symbol_get_full_name ((ValaSymbol*) self);
+									_tmp475_ = base_class;
+									_tmp476_ = vala_symbol_get_scope ((ValaSymbol*) _tmp475_);
 									_tmp477_ = _tmp476_;
 									_tmp478_ = prop;
-									_tmp479_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp478_);
+									_tmp479_ = vala_symbol_get_name ((ValaSymbol*) _tmp478_);
 									_tmp480_ = _tmp479_;
-									_tmp481_ = g_strdup_printf ("`%s' does not implement interface property `%s'", _tmp477_, _tmp480_);
-									_tmp482_ = _tmp481_;
-									vala_report_error (_tmp475_, _tmp482_);
-									_g_free0 (_tmp482_);
-									_g_free0 (_tmp480_);
-									_g_free0 (_tmp477_);
+									_tmp481_ = vala_scope_lookup (_tmp477_, _tmp480_);
+									_vala_code_node_unref0 (sym);
+									sym = _tmp481_;
+									_tmp482_ = base_class;
+									_tmp483_ = _tmp482_->priv->_base_class;
+									_tmp484_ = _vala_code_node_ref0 (_tmp483_);
+									_vala_code_node_unref0 (base_class);
+									base_class = _tmp484_;
+								}
+								_tmp485_ = sym;
+								if (G_TYPE_CHECK_INSTANCE_TYPE (_tmp485_, VALA_TYPE_PROPERTY)) {
+									ValaSymbol* _tmp486_ = NULL;
+									ValaSourceReference* _tmp487_ = NULL;
+									ValaSourceReference* _tmp488_ = NULL;
+									ValaSymbol* _tmp489_ = NULL;
+									ValaSourceReference* _tmp490_ = NULL;
+									ValaSourceReference* _tmp491_ = NULL;
+									ValaSymbol* _tmp492_ = NULL;
+									_tmp486_ = sym;
+									_tmp487_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+									_tmp488_ = _tmp487_;
+									vala_symbol_check_deprecated (_tmp486_, _tmp488_);
+									_tmp489_ = sym;
+									_tmp490_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+									_tmp491_ = _tmp490_;
+									vala_symbol_check_experimental (_tmp489_, _tmp491_);
+									_tmp492_ = sym;
+									vala_symbol_set_used (_tmp492_, TRUE);
+								} else {
+									ValaSourceReference* _tmp493_ = NULL;
+									ValaSourceReference* _tmp494_ = NULL;
+									gchar* _tmp495_ = NULL;
+									gchar* _tmp496_ = NULL;
+									ValaProperty* _tmp497_ = NULL;
+									gchar* _tmp498_ = NULL;
+									gchar* _tmp499_ = NULL;
+									gchar* _tmp500_ = NULL;
+									gchar* _tmp501_ = NULL;
+									vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
+									_tmp493_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+									_tmp494_ = _tmp493_;
+									_tmp495_ = vala_symbol_get_full_name ((ValaSymbol*) self);
+									_tmp496_ = _tmp495_;
+									_tmp497_ = prop;
+									_tmp498_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp497_);
+									_tmp499_ = _tmp498_;
+									_tmp500_ = g_strdup_printf ("`%s' does not implement interface property `%s'", _tmp496_, _tmp499_);
+									_tmp501_ = _tmp500_;
+									vala_report_error (_tmp494_, _tmp501_);
+									_g_free0 (_tmp501_);
+									_g_free0 (_tmp499_);
+									_g_free0 (_tmp496_);
 								}
 								_vala_code_node_unref0 (base_class);
 								_vala_code_node_unref0 (sym);
@@ -5054,129 +5132,129 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 			}
 			_vala_iterable_unref0 (_base_type_list);
 		}
-		_tmp483_ = self->priv->_is_abstract;
-		if (!_tmp483_) {
+		_tmp502_ = self->priv->_is_abstract;
+		if (!_tmp502_) {
 			ValaClass* base_class = NULL;
-			ValaClass* _tmp484_ = NULL;
-			ValaClass* _tmp485_ = NULL;
-			_tmp484_ = self->priv->_base_class;
-			_tmp485_ = _vala_code_node_ref0 (_tmp484_);
-			base_class = _tmp485_;
+			ValaClass* _tmp503_ = NULL;
+			ValaClass* _tmp504_ = NULL;
+			_tmp503_ = self->priv->_base_class;
+			_tmp504_ = _vala_code_node_ref0 (_tmp503_);
+			base_class = _tmp504_;
 			while (TRUE) {
-				gboolean _tmp486_ = FALSE;
-				ValaClass* _tmp487_ = NULL;
-				ValaClass* _tmp556_ = NULL;
-				ValaClass* _tmp557_ = NULL;
-				ValaClass* _tmp558_ = NULL;
-				_tmp487_ = base_class;
-				if (_tmp487_ != NULL) {
-					ValaClass* _tmp488_ = NULL;
-					gboolean _tmp489_ = FALSE;
-					_tmp488_ = base_class;
-					_tmp489_ = _tmp488_->priv->_is_abstract;
-					_tmp486_ = _tmp489_;
+				gboolean _tmp505_ = FALSE;
+				ValaClass* _tmp506_ = NULL;
+				ValaClass* _tmp575_ = NULL;
+				ValaClass* _tmp576_ = NULL;
+				ValaClass* _tmp577_ = NULL;
+				_tmp506_ = base_class;
+				if (_tmp506_ != NULL) {
+					ValaClass* _tmp507_ = NULL;
+					gboolean _tmp508_ = FALSE;
+					_tmp507_ = base_class;
+					_tmp508_ = _tmp507_->priv->_is_abstract;
+					_tmp505_ = _tmp508_;
 				} else {
-					_tmp486_ = FALSE;
+					_tmp505_ = FALSE;
 				}
-				if (!_tmp486_) {
+				if (!_tmp505_) {
 					break;
 				}
 				{
 					ValaList* _base_method_list = NULL;
-					ValaClass* _tmp490_ = NULL;
-					ValaList* _tmp491_ = NULL;
+					ValaClass* _tmp509_ = NULL;
+					ValaList* _tmp510_ = NULL;
 					gint _base_method_size = 0;
-					ValaList* _tmp492_ = NULL;
-					gint _tmp493_ = 0;
-					gint _tmp494_ = 0;
+					ValaList* _tmp511_ = NULL;
+					gint _tmp512_ = 0;
+					gint _tmp513_ = 0;
 					gint _base_method_index = 0;
-					_tmp490_ = base_class;
-					_tmp491_ = vala_object_type_symbol_get_methods ((ValaObjectTypeSymbol*) _tmp490_);
-					_base_method_list = _tmp491_;
-					_tmp492_ = _base_method_list;
-					_tmp493_ = vala_collection_get_size ((ValaCollection*) _tmp492_);
-					_tmp494_ = _tmp493_;
-					_base_method_size = _tmp494_;
+					_tmp509_ = base_class;
+					_tmp510_ = vala_object_type_symbol_get_methods ((ValaObjectTypeSymbol*) _tmp509_);
+					_base_method_list = _tmp510_;
+					_tmp511_ = _base_method_list;
+					_tmp512_ = vala_collection_get_size ((ValaCollection*) _tmp511_);
+					_tmp513_ = _tmp512_;
+					_base_method_size = _tmp513_;
 					_base_method_index = -1;
 					while (TRUE) {
-						gint _tmp495_ = 0;
-						gint _tmp496_ = 0;
-						gint _tmp497_ = 0;
+						gint _tmp514_ = 0;
+						gint _tmp515_ = 0;
+						gint _tmp516_ = 0;
 						ValaMethod* base_method = NULL;
-						ValaList* _tmp498_ = NULL;
-						gint _tmp499_ = 0;
-						gpointer _tmp500_ = NULL;
-						ValaMethod* _tmp501_ = NULL;
-						gboolean _tmp502_ = FALSE;
-						gboolean _tmp503_ = FALSE;
-						_tmp495_ = _base_method_index;
-						_base_method_index = _tmp495_ + 1;
-						_tmp496_ = _base_method_index;
-						_tmp497_ = _base_method_size;
-						if (!(_tmp496_ < _tmp497_)) {
+						ValaList* _tmp517_ = NULL;
+						gint _tmp518_ = 0;
+						gpointer _tmp519_ = NULL;
+						ValaMethod* _tmp520_ = NULL;
+						gboolean _tmp521_ = FALSE;
+						gboolean _tmp522_ = FALSE;
+						_tmp514_ = _base_method_index;
+						_base_method_index = _tmp514_ + 1;
+						_tmp515_ = _base_method_index;
+						_tmp516_ = _base_method_size;
+						if (!(_tmp515_ < _tmp516_)) {
 							break;
 						}
-						_tmp498_ = _base_method_list;
-						_tmp499_ = _base_method_index;
-						_tmp500_ = vala_list_get (_tmp498_, _tmp499_);
-						base_method = (ValaMethod*) _tmp500_;
-						_tmp501_ = base_method;
-						_tmp502_ = vala_method_get_is_abstract (_tmp501_);
-						_tmp503_ = _tmp502_;
-						if (_tmp503_) {
+						_tmp517_ = _base_method_list;
+						_tmp518_ = _base_method_index;
+						_tmp519_ = vala_list_get (_tmp517_, _tmp518_);
+						base_method = (ValaMethod*) _tmp519_;
+						_tmp520_ = base_method;
+						_tmp521_ = vala_method_get_is_abstract (_tmp520_);
+						_tmp522_ = _tmp521_;
+						if (_tmp522_) {
 							ValaMethod* override_method = NULL;
-							ValaMethod* _tmp504_ = NULL;
-							const gchar* _tmp505_ = NULL;
-							const gchar* _tmp506_ = NULL;
-							ValaSymbol* _tmp507_ = NULL;
-							ValaMethod* _tmp508_ = NULL;
-							gboolean _tmp509_ = FALSE;
-							ValaMethod* _tmp510_ = NULL;
-							_tmp504_ = base_method;
-							_tmp505_ = vala_symbol_get_name ((ValaSymbol*) _tmp504_);
-							_tmp506_ = _tmp505_;
-							_tmp507_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) self, _tmp506_);
-							_tmp508_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp507_, VALA_TYPE_METHOD) ? ((ValaMethod*) _tmp507_) : NULL;
-							if (_tmp508_ == NULL) {
-								_vala_code_node_unref0 (_tmp507_);
+							ValaMethod* _tmp523_ = NULL;
+							const gchar* _tmp524_ = NULL;
+							const gchar* _tmp525_ = NULL;
+							ValaSymbol* _tmp526_ = NULL;
+							ValaMethod* _tmp527_ = NULL;
+							gboolean _tmp528_ = FALSE;
+							ValaMethod* _tmp529_ = NULL;
+							_tmp523_ = base_method;
+							_tmp524_ = vala_symbol_get_name ((ValaSymbol*) _tmp523_);
+							_tmp525_ = _tmp524_;
+							_tmp526_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) self, _tmp525_);
+							_tmp527_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp526_, VALA_TYPE_METHOD) ? ((ValaMethod*) _tmp526_) : NULL;
+							if (_tmp527_ == NULL) {
+								_vala_code_node_unref0 (_tmp526_);
 							}
-							override_method = _tmp508_;
-							_tmp510_ = override_method;
-							if (_tmp510_ == NULL) {
-								_tmp509_ = TRUE;
+							override_method = _tmp527_;
+							_tmp529_ = override_method;
+							if (_tmp529_ == NULL) {
+								_tmp528_ = TRUE;
 							} else {
-								ValaMethod* _tmp511_ = NULL;
-								gboolean _tmp512_ = FALSE;
-								gboolean _tmp513_ = FALSE;
-								_tmp511_ = override_method;
-								_tmp512_ = vala_method_get_overrides (_tmp511_);
-								_tmp513_ = _tmp512_;
-								_tmp509_ = !_tmp513_;
+								ValaMethod* _tmp530_ = NULL;
+								gboolean _tmp531_ = FALSE;
+								gboolean _tmp532_ = FALSE;
+								_tmp530_ = override_method;
+								_tmp531_ = vala_method_get_overrides (_tmp530_);
+								_tmp532_ = _tmp531_;
+								_tmp528_ = !_tmp532_;
 							}
-							if (_tmp509_) {
-								ValaSourceReference* _tmp514_ = NULL;
-								ValaSourceReference* _tmp515_ = NULL;
-								gchar* _tmp516_ = NULL;
-								gchar* _tmp517_ = NULL;
-								ValaMethod* _tmp518_ = NULL;
-								gchar* _tmp519_ = NULL;
-								gchar* _tmp520_ = NULL;
-								gchar* _tmp521_ = NULL;
-								gchar* _tmp522_ = NULL;
+							if (_tmp528_) {
+								ValaSourceReference* _tmp533_ = NULL;
+								ValaSourceReference* _tmp534_ = NULL;
+								gchar* _tmp535_ = NULL;
+								gchar* _tmp536_ = NULL;
+								ValaMethod* _tmp537_ = NULL;
+								gchar* _tmp538_ = NULL;
+								gchar* _tmp539_ = NULL;
+								gchar* _tmp540_ = NULL;
+								gchar* _tmp541_ = NULL;
 								vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
-								_tmp514_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-								_tmp515_ = _tmp514_;
-								_tmp516_ = vala_symbol_get_full_name ((ValaSymbol*) self);
-								_tmp517_ = _tmp516_;
-								_tmp518_ = base_method;
-								_tmp519_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp518_);
-								_tmp520_ = _tmp519_;
-								_tmp521_ = g_strdup_printf ("`%s' does not implement abstract method `%s'", _tmp517_, _tmp520_);
-								_tmp522_ = _tmp521_;
-								vala_report_error (_tmp515_, _tmp522_);
-								_g_free0 (_tmp522_);
-								_g_free0 (_tmp520_);
-								_g_free0 (_tmp517_);
+								_tmp533_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+								_tmp534_ = _tmp533_;
+								_tmp535_ = vala_symbol_get_full_name ((ValaSymbol*) self);
+								_tmp536_ = _tmp535_;
+								_tmp537_ = base_method;
+								_tmp538_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp537_);
+								_tmp539_ = _tmp538_;
+								_tmp540_ = g_strdup_printf ("`%s' does not implement abstract method `%s'", _tmp536_, _tmp539_);
+								_tmp541_ = _tmp540_;
+								vala_report_error (_tmp534_, _tmp541_);
+								_g_free0 (_tmp541_);
+								_g_free0 (_tmp539_);
+								_g_free0 (_tmp536_);
 							}
 							_vala_code_node_unref0 (override_method);
 						}
@@ -5186,100 +5264,100 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 				}
 				{
 					ValaList* _base_property_list = NULL;
-					ValaClass* _tmp523_ = NULL;
-					ValaList* _tmp524_ = NULL;
+					ValaClass* _tmp542_ = NULL;
+					ValaList* _tmp543_ = NULL;
 					gint _base_property_size = 0;
-					ValaList* _tmp525_ = NULL;
-					gint _tmp526_ = 0;
-					gint _tmp527_ = 0;
+					ValaList* _tmp544_ = NULL;
+					gint _tmp545_ = 0;
+					gint _tmp546_ = 0;
 					gint _base_property_index = 0;
-					_tmp523_ = base_class;
-					_tmp524_ = vala_object_type_symbol_get_properties ((ValaObjectTypeSymbol*) _tmp523_);
-					_base_property_list = _tmp524_;
-					_tmp525_ = _base_property_list;
-					_tmp526_ = vala_collection_get_size ((ValaCollection*) _tmp525_);
-					_tmp527_ = _tmp526_;
-					_base_property_size = _tmp527_;
+					_tmp542_ = base_class;
+					_tmp543_ = vala_object_type_symbol_get_properties ((ValaObjectTypeSymbol*) _tmp542_);
+					_base_property_list = _tmp543_;
+					_tmp544_ = _base_property_list;
+					_tmp545_ = vala_collection_get_size ((ValaCollection*) _tmp544_);
+					_tmp546_ = _tmp545_;
+					_base_property_size = _tmp546_;
 					_base_property_index = -1;
 					while (TRUE) {
-						gint _tmp528_ = 0;
-						gint _tmp529_ = 0;
-						gint _tmp530_ = 0;
+						gint _tmp547_ = 0;
+						gint _tmp548_ = 0;
+						gint _tmp549_ = 0;
 						ValaProperty* base_property = NULL;
-						ValaList* _tmp531_ = NULL;
-						gint _tmp532_ = 0;
-						gpointer _tmp533_ = NULL;
-						ValaProperty* _tmp534_ = NULL;
-						gboolean _tmp535_ = FALSE;
-						gboolean _tmp536_ = FALSE;
-						_tmp528_ = _base_property_index;
-						_base_property_index = _tmp528_ + 1;
-						_tmp529_ = _base_property_index;
-						_tmp530_ = _base_property_size;
-						if (!(_tmp529_ < _tmp530_)) {
+						ValaList* _tmp550_ = NULL;
+						gint _tmp551_ = 0;
+						gpointer _tmp552_ = NULL;
+						ValaProperty* _tmp553_ = NULL;
+						gboolean _tmp554_ = FALSE;
+						gboolean _tmp555_ = FALSE;
+						_tmp547_ = _base_property_index;
+						_base_property_index = _tmp547_ + 1;
+						_tmp548_ = _base_property_index;
+						_tmp549_ = _base_property_size;
+						if (!(_tmp548_ < _tmp549_)) {
 							break;
 						}
-						_tmp531_ = _base_property_list;
-						_tmp532_ = _base_property_index;
-						_tmp533_ = vala_list_get (_tmp531_, _tmp532_);
-						base_property = (ValaProperty*) _tmp533_;
-						_tmp534_ = base_property;
-						_tmp535_ = vala_property_get_is_abstract (_tmp534_);
-						_tmp536_ = _tmp535_;
-						if (_tmp536_) {
+						_tmp550_ = _base_property_list;
+						_tmp551_ = _base_property_index;
+						_tmp552_ = vala_list_get (_tmp550_, _tmp551_);
+						base_property = (ValaProperty*) _tmp552_;
+						_tmp553_ = base_property;
+						_tmp554_ = vala_property_get_is_abstract (_tmp553_);
+						_tmp555_ = _tmp554_;
+						if (_tmp555_) {
 							ValaProperty* override_property = NULL;
-							ValaProperty* _tmp537_ = NULL;
-							const gchar* _tmp538_ = NULL;
-							const gchar* _tmp539_ = NULL;
-							ValaSymbol* _tmp540_ = NULL;
-							ValaProperty* _tmp541_ = NULL;
-							gboolean _tmp542_ = FALSE;
-							ValaProperty* _tmp543_ = NULL;
-							_tmp537_ = base_property;
-							_tmp538_ = vala_symbol_get_name ((ValaSymbol*) _tmp537_);
-							_tmp539_ = _tmp538_;
-							_tmp540_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) self, _tmp539_);
-							_tmp541_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp540_, VALA_TYPE_PROPERTY) ? ((ValaProperty*) _tmp540_) : NULL;
-							if (_tmp541_ == NULL) {
-								_vala_code_node_unref0 (_tmp540_);
+							ValaProperty* _tmp556_ = NULL;
+							const gchar* _tmp557_ = NULL;
+							const gchar* _tmp558_ = NULL;
+							ValaSymbol* _tmp559_ = NULL;
+							ValaProperty* _tmp560_ = NULL;
+							gboolean _tmp561_ = FALSE;
+							ValaProperty* _tmp562_ = NULL;
+							_tmp556_ = base_property;
+							_tmp557_ = vala_symbol_get_name ((ValaSymbol*) _tmp556_);
+							_tmp558_ = _tmp557_;
+							_tmp559_ = vala_semantic_analyzer_symbol_lookup_inherited ((ValaSymbol*) self, _tmp558_);
+							_tmp560_ = G_TYPE_CHECK_INSTANCE_TYPE (_tmp559_, VALA_TYPE_PROPERTY) ? ((ValaProperty*) _tmp559_) : NULL;
+							if (_tmp560_ == NULL) {
+								_vala_code_node_unref0 (_tmp559_);
 							}
-							override_property = _tmp541_;
-							_tmp543_ = override_property;
-							if (_tmp543_ == NULL) {
-								_tmp542_ = TRUE;
+							override_property = _tmp560_;
+							_tmp562_ = override_property;
+							if (_tmp562_ == NULL) {
+								_tmp561_ = TRUE;
 							} else {
-								ValaProperty* _tmp544_ = NULL;
-								gboolean _tmp545_ = FALSE;
-								gboolean _tmp546_ = FALSE;
-								_tmp544_ = override_property;
-								_tmp545_ = vala_property_get_overrides (_tmp544_);
-								_tmp546_ = _tmp545_;
-								_tmp542_ = !_tmp546_;
+								ValaProperty* _tmp563_ = NULL;
+								gboolean _tmp564_ = FALSE;
+								gboolean _tmp565_ = FALSE;
+								_tmp563_ = override_property;
+								_tmp564_ = vala_property_get_overrides (_tmp563_);
+								_tmp565_ = _tmp564_;
+								_tmp561_ = !_tmp565_;
 							}
-							if (_tmp542_) {
-								ValaSourceReference* _tmp547_ = NULL;
-								ValaSourceReference* _tmp548_ = NULL;
-								gchar* _tmp549_ = NULL;
-								gchar* _tmp550_ = NULL;
-								ValaProperty* _tmp551_ = NULL;
-								gchar* _tmp552_ = NULL;
-								gchar* _tmp553_ = NULL;
-								gchar* _tmp554_ = NULL;
-								gchar* _tmp555_ = NULL;
+							if (_tmp561_) {
+								ValaSourceReference* _tmp566_ = NULL;
+								ValaSourceReference* _tmp567_ = NULL;
+								gchar* _tmp568_ = NULL;
+								gchar* _tmp569_ = NULL;
+								ValaProperty* _tmp570_ = NULL;
+								gchar* _tmp571_ = NULL;
+								gchar* _tmp572_ = NULL;
+								gchar* _tmp573_ = NULL;
+								gchar* _tmp574_ = NULL;
 								vala_code_node_set_error ((ValaCodeNode*) self, TRUE);
-								_tmp547_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
-								_tmp548_ = _tmp547_;
-								_tmp549_ = vala_symbol_get_full_name ((ValaSymbol*) self);
-								_tmp550_ = _tmp549_;
-								_tmp551_ = base_property;
-								_tmp552_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp551_);
-								_tmp553_ = _tmp552_;
-								_tmp554_ = g_strdup_printf ("`%s' does not implement abstract property `%s'", _tmp550_, _tmp553_);
-								_tmp555_ = _tmp554_;
-								vala_report_error (_tmp548_, _tmp555_);
-								_g_free0 (_tmp555_);
-								_g_free0 (_tmp553_);
-								_g_free0 (_tmp550_);
+								_tmp566_ = vala_code_node_get_source_reference ((ValaCodeNode*) self);
+								_tmp567_ = _tmp566_;
+								_tmp568_ = vala_symbol_get_full_name ((ValaSymbol*) self);
+								_tmp569_ = _tmp568_;
+								_tmp570_ = base_property;
+								_tmp571_ = vala_symbol_get_full_name ((ValaSymbol*) _tmp570_);
+								_tmp572_ = _tmp571_;
+								_tmp573_ = g_strdup_printf ("`%s' does not implement abstract property `%s'", _tmp569_, _tmp572_);
+								_tmp574_ = _tmp573_;
+								vala_report_error (_tmp567_, _tmp574_);
+								_g_free0 (_tmp574_);
+								_g_free0 (_tmp572_);
+								_g_free0 (_tmp569_);
 							}
 							_vala_code_node_unref0 (override_property);
 						}
@@ -5287,28 +5365,28 @@ static gboolean vala_class_real_check (ValaCodeNode* base, ValaCodeContext* cont
 					}
 					_vala_iterable_unref0 (_base_property_list);
 				}
-				_tmp556_ = base_class;
-				_tmp557_ = _tmp556_->priv->_base_class;
-				_tmp558_ = _vala_code_node_ref0 (_tmp557_);
+				_tmp575_ = base_class;
+				_tmp576_ = _tmp575_->priv->_base_class;
+				_tmp577_ = _vala_code_node_ref0 (_tmp576_);
 				_vala_code_node_unref0 (base_class);
-				base_class = _tmp558_;
+				base_class = _tmp577_;
 			}
 			_vala_code_node_unref0 (base_class);
 		}
 	}
-	_tmp559_ = context;
-	_tmp560_ = vala_code_context_get_analyzer (_tmp559_);
-	_tmp561_ = _tmp560_;
-	_tmp562_ = old_source_file;
-	vala_semantic_analyzer_set_current_source_file (_tmp561_, _tmp562_);
-	_tmp563_ = context;
-	_tmp564_ = vala_code_context_get_analyzer (_tmp563_);
-	_tmp565_ = _tmp564_;
-	_tmp566_ = old_symbol;
-	vala_semantic_analyzer_set_current_symbol (_tmp565_, _tmp566_);
-	_tmp567_ = vala_code_node_get_error ((ValaCodeNode*) self);
-	_tmp568_ = _tmp567_;
-	result = !_tmp568_;
+	_tmp578_ = context;
+	_tmp579_ = vala_code_context_get_analyzer (_tmp578_);
+	_tmp580_ = _tmp579_;
+	_tmp581_ = old_source_file;
+	vala_semantic_analyzer_set_current_source_file (_tmp580_, _tmp581_);
+	_tmp582_ = context;
+	_tmp583_ = vala_code_context_get_analyzer (_tmp582_);
+	_tmp584_ = _tmp583_;
+	_tmp585_ = old_symbol;
+	vala_semantic_analyzer_set_current_symbol (_tmp584_, _tmp585_);
+	_tmp586_ = vala_code_node_get_error ((ValaCodeNode*) self);
+	_tmp587_ = _tmp586_;
+	result = !_tmp587_;
 	_vala_iterable_unref0 (missing_prereqs);
 	_vala_iterable_unref0 (prerequisites);
 	_vala_code_node_unref0 (old_symbol);
@@ -5772,28 +5850,28 @@ gboolean vala_class_get_is_error_base (ValaClass* self) {
 
 static void vala_class_class_init (ValaClassClass * klass) {
 	vala_class_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_class_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_class_finalize;
 	g_type_class_add_private (klass, sizeof (ValaClassPrivate));
-	VALA_SYMBOL_CLASS (klass)->add_constant = vala_class_real_add_constant;
-	VALA_SYMBOL_CLASS (klass)->add_field = vala_class_real_add_field;
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_class_real_add_method;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_methods = vala_class_real_get_methods;
-	VALA_SYMBOL_CLASS (klass)->add_property = vala_class_real_add_property;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_properties = vala_class_real_get_properties;
-	VALA_SYMBOL_CLASS (klass)->add_signal = vala_class_real_add_signal;
-	VALA_OBJECT_TYPE_SYMBOL_CLASS (klass)->get_signals = vala_class_real_get_signals;
-	VALA_SYMBOL_CLASS (klass)->add_class = vala_class_real_add_class;
-	VALA_SYMBOL_CLASS (klass)->add_struct = vala_class_real_add_struct;
-	VALA_SYMBOL_CLASS (klass)->add_enum = vala_class_real_add_enum;
-	VALA_SYMBOL_CLASS (klass)->add_delegate = vala_class_real_add_delegate;
-	VALA_SYMBOL_CLASS (klass)->add_constructor = vala_class_real_add_constructor;
-	VALA_SYMBOL_CLASS (klass)->add_destructor = vala_class_real_add_destructor;
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_class_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_class_real_accept_children;
-	VALA_TYPESYMBOL_CLASS (klass)->is_reference_type = vala_class_real_is_reference_type;
-	VALA_TYPESYMBOL_CLASS (klass)->is_subtype_of = vala_class_real_is_subtype_of;
-	VALA_CODE_NODE_CLASS (klass)->replace_type = vala_class_real_replace_type;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_class_real_check;
+	((ValaSymbolClass *) klass)->add_constant = vala_class_real_add_constant;
+	((ValaSymbolClass *) klass)->add_field = vala_class_real_add_field;
+	((ValaSymbolClass *) klass)->add_method = vala_class_real_add_method;
+	((ValaObjectTypeSymbolClass *) klass)->get_methods = vala_class_real_get_methods;
+	((ValaSymbolClass *) klass)->add_property = vala_class_real_add_property;
+	((ValaObjectTypeSymbolClass *) klass)->get_properties = vala_class_real_get_properties;
+	((ValaSymbolClass *) klass)->add_signal = vala_class_real_add_signal;
+	((ValaObjectTypeSymbolClass *) klass)->get_signals = vala_class_real_get_signals;
+	((ValaSymbolClass *) klass)->add_class = vala_class_real_add_class;
+	((ValaSymbolClass *) klass)->add_struct = vala_class_real_add_struct;
+	((ValaSymbolClass *) klass)->add_enum = vala_class_real_add_enum;
+	((ValaSymbolClass *) klass)->add_delegate = vala_class_real_add_delegate;
+	((ValaSymbolClass *) klass)->add_constructor = vala_class_real_add_constructor;
+	((ValaSymbolClass *) klass)->add_destructor = vala_class_real_add_destructor;
+	((ValaCodeNodeClass *) klass)->accept = vala_class_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_class_real_accept_children;
+	((ValaTypeSymbolClass *) klass)->is_reference_type = vala_class_real_is_reference_type;
+	((ValaTypeSymbolClass *) klass)->is_subtype_of = vala_class_real_is_subtype_of;
+	((ValaCodeNodeClass *) klass)->replace_type = vala_class_real_replace_type;
+	((ValaCodeNodeClass *) klass)->check = vala_class_real_check;
 }
 
 

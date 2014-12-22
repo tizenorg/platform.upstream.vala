@@ -350,9 +350,9 @@ void vala_ccode_enum_set_deprecated (ValaCCodeEnum* self, gboolean value) {
 
 static void vala_ccode_enum_class_init (ValaCCodeEnumClass * klass) {
 	vala_ccode_enum_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_enum_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_enum_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeEnumPrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_enum_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_enum_real_write;
 }
 
 

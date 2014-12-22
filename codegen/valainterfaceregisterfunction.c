@@ -454,19 +454,19 @@ void vala_interface_register_function_set_interface_reference (ValaInterfaceRegi
 
 static void vala_interface_register_function_class_init (ValaInterfaceRegisterFunctionClass * klass) {
 	vala_interface_register_function_parent_class = g_type_class_peek_parent (klass);
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->finalize = vala_interface_register_function_finalize;
+	((ValaTypeRegisterFunctionClass *) klass)->finalize = vala_interface_register_function_finalize;
 	g_type_class_add_private (klass, sizeof (ValaInterfaceRegisterFunctionPrivate));
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_type_declaration = vala_interface_register_function_real_get_type_declaration;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_type_struct_name = vala_interface_register_function_real_get_type_struct_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_base_init_func_name = vala_interface_register_function_real_get_base_init_func_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_class_finalize_func_name = vala_interface_register_function_real_get_class_finalize_func_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_base_finalize_func_name = vala_interface_register_function_real_get_base_finalize_func_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_class_init_func_name = vala_interface_register_function_real_get_class_init_func_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_instance_struct_size = vala_interface_register_function_real_get_instance_struct_size;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_instance_init_func_name = vala_interface_register_function_real_get_instance_init_func_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_parent_type_name = vala_interface_register_function_real_get_parent_type_name;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_accessibility = vala_interface_register_function_real_get_accessibility;
-	VALA_TYPEREGISTER_FUNCTION_CLASS (klass)->get_type_interface_init_statements = vala_interface_register_function_real_get_type_interface_init_statements;
+	((ValaTypeRegisterFunctionClass *) klass)->get_type_declaration = vala_interface_register_function_real_get_type_declaration;
+	((ValaTypeRegisterFunctionClass *) klass)->get_type_struct_name = vala_interface_register_function_real_get_type_struct_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_base_init_func_name = vala_interface_register_function_real_get_base_init_func_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_class_finalize_func_name = vala_interface_register_function_real_get_class_finalize_func_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_base_finalize_func_name = vala_interface_register_function_real_get_base_finalize_func_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_class_init_func_name = vala_interface_register_function_real_get_class_init_func_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_instance_struct_size = vala_interface_register_function_real_get_instance_struct_size;
+	((ValaTypeRegisterFunctionClass *) klass)->get_instance_init_func_name = vala_interface_register_function_real_get_instance_init_func_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_parent_type_name = vala_interface_register_function_real_get_parent_type_name;
+	((ValaTypeRegisterFunctionClass *) klass)->get_accessibility = vala_interface_register_function_real_get_accessibility;
+	((ValaTypeRegisterFunctionClass *) klass)->get_type_interface_init_statements = vala_interface_register_function_real_get_type_interface_init_statements;
 }
 
 

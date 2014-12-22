@@ -17,7 +17,7 @@ namespace Notify {
 		[Deprecated (since = "0.6.")]
 		public void set_hint_byte (string key, [CCode (type = "guchar")] uchar value);
 		[Deprecated (since = "0.6.")]
-		public void set_hint_byte_array (string key, [CCode (array_length = false, type = "const guchar*")] uchar[] value, size_t len);
+		public void set_hint_byte_array (string key, [CCode (array_length_cname = "len", array_length_pos = 2.1, array_length_type = "gsize")] uchar[] value);
 		[Deprecated (since = "0.6.")]
 		public void set_hint_double (string key, double value);
 		[Deprecated (since = "0.6.")]

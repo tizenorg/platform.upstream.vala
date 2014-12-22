@@ -612,10 +612,10 @@ static ValaDataType* vala_struct_value_type_real_copy (ValaDataType* base) {
 
 static void vala_struct_value_type_class_init (ValaStructValueTypeClass * klass) {
 	vala_struct_value_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->is_invokable = vala_struct_value_type_real_is_invokable;
-	VALA_DATA_TYPE_CLASS (klass)->get_return_type = vala_struct_value_type_real_get_return_type;
-	VALA_DATA_TYPE_CLASS (klass)->get_parameters = vala_struct_value_type_real_get_parameters;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_struct_value_type_real_copy;
+	((ValaDataTypeClass *) klass)->is_invokable = vala_struct_value_type_real_is_invokable;
+	((ValaDataTypeClass *) klass)->get_return_type = vala_struct_value_type_real_get_return_type;
+	((ValaDataTypeClass *) klass)->get_parameters = vala_struct_value_type_real_get_parameters;
+	((ValaDataTypeClass *) klass)->copy = vala_struct_value_type_real_copy;
 }
 
 

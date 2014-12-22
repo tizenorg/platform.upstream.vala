@@ -335,7 +335,7 @@ GType vala_comment_get_type (void) G_GNUC_CONST;
 static GType vala_genie_scanner_conditional_get_type (void) G_GNUC_CONST G_GNUC_UNUSED;
 static ValaGenieScannerConditional* vala_genie_scanner_conditional_dup (const ValaGenieScannerConditional* self);
 static void vala_genie_scanner_conditional_free (ValaGenieScannerConditional* self);
-static GType vala_genie_scanner_state_get_type (void) G_GNUC_UNUSED;
+static GType vala_genie_scanner_state_get_type (void) G_GNUC_CONST G_GNUC_UNUSED;
 #define VALA_GENIE_SCANNER_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), VALA_GENIE_TYPE_SCANNER, ValaGenieScannerPrivate))
 enum  {
 	VALA_GENIE_SCANNER_DUMMY_PROPERTY
@@ -7146,7 +7146,7 @@ void vala_genie_value_take_scanner (GValue* value, gpointer v_object) {
 
 static void vala_genie_scanner_class_init (ValaGenieScannerClass * klass) {
 	vala_genie_scanner_parent_class = g_type_class_peek_parent (klass);
-	VALA_GENIE_SCANNER_CLASS (klass)->finalize = vala_genie_scanner_finalize;
+	((ValaGenieScannerClass *) klass)->finalize = vala_genie_scanner_finalize;
 	g_type_class_add_private (klass, sizeof (ValaGenieScannerPrivate));
 }
 
@@ -7160,6 +7160,7 @@ static void vala_genie_scanner_instance_init (ValaGenieScanner * self) {
 static void vala_genie_scanner_finalize (ValaGenieScanner* obj) {
 	ValaGenieScanner * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_GENIE_TYPE_SCANNER, ValaGenieScanner);
+	g_signal_handlers_destroy (self);
 	_vala_source_file_unref0 (self->priv->_source_file);
 	_vala_comment_unref0 (self->priv->_comment);
 	self->priv->conditional_stack = (g_free (self->priv->conditional_stack), NULL);

@@ -579,9 +579,9 @@ void vala_dynamic_method_set_invocation (ValaDynamicMethod* self, ValaMethodCall
 
 static void vala_dynamic_method_class_init (ValaDynamicMethodClass * klass) {
 	vala_dynamic_method_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_dynamic_method_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_dynamic_method_finalize;
 	g_type_class_add_private (klass, sizeof (ValaDynamicMethodPrivate));
-	VALA_CODE_NODE_CLASS (klass)->check = vala_dynamic_method_real_check;
+	((ValaCodeNodeClass *) klass)->check = vala_dynamic_method_real_check;
 }
 
 

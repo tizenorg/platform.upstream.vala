@@ -951,15 +951,15 @@ void vala_postfix_expression_set_increment (ValaPostfixExpression* self, gboolea
 
 static void vala_postfix_expression_class_init (ValaPostfixExpressionClass * klass) {
 	vala_postfix_expression_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_postfix_expression_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_postfix_expression_finalize;
 	g_type_class_add_private (klass, sizeof (ValaPostfixExpressionPrivate));
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_postfix_expression_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_postfix_expression_real_accept_children;
-	VALA_EXPRESSION_CLASS (klass)->is_pure = vala_postfix_expression_real_is_pure;
-	VALA_CODE_NODE_CLASS (klass)->get_defined_variables = vala_postfix_expression_real_get_defined_variables;
-	VALA_CODE_NODE_CLASS (klass)->get_used_variables = vala_postfix_expression_real_get_used_variables;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_postfix_expression_real_check;
-	VALA_CODE_NODE_CLASS (klass)->emit = vala_postfix_expression_real_emit;
+	((ValaCodeNodeClass *) klass)->accept = vala_postfix_expression_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_postfix_expression_real_accept_children;
+	((ValaExpressionClass *) klass)->is_pure = vala_postfix_expression_real_is_pure;
+	((ValaCodeNodeClass *) klass)->get_defined_variables = vala_postfix_expression_real_get_defined_variables;
+	((ValaCodeNodeClass *) klass)->get_used_variables = vala_postfix_expression_real_get_used_variables;
+	((ValaCodeNodeClass *) klass)->check = vala_postfix_expression_real_check;
+	((ValaCodeNodeClass *) klass)->emit = vala_postfix_expression_real_emit;
 }
 
 

@@ -240,9 +240,9 @@ void vala_ccode_include_directive_set_local (ValaCCodeIncludeDirective* self, gb
 
 static void vala_ccode_include_directive_class_init (ValaCCodeIncludeDirectiveClass * klass) {
 	vala_ccode_include_directive_parent_class = g_type_class_peek_parent (klass);
-	VALA_CCODE_NODE_CLASS (klass)->finalize = vala_ccode_include_directive_finalize;
+	((ValaCCodeNodeClass *) klass)->finalize = vala_ccode_include_directive_finalize;
 	g_type_class_add_private (klass, sizeof (ValaCCodeIncludeDirectivePrivate));
-	VALA_CCODE_NODE_CLASS (klass)->write = vala_ccode_include_directive_real_write;
+	((ValaCCodeNodeClass *) klass)->write = vala_ccode_include_directive_real_write;
 }
 
 

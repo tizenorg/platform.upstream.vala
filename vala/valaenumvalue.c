@@ -584,9 +584,9 @@ static gboolean vala_enum_value_real_check (ValaCodeNode* base, ValaCodeContext*
 
 static void vala_enum_value_class_init (ValaEnumValueClass * klass) {
 	vala_enum_value_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->accept = vala_enum_value_real_accept;
-	VALA_CODE_NODE_CLASS (klass)->accept_children = vala_enum_value_real_accept_children;
-	VALA_CODE_NODE_CLASS (klass)->check = vala_enum_value_real_check;
+	((ValaCodeNodeClass *) klass)->accept = vala_enum_value_real_accept;
+	((ValaCodeNodeClass *) klass)->accept_children = vala_enum_value_real_accept_children;
+	((ValaCodeNodeClass *) klass)->check = vala_enum_value_real_check;
 }
 
 

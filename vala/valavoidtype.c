@@ -343,9 +343,9 @@ static ValaDataType* vala_void_type_real_copy (ValaDataType* base) {
 
 static void vala_void_type_class_init (ValaVoidTypeClass * klass) {
 	vala_void_type_parent_class = g_type_class_peek_parent (klass);
-	VALA_DATA_TYPE_CLASS (klass)->stricter = vala_void_type_real_stricter;
-	VALA_DATA_TYPE_CLASS (klass)->to_qualified_string = vala_void_type_real_to_qualified_string;
-	VALA_DATA_TYPE_CLASS (klass)->copy = vala_void_type_real_copy;
+	((ValaDataTypeClass *) klass)->stricter = vala_void_type_real_stricter;
+	((ValaDataTypeClass *) klass)->to_qualified_string = vala_void_type_real_to_qualified_string;
+	((ValaDataTypeClass *) klass)->copy = vala_void_type_real_copy;
 }
 
 

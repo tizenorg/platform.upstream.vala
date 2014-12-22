@@ -582,7 +582,7 @@ void vala_value_take_scope (GValue* value, gpointer v_object) {
 
 static void vala_scope_class_init (ValaScopeClass * klass) {
 	vala_scope_parent_class = g_type_class_peek_parent (klass);
-	VALA_SCOPE_CLASS (klass)->finalize = vala_scope_finalize;
+	((ValaScopeClass *) klass)->finalize = vala_scope_finalize;
 	g_type_class_add_private (klass, sizeof (ValaScopePrivate));
 }
 
@@ -596,6 +596,7 @@ static void vala_scope_instance_init (ValaScope * self) {
 static void vala_scope_finalize (ValaScope* obj) {
 	ValaScope * self;
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, VALA_TYPE_SCOPE, ValaScope);
+	g_signal_handlers_destroy (self);
 	_vala_map_unref0 (self->priv->symbol_table);
 	_vala_iterable_unref0 (self->priv->anonymous_members);
 }

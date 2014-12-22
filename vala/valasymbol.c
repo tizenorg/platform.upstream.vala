@@ -2409,24 +2409,24 @@ ValaSourceFileType vala_symbol_get_source_type (ValaSymbol* self) {
 
 static void vala_symbol_class_init (ValaSymbolClass * klass) {
 	vala_symbol_parent_class = g_type_class_peek_parent (klass);
-	VALA_CODE_NODE_CLASS (klass)->finalize = vala_symbol_finalize;
+	((ValaCodeNodeClass *) klass)->finalize = vala_symbol_finalize;
 	g_type_class_add_private (klass, sizeof (ValaSymbolPrivate));
-	VALA_SYMBOL_CLASS (klass)->is_instance_member = vala_symbol_real_is_instance_member;
-	VALA_SYMBOL_CLASS (klass)->is_class_member = vala_symbol_real_is_class_member;
-	VALA_SYMBOL_CLASS (klass)->add_namespace = vala_symbol_real_add_namespace;
-	VALA_SYMBOL_CLASS (klass)->add_class = vala_symbol_real_add_class;
-	VALA_SYMBOL_CLASS (klass)->add_interface = vala_symbol_real_add_interface;
-	VALA_SYMBOL_CLASS (klass)->add_struct = vala_symbol_real_add_struct;
-	VALA_SYMBOL_CLASS (klass)->add_enum = vala_symbol_real_add_enum;
-	VALA_SYMBOL_CLASS (klass)->add_error_domain = vala_symbol_real_add_error_domain;
-	VALA_SYMBOL_CLASS (klass)->add_delegate = vala_symbol_real_add_delegate;
-	VALA_SYMBOL_CLASS (klass)->add_constant = vala_symbol_real_add_constant;
-	VALA_SYMBOL_CLASS (klass)->add_field = vala_symbol_real_add_field;
-	VALA_SYMBOL_CLASS (klass)->add_method = vala_symbol_real_add_method;
-	VALA_SYMBOL_CLASS (klass)->add_property = vala_symbol_real_add_property;
-	VALA_SYMBOL_CLASS (klass)->add_signal = vala_symbol_real_add_signal;
-	VALA_SYMBOL_CLASS (klass)->add_constructor = vala_symbol_real_add_constructor;
-	VALA_SYMBOL_CLASS (klass)->add_destructor = vala_symbol_real_add_destructor;
+	((ValaSymbolClass *) klass)->is_instance_member = vala_symbol_real_is_instance_member;
+	((ValaSymbolClass *) klass)->is_class_member = vala_symbol_real_is_class_member;
+	((ValaSymbolClass *) klass)->add_namespace = vala_symbol_real_add_namespace;
+	((ValaSymbolClass *) klass)->add_class = vala_symbol_real_add_class;
+	((ValaSymbolClass *) klass)->add_interface = vala_symbol_real_add_interface;
+	((ValaSymbolClass *) klass)->add_struct = vala_symbol_real_add_struct;
+	((ValaSymbolClass *) klass)->add_enum = vala_symbol_real_add_enum;
+	((ValaSymbolClass *) klass)->add_error_domain = vala_symbol_real_add_error_domain;
+	((ValaSymbolClass *) klass)->add_delegate = vala_symbol_real_add_delegate;
+	((ValaSymbolClass *) klass)->add_constant = vala_symbol_real_add_constant;
+	((ValaSymbolClass *) klass)->add_field = vala_symbol_real_add_field;
+	((ValaSymbolClass *) klass)->add_method = vala_symbol_real_add_method;
+	((ValaSymbolClass *) klass)->add_property = vala_symbol_real_add_property;
+	((ValaSymbolClass *) klass)->add_signal = vala_symbol_real_add_signal;
+	((ValaSymbolClass *) klass)->add_constructor = vala_symbol_real_add_constructor;
+	((ValaSymbolClass *) klass)->add_destructor = vala_symbol_real_add_destructor;
 }
 
 
