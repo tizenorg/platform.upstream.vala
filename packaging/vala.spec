@@ -1,16 +1,13 @@
-%define         baseline 0.24
-%define         vala_version 0.24
-%define         vala_libversion 0_24
-%define         vala_priority 24
+%define         vala_version 0.26
 
 Name:           vala
-Version:        0.24.0
+Version:        0.26.1
 Release:        0
 Summary:        Programming language for GNOME
 License:        LGPL-2.0
 Group:          Platform Development/Utilities
 Url:            http://live.gnome.org/Vala
-Source0:        http://download.gnome.org/sources/vala/%{baseline}/%{name}-%{version}.tar.xz
+Source0:        http://download.gnome.org/sources/vala/%{vala_version}/%{name}-%{version}.tar.xz
 Source1001:     %{name}.manifest
 
 BuildRequires:  bison
@@ -66,7 +63,7 @@ rm -rf %{buildroot}
 %post
 update-alternatives \
   --install %{_bindir}/vala                          vala                     %{_bindir}/vala-%{vala_version} \
-            %{vala_priority} \
+            %{vala_version} \
   --slave   %{_bindir}/valac                         valac                    %{_bindir}/valac-%{vala_version} \
   --slave   %{_bindir}/vala-gen-introspect           vala-gen-introspect      %{_bindir}/vala-gen-introspect-%{vala_version} \
   --slave   %{_bindir}/vapicheck                     vapicheck                %{_bindir}/vapicheck-%{vala_version} \
