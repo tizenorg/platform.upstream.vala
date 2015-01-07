@@ -1,4 +1,5 @@
 %define         vala_version 0.26
+%define         vala_priority 26
 
 Name:           vala
 Version:        0.26.1
@@ -63,7 +64,7 @@ rm -rf %{buildroot}
 %post
 update-alternatives \
   --install %{_bindir}/vala                          vala                     %{_bindir}/vala-%{vala_version} \
-            %{vala_version} \
+            %{vala_priority} \
   --slave   %{_bindir}/valac                         valac                    %{_bindir}/valac-%{vala_version} \
   --slave   %{_bindir}/vala-gen-introspect           vala-gen-introspect      %{_bindir}/vala-gen-introspect-%{vala_version} \
   --slave   %{_bindir}/vapicheck                     vapicheck                %{_bindir}/vapicheck-%{vala_version} \
