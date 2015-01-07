@@ -38,7 +38,7 @@ compared to applications and libraries written in C.
 %package -n libvala-devel
 Summary:        Programming language for GNOME
 Group:          Platform Development/Utilities
-Requires:       libvala = %{version}
+Requires:       libvala = %{version}-%{release}
 
 %description -n libvala-devel
 Vala is a new programming language that aims to bring modern
